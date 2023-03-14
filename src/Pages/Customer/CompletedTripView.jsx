@@ -560,8 +560,11 @@ const CompletedTripView = () => {
                         <div className="ms-2 me-auto">
                           <Form.Group className="" controlId="cas1">
                             <Form.Check
+                            disabled={autoBrk === 0}
                               type="checkbox"
                               label="Automatic Braking"
+                              value="6"
+                              onChange={handlecheckbox}
                             />
                           </Form.Group>
                         </div>
