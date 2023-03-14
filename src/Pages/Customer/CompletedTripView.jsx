@@ -128,19 +128,8 @@ const CompletedTripView = () => {
             setMedia(res.data[i].jsondata);
           }
 
-          // Set accident saved data
-          if (res.data[i].event === "BRK") {
-            let brk = JSON.parse(res.data[i].jsondata);
-            let ttcdiff = brk.data.on_ttc - brk.data.off_ttc;
-            let acd = ttcdiff / brk.data.off_ttc;
-            let accSvd = acd * 100;
-            if (accSvd > 50 && accSvd < 100) {
-              setAccident(parseInt(accident) + 1);
-            }
-            if (brk.data.reason === 0) {
-              setAutoBrk((prevCount) => prevCount + 1);
-            }
-          }
+         
+
 
           // Set all notifications data
 
@@ -295,10 +284,27 @@ const CompletedTripView = () => {
         }
       )
       .then((response) => {
-        let parameters = [];
+         let parameters = [];
         let params = {};
+
         for (let l = 0; l < response.data.length; l++) {
+          ////////////////parsing break json
+
           let parseJson = JSON.parse(response.data[l].jsondata);
+          console.log(parseJson);
+          if (response.data[l].event == "BRK") {
+            let ttcdiff = parseJson.data.on_ttc - parseJson.data.off_ttc;
+            let acd = ttcdiff / parseJson.data.off_ttc;
+            let accSvd = acd * 100;
+            if (accSvd > 50 && accSvd < 100) {
+              setAccident((prevCount) => prevCount + 1);
+            }
+            if (parseJson.data.reason === 0) {
+              setAutoBrk((prevCount) => prevCount + 1);
+            }
+          }
+
+          ///////////////////////adding brk json to markers
           if (parseJson.notification !== undefined) {
             params = {
               id: response.data[l].id,
@@ -311,7 +317,6 @@ const CompletedTripView = () => {
             parameters.push(params);
           }
           if (parseJson.event == "BRK") {
-            setAccident((prev) => prev + 1);
             params = {
               id: response.data[l].id,
               lat: parseFloat(response.data[l].lat),
