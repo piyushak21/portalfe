@@ -25,7 +25,7 @@ const AddDevice = () => {
       .catch((err) => {
         console.log(err);
       });
-  });
+  },, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
