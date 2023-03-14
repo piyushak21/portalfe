@@ -30,6 +30,10 @@ const OngoingTripView = () => {
   const [avgSpd, setAvgSpd] = useState();
   const [spdData, setSpdData] = useState([]);
   const [vehicle, setVehicle] = useState([]);
+  const [media, setMedia] = useState({});
+  const [dmsMedia, setDmsMedia] = useState("");
+  const [drowsiness, setDrowsiness] = useState(0);
+  const [distraction, setDistraction] = useState(0);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -105,6 +109,14 @@ const OngoingTripView = () => {
 
             // Calculate average speed
             setSpdData(res.data.map((speed) => speed.spd));
+
+            // set DMS data
+            for (let i = 0; i < res.data.length; i++) {
+              // Set DMS Data
+              if (res.data[i].event === "DMS") {
+                setMedia(res.data[i].jsondata);
+              }
+            }
           });
       };
       fetchData();
@@ -180,6 +192,22 @@ const OngoingTripView = () => {
       setAvgSpd(Math.round(averageSpeed));
     }
   }, [tripData, distance, durationInSec]);
+
+  // Set DMS media
+  useEffect(() => {
+    if (media.length > 0) {
+      let mediaParse = JSON.parse(media);
+      setDmsMedia(mediaParse.data.media);
+      console.log(dmsMedia);
+
+      if (mediaParse.data.alert_type === "DROWSINESS") {
+        setDrowsiness((prev) => prev + 1);
+      }
+      if (mediaParse.data.alert_type === "Distraction") {
+        setDistraction((prev) => prev + 1);
+      }
+    }
+  }, [media]);
 
   // Set vehicle data
   useEffect(() => {
@@ -597,7 +625,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {/* {drowsiness} */}
+                            {drowsiness}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -610,7 +638,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {/* {distraction} */}
+                            {distraction}
                           </Badge>
                         </ListGroup.Item>
                       </ListGroup>
@@ -619,20 +647,13 @@ const OngoingTripView = () => {
                 </div>
                 <div className="col-md-8">
                   <h5>DMS Media</h5>
-                  {/* <div className="row">
-                  <div className="col-md-6">
-                    <img src={dmsImg} alt="" className="img-fluid w-100" />
+                  <div className="row">
+                    <div className="col-md-6">
+                      <video width="320" height="240" controls>
+                        <source src={dmsMedia} type="video/mp4" controls />
+                      </video>
+                    </div>
                   </div>
-
-                  <div className="col-md-6">
-                    <Iframe
-                      src={dmsVid}
-                      width="100%"
-                      height="100%"
-                      allow="autoplay"
-                    ></Iframe>
-                  </div>
-                </div> */}
                 </div>
               </div>
             </Tab>
