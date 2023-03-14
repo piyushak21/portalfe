@@ -1,0 +1,11 @@
+.topdiv {
+  display: flex;
+  justify-content: space-between;
+  margin: auto;
+  margin-top: 3rem;
+}
+.topright {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}

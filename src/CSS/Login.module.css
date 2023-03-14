@@ -1,0 +1,27 @@
+
+.divlogout {
+  border: none;
+  border-radius: 10px;
+  height: 300px;
+  width: 400px;
+  margin: auto;
+  margin-top: 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 5rem;
+  background-color: rgb(58, 126, 126);
+  color: white;
+}
+.logoutmain {
+  background-color: rgb(5, 70, 70);
+  height: 100vh;
+  border: 0.2px solid white;
+}
+.logoutbtn {
+  margin-top: 1rem;
+  width: 300px;
+  font-size: 45px;
+  font-weight: 600;
+  background-color: blue;
+}
