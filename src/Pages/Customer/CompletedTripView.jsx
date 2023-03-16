@@ -127,9 +127,19 @@ const CompletedTripView = () => {
           if (res.data[i].event === "DMS") {
             setMedia(res.data[i].jsondata);
           }
-
-         
-
+          // Set accident saved data
+          // if (res.data[i].event === "BRK") {
+          //   let brk = JSON.parse(res.data[i].jsondata);
+          //   let ttcdiff = brk.data.on_ttc - brk.data.off_ttc;
+          //   let acd = ttcdiff / brk.data.off_ttc;
+          //   let accSvd = acd * 100;
+          //   if (accSvd > 50 && accSvd < 100) {
+          //     setAccident(parseInt(accident) + 1);
+          //   }
+          //   if (brk.data.reason === 0) {
+          //     setAutoBrk((prevCount) => prevCount + 1);
+          //   }
+          // }
 
           // Set all notifications data
 
@@ -284,24 +294,42 @@ const CompletedTripView = () => {
         }
       )
       .then((response) => {
-         let parameters = [];
+        let parameters = [];
         let params = {};
 
         for (let l = 0; l < response.data.length; l++) {
           ////////////////parsing break json
 
           let parseJson = JSON.parse(response.data[l].jsondata);
-          console.log(parseJson);
+
           if (response.data[l].event == "BRK") {
             let ttcdiff = parseJson.data.on_ttc - parseJson.data.off_ttc;
             let acd = ttcdiff / parseJson.data.off_ttc;
             let accSvd = acd * 100;
             if (accSvd > 50 && accSvd < 100) {
               setAccident((prevCount) => prevCount + 1);
+              params = {
+                id: response.data[l].id,
+                lat: parseFloat(response.data[l].lat),
+                lng: parseFloat(response.data[l].lng),
+                title: parseJson.notification,
+                content: response.data[l].timestamp,
+                message: response.data[l].message,
+                event: response.data[l].event,
+              };
+              parameters.push(params);
             }
-            if (parseJson.data.reason === 0) {
-              setAutoBrk((prevCount) => prevCount + 1);
-            }
+            setAutoBrk((prevCount) => prevCount + 1);
+            params = {
+              id: response.data[l].id,
+              lat: parseFloat(response.data[l].lat),
+              lng: parseFloat(response.data[l].lng),
+              title: parseJson.notification,
+              content: response.data[l].timestamp,
+              message: response.data[l].message,
+              event: response.data[l].event,
+            };
+            parameters.push(params);
           }
 
           ///////////////////////adding brk json to markers
@@ -313,6 +341,7 @@ const CompletedTripView = () => {
               title: parseJson.notification,
               content: response.data[l].timestamp,
               message: response.data[l].message,
+              event: response.data[l].event,
             };
             parameters.push(params);
           }
@@ -322,6 +351,7 @@ const CompletedTripView = () => {
               lat: parseFloat(response.data[l].lat),
               lng: parseFloat(response.data[l].lng),
               title: response.data[l].message,
+              event: response.data[l].event,
             };
             parameters.push(params);
           }
@@ -337,11 +367,12 @@ const CompletedTripView = () => {
     setSelectedMarker(marker);
   };
   const handlecheckbox = (e) => {
-    const { value } = e.target;
+    const { value, dataset } = e.target;
     if (e.target.checked) {
       let x = [];
+      console.log(dataset.customAttribute);
       markers.map((el) => {
-        if (el.title.toString() == value) {
+        if (el.title == value && el.event == dataset.customAttribute) {
           x.push(el);
         }
       });
@@ -349,7 +380,7 @@ const CompletedTripView = () => {
     } else {
       let y = [];
       [].concat(...filterMarker)?.map((el, ind) => {
-        if (el.title.toString() !== value) {
+        if (el.title !== value && el.event !== dataset.customAttribute) {
           y.push(el);
         }
       });
@@ -358,8 +389,8 @@ const CompletedTripView = () => {
   };
 
   useEffect(() => {
-    console.log(markers);
-    // console.log(filterMarker);
+    // console.log(markers);
+    console.log(filterMarker);
   }, [markers, filterMarker]);
 
   // customized marker icons
@@ -560,10 +591,11 @@ const CompletedTripView = () => {
                         <div className="ms-2 me-auto">
                           <Form.Group className="" controlId="cas1">
                             <Form.Check
-                            disabled={autoBrk === 0}
+                              disabled={autoBrk === 0}
                               type="checkbox"
                               label="Automatic Braking"
-                              value="6"
+                              value={6}
+                              data-custom-attribute="BRK"
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
@@ -582,7 +614,8 @@ const CompletedTripView = () => {
                               disabled={accident === 0}
                               type="checkbox"
                               label="Accident Saved"
-                              value="6"
+                              value={6}
+                              data-custom-attribute="BRK"
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
@@ -611,7 +644,8 @@ const CompletedTripView = () => {
                               disabled={sleeptAlt === 0}
                               type="checkbox"
                               label="Sleep Alert Missed"
-                              value="13"
+                              value={13}
+                              data-custom-attribute="NTF"
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
@@ -642,7 +676,8 @@ const CompletedTripView = () => {
                               disabled={harshacc === 0}
                               type="checkbox"
                               label="Harsh Acceleration"
-                              value="2"
+                              value={2}
+                              data-custom-attribute="NTF"
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
@@ -661,7 +696,8 @@ const CompletedTripView = () => {
                               disabled={laneChng === 0}
                               type="checkbox"
                               label="Lane Change"
-                              value="5"
+                              value={5}
+                              data-custom-attribute="NTF"
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
@@ -680,7 +716,8 @@ const CompletedTripView = () => {
                               disabled={spdBump === 0}
                               type="checkbox"
                               label="Speed Bump"
-                              value="4"
+                              value={4}
+                              data-custom-attribute="NTF"
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
@@ -699,7 +736,8 @@ const CompletedTripView = () => {
                               disabled={suddenBrk === 0}
                               type="checkbox"
                               label="Sudden Braking"
-                              value="3"
+                              value={3}
+                              data-custom-attribute="NTF"
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
@@ -718,7 +756,8 @@ const CompletedTripView = () => {
                               disabled={tailgating === 0}
                               type="checkbox"
                               label="Tailgating"
-                              value="6"
+                              value={6}
+                              data-custom-attribute="NTF"
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
@@ -749,7 +788,8 @@ const CompletedTripView = () => {
                               disabled={overspeed === 0}
                               type="checkbox"
                               label="Overspeeding"
-                              value="7"
+                              value={7}
+                              data-custom-attribute="NTF"
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
