@@ -199,7 +199,7 @@ const CompletedTripView = () => {
       setDmsImg(mediaParse.data.img_url);
       setDmsVid(mediaParse.data.vid_url);
       setDmsMedia(mediaParse.data.media);
-      console.log(dmsMedia);
+      // console.log(dmsMedia);
 
       if (mediaParse.data.alert_type === "DROWSINESS") {
         setDrowsiness((prev) => prev + 1);
@@ -301,7 +301,7 @@ const CompletedTripView = () => {
           ////////////////parsing break json
 
           let parseJson = JSON.parse(response.data[l].jsondata);
-
+          console.log(parseJson);
           if (response.data[l].event == "BRK") {
             let ttcdiff = parseJson.data.on_ttc - parseJson.data.off_ttc;
             let acd = ttcdiff / parseJson.data.off_ttc;
@@ -312,10 +312,11 @@ const CompletedTripView = () => {
                 id: response.data[l].id,
                 lat: parseFloat(response.data[l].lat),
                 lng: parseFloat(response.data[l].lng),
-                title: parseJson.notification,
+                title: response.data[l].message,
                 content: response.data[l].timestamp,
-                message: response.data[l].message,
+                speed: parseFloat(response.data[l].spd),
                 event: response.data[l].event,
+                reason: parseJson.data.reason,
               };
               parameters.push(params);
             }
@@ -324,10 +325,11 @@ const CompletedTripView = () => {
               id: response.data[l].id,
               lat: parseFloat(response.data[l].lat),
               lng: parseFloat(response.data[l].lng),
-              title: parseJson.notification,
+              title: response.data[l].message,
               content: response.data[l].timestamp,
-              message: response.data[l].message,
+              speed: parseFloat(response.data[l].spd),
               event: response.data[l].event,
+              reason: parseJson.data.reason,
             };
             parameters.push(params);
           }
@@ -340,8 +342,9 @@ const CompletedTripView = () => {
               lng: parseFloat(response.data[l].lng),
               title: parseJson.notification,
               content: response.data[l].timestamp,
-              message: response.data[l].message,
+              speed: parseFloat(response.data[l].spd),
               event: response.data[l].event,
+              reason: parseJson.notification,
             };
             parameters.push(params);
           }
@@ -352,6 +355,8 @@ const CompletedTripView = () => {
               lng: parseFloat(response.data[l].lng),
               title: response.data[l].message,
               event: response.data[l].event,
+              reason: parseJson.data.reason,
+              speed: parseFloat(response.data[l].spd),
             };
             parameters.push(params);
           }
@@ -368,9 +373,9 @@ const CompletedTripView = () => {
   };
   const handlecheckbox = (e) => {
     const { value, dataset } = e.target;
+    // console.log("value:", value);
     if (e.target.checked) {
       let x = [];
-      console.log(dataset.customAttribute);
       markers.map((el) => {
         if (el.title == value && el.event == dataset.customAttribute) {
           x.push(el);
@@ -379,17 +384,21 @@ const CompletedTripView = () => {
       setFilterMarker([...filterMarker, x]);
     } else {
       let y = [];
-      [].concat(...filterMarker)?.map((el, ind) => {
-        if (el.title !== value && el.event !== dataset.customAttribute) {
+
+      [].concat(...filterMarker)?.map((el) => {
+        if (el.title == value && el.event == dataset.customAttribute) {
+          console.log("aya mc");
+        } else {
           y.push(el);
         }
       });
+
       setFilterMarker([y]);
     }
   };
 
   useEffect(() => {
-    // console.log(markers);
+    console.log(markers);
     console.log(filterMarker);
   }, [markers, filterMarker]);
 
@@ -438,10 +447,114 @@ const CompletedTripView = () => {
             >
               {selectedMarker === marker && (
                 <InfoWindow onCloseClick={() => setSelectedMarker(null)}>
-                  <div>
-                    <h5>{marker.title}</h5>
-                    {marker.content}
-                  </div>
+                  {marker.event === "BRK" ? (
+                    <div>
+                      {marker.reason === 0 ? (
+                        <>
+                          <div>
+                            Automatic Brake Due to{" "}
+                            <b>Collosion Avoidance System</b>
+                            <p className="mb-0">
+                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
+                              {marker.spd}
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div>
+                            Automatic Brake Due to <b>Sleep Alert Missed</b>
+                            <p className="mb-0">
+                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
+                              {marker.spd}
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <>
+                        {marker.reason === 2 ? (
+                          <div>
+                            <b>Harsh Acceleration</b>
+                            <p className="mb-0">
+                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
+                              {marker.spd}
+                            </p>
+                          </div>
+                        ) : (
+                          ""
+                        )}
+                        {marker.reason === 3 ? (
+                          <div>
+                            <b>Sudden Braking</b>
+                            <p className="mb-0">
+                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
+                              {marker.spd}
+                            </p>
+                          </div>
+                        ) : (
+                          ""
+                        )}
+                        {marker.reason === 4 ? (
+                          <div>
+                            <b>Speed Bump</b>
+                            <p className="mb-0">
+                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
+                              {marker.spd}
+                            </p>
+                          </div>
+                        ) : (
+                          ""
+                        )}
+                        {marker.reason === 5 ? (
+                          <div>
+                            <b>Lane change</b>
+                            <p className="mb-0">
+                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
+                              {marker.spd}
+                            </p>
+                          </div>
+                        ) : (
+                          ""
+                        )}
+                        {marker.reason === 6 ? (
+                          <div>
+                            <b>Tailgating</b>
+                            <p className="mb-0">
+                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
+                              {marker.spd}
+                            </p>
+                          </div>
+                        ) : (
+                          ""
+                        )}
+                        {marker.reason === 7 ? (
+                          <div>
+                            <b>Overspeed</b>
+                            <p className="mb-0">
+                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
+                              {marker.spd}
+                            </p>
+                          </div>
+                        ) : (
+                          ""
+                        )}
+                        {marker.reason === 13 ? (
+                          <div>
+                            <b>Sleep Alert Missed</b>
+                            <p className="mb-0">
+                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
+                              {marker.spd}
+                            </p>
+                          </div>
+                        ) : (
+                          ""
+                        )}
+                      </>
+                    </div>
+                  )}
                 </InfoWindow>
               )}
             </Marker>
@@ -849,18 +962,11 @@ const CompletedTripView = () => {
                 <h5>DMS Media</h5>
                 <div className="row">
                   <div className="col-md-6">
-                    <img src={dmsImg} alt="" className="img-fluid w-100" />
-                  </div>
-
-                  <div className="col-md-6">
-                    <video width="320" height="240" controls>
-                      <source src={dmsMedia} type="video/mp4" controls />
-                    </video>
-                    {/* <Iframe
-                      src="https://drive.google.com/file/d/1v3_3b2GUXEfamkdEbEZF1kfHHpqBYRzI/view?usp=drivesdk"
-                      width="300px"
+                    <Iframe
+                      src={dmsMedia}
+                      width="320px"
                       height="300px"
-                    ></Iframe> */}
+                    ></Iframe>
                   </div>
                 </div>
               </div>
