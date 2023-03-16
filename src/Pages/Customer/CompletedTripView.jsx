@@ -446,7 +446,10 @@ const CompletedTripView = () => {
               icon={markerIcons.blue}
             >
               {selectedMarker === marker && (
-                <InfoWindow onCloseClick={() => setSelectedMarker(null)}>
+                <InfoWindow
+                  position={{ lat: marker.lat, lng: marker.lng }}
+                  onCloseClick={() => setSelectedMarker(null)}
+                >
                   {marker.event === "BRK" ? (
                     <div>
                       {marker.reason === 0 ? (
