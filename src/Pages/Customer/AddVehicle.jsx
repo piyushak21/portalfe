@@ -11,6 +11,7 @@ const AddVehicle = () => {
   const [data, setData] = useState([]);
   const [iotData, setIotData] = useState([]);
   const [ecuData, setEcuData] = useState([]);
+  const [dmsData, setDmsData] = useState([]);
   const token = localStorage.getItem("token");
   const user_id = localStorage.getItem("user_id");
   const handleChange = (e) => {
@@ -73,6 +74,14 @@ const AddVehicle = () => {
       .catch((err) => {
         console.log(err);
       });
+
+    ///getting DMS data
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-dms`, {
+        headers: { authorization: `bearer ${token}` },
+      })
+      .then((res) => setDmsData(res.data.dmsData))
+      .catch((err) => console.log(err));
   }, [token]);
 
   return (
@@ -86,75 +95,95 @@ const AddVehicle = () => {
             <div>
               <h3>Add Vehicle</h3>
             </div>
-            <div className={styles.griddiv}>
-              <div>
-                <p>Vehicle_Name</p>
-                <InputGroup className="mb-3">
-                  <Form.Control
-                    placeholder="VEHICLE_NAME"
-                    name="vehicle_name"
-                    onChange={handleChange}
-                  />
-                </InputGroup>
-              </div>
-              <div>
-                <p>Registration Number</p>
-                <InputGroup className="mb-3">
-                  <Form.Control
-                    placeholder="VEHICLE_REGISTRATION"
-                    name="vehicle_registration"
-                    onChange={handleChange}
-                  />
-                </InputGroup>
-              </div>
-              <div>
-                <p>Select ECU</p>
-                <Form.Select name="ecu" onChange={handleChange}>
-                  <option>-Select ECU-</option>
-                  {ecuData?.map((el) => {
-                    return (
-                      <option key={el.id} value={`${el.device_id}`}>
-                        {el.device_id}
-                      </option>
-                    );
-                  })}
-                </Form.Select>
-              </div>
-              <div>
-                <p>Select IoT</p>
+            <div className="d-flex gap-4 justify-content-center">
+              <div className={styles.griddiv}>
+                <div>
+                  <p>Vehicle_Name</p>
+                  <InputGroup className="mb-3">
+                    <Form.Control
+                      placeholder="VEHICLE_NAME"
+                      name="vehicle_name"
+                      onChange={handleChange}
+                    />
+                  </InputGroup>
+                </div>
+                <div>
+                  <p>Registration Number</p>
+                  <InputGroup className="mb-3">
+                    <Form.Control
+                      placeholder="VEHICLE_REGISTRATION"
+                      name="vehicle_registration"
+                      onChange={handleChange}
+                    />
+                  </InputGroup>
+                </div>
 
-                <Form.Select name="iot" onChange={handleChange}>
-                  <option>-Select IoT-</option>
-                  {iotData?.map((el) => {
-                    return (
-                      <option key={el.id} value={`${el.device_id}`}>
-                        {el.device_id}
-                      </option>
-                    );
-                  })}
-                </Form.Select>
+                <div>
+                  <p>Featureset</p>
+                  <InputGroup className="mb-3">
+                    <Form.Control
+                      placeholder="FEATURESET"
+                      name="featureset"
+                      onChange={handleChange}
+                    />
+                  </InputGroup>
+                </div>
+                <div>
+                  <p>Status</p>
+                  <Form.Select onChange={handleChange} name="status">
+                    <option>-Select Status-</option>
+                    <option value="0">Deleted</option>
+                    <option value="1">Active</option>
+                    <option value="2">Deactive</option>
+                  </Form.Select>
+                </div>
               </div>
-              <div>
-                <p>Featureset</p>
-                <InputGroup className="mb-3">
-                  <Form.Control
-                    placeholder="FEATURESET"
-                    name="featureset"
-                    onChange={handleChange}
-                  />
-                </InputGroup>
-              </div>
-              <div>
-                <p>Status</p>
-                <Form.Select onChange={handleChange} name="status">
-                  <option>-Select Status-</option>
-                  <option value="0">Deleted</option>
-                  <option value="1">Active</option>
-                  <option value="2">Deactive</option>
-                </Form.Select>
+              <div className={styles.griddiv}>
+                <div>
+                  <p>Select ECU</p>
+                  <Form.Select name="ecu" onChange={handleChange}>
+                    <option>-Select ECU-</option>
+                    {ecuData?.map((el) => {
+                      return (
+                        <option key={el.id} value={`${el.device_id}`}>
+                          {el.device_id}
+                        </option>
+                      );
+                    })}
+                  </Form.Select>
+                </div>
+                <div>
+                  <p>Select IoT</p>
+
+                  <Form.Select name="iot" onChange={handleChange}>
+                    <option>-Select IoT-</option>
+                    {iotData?.map((el) => {
+                      return (
+                        <option key={el.id} value={`${el.device_id}`}>
+                          {el.device_id}
+                        </option>
+                      );
+                    })}
+                  </Form.Select>
+                </div>
+                <div>
+                  <p>Select DMS</p>
+
+                  <Form.Select name="dms" onChange={handleChange}>
+                    <option>-Select DMS-</option>
+                    <option value={null}>Unassign</option>
+                    {dmsData?.map((el) => {
+                      return (
+                        <option key={el.id} value={`${el.device_id}`}>
+                          {el.device_id}
+                        </option>
+                      );
+                    })}
+                  </Form.Select>
+                </div>
               </div>
             </div>
-            <div>
+            <div className="d-flex justify-content-center">
               <Button
                 style={{ width: "600px", marginTop: "2rem" }}
                 type="submit"
