@@ -19,6 +19,7 @@ const CompletedTripView = () => {
   let { id } = useParams();
   const [path, setPath] = useState([]);
   const [tripData, setTripData] = useState([]);
+  const [tripSummary, setTripSummary] = useState([]);
   const [center, setCenter] = useState({});
   const [startPoint, setStartPoint] = useState({});
   const [endPoint, setEndPoint] = useState({});
@@ -27,11 +28,9 @@ const CompletedTripView = () => {
   const [startTime, setStartTime] = useState();
   const [endTime, setEndTime] = useState();
   const [duration, setDuration] = useState("");
-  const [spdData, setSpdData] = useState([]);
+  // const [spdData, setSpdData] = useState([]);
   const [media, setMedia] = useState({});
-  const [dmsImg, setDmsImg] = useState("");
-  const [dmsVid, setDmsVid] = useState("");
-  const [dmsMedia, setDmsMedia] = useState("");
+  const [dmsMedia, setDmsMedia] = useState({});
   const [accident, setAccident] = useState(0);
   const [harshacc, setHarshacc] = useState(0);
   const [sleeptAlt, setSleepAlt] = useState(0);
@@ -45,11 +44,32 @@ const CompletedTripView = () => {
   const [vehicle, setVehicle] = useState([]);
   const [distance, setDistance] = useState("");
   const [maxSpd, setMaxSpd] = useState("");
-  const [durationInSec, setDurationInSec] = useState();
+  // const [durationInSec, setDurationInSec] = useState();
   const [avgSpd, setAvgSpd] = useState();
   const [autoBrk, setAutoBrk] = useState(0);
 
   let token = localStorage.getItem("token");
+
+  // Get trip summary data
+  useEffect(() => {
+    axios
+      .get(
+        `${process.env.REACT_APP_BASE_URL}/completedTrip/getTripSummaryById/${id}`,
+        {
+          headers: { authorization: `bearer ${token}` },
+        }
+      )
+      .then((res) => {
+        setTripSummary(res.data);
+        setAvgSpd(res.data[0].avg_spd);
+        setDistance(res.data[0].total_distance);
+        setMaxSpd(res.data[0].max_spd);
+        setDuration(res.data[0].duration);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [id, token]);
 
   //   Set all trip analytics
   useEffect(() => {
@@ -101,25 +121,25 @@ const CompletedTripView = () => {
         setEndTime(updateEdTime.toString());
 
         // Set the duration
-        let difference = edtime - sttime;
-        setDurationInSec(difference); // this is use for calculate the avg speed
+        // let difference = edtime - sttime;
+        // setDurationInSec(difference); // this is use for calculate the avg speed
 
-        let hours = Math.floor(difference / 3600);
-        difference = difference % 3600;
+        // let hours = Math.floor(difference / 3600);
+        // difference = difference % 3600;
 
-        let minutes = Math.floor(difference / 60);
-        difference = difference % 60;
-        let seconds = difference;
-        if (hours > 0) {
-          setDuration(
-            hours + " hours " + minutes + " Mins " + seconds + " Sec"
-          );
-        } else {
-          setDuration(minutes + " Mins " + seconds + " Sec");
-        }
+        // let minutes = Math.floor(difference / 60);
+        // difference = difference % 60;
+        // let seconds = difference;
+        // if (hours > 0) {
+        //   setDuration(
+        //     hours + " hours " + minutes + " Mins " + seconds + " Sec"
+        //   );
+        // } else {
+        //   setDuration(minutes + " Mins " + seconds + " Sec");
+        // }
 
         // Calculate average speed
-        setSpdData(res.data.map((speed) => speed.spd));
+        // setSpdData(res.data.map((speed) => speed.spd));
 
         // set DMS data
         for (let i = 0; i < res.data.length; i++) {
@@ -142,7 +162,6 @@ const CompletedTripView = () => {
           // }
 
           // Set all notifications data
-
           if (res.data[i].event === "NTF") {
             let ntfData = res.data[i].jsondata;
             let ntfparse = JSON.parse(ntfData);
@@ -196,10 +215,8 @@ const CompletedTripView = () => {
   useEffect(() => {
     if (media.length > 0) {
       let mediaParse = JSON.parse(media);
-      setDmsImg(mediaParse.data.img_url);
-      setDmsVid(mediaParse.data.vid_url);
       setDmsMedia(mediaParse.data.media);
-      // console.log(dmsMedia);
+      console.log(dmsMedia);
 
       if (mediaParse.data.alert_type === "DROWSINESS") {
         setDrowsiness((prev) => prev + 1);
@@ -227,58 +244,58 @@ const CompletedTripView = () => {
   }, [tripData]);
 
   // Set total distance
-  useEffect(() => {
-    if (tripData.length > 0) {
-      let distancefunc = (lat1, lng1, lat2, lng2) => {
-        let R = 6371;
-        let dLat = 0.0174533 * (lat1 - lat2);
-        let dLng = 0.0174533 * (lng1 - lng2);
-        let a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(0.0174533 * lat1) *
-            Math.cos(0.0174533 * lat2) *
-            Math.sin(dLng / 2) *
-            Math.sin(dLng / 2);
+  // useEffect(() => {
+  //   if (tripData.length > 0) {
+  //     let distancefunc = (lat1, lng1, lat2, lng2) => {
+  //       let R = 6371;
+  //       let dLat = 0.0174533 * (lat1 - lat2);
+  //       let dLng = 0.0174533 * (lng1 - lng2);
+  //       let a =
+  //         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+  //         Math.cos(0.0174533 * lat1) *
+  //           Math.cos(0.0174533 * lat2) *
+  //           Math.sin(dLng / 2) *
+  //           Math.sin(dLng / 2);
 
-        let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        let d = R * c;
-        return d;
-      };
-      let sum = 0;
-      for (let i = 0; i < path.length - 1; i++) {
-        sum =
-          sum +
-          distancefunc(
-            path[i].lat,
-            path[i].lng,
-            path[i + 1].lat,
-            path[i + 1].lng
-          );
-      }
-      setDistance(sum.toFixed(2));
-    }
-  }, [tripData]);
+  //       let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  //       let d = R * c;
+  //       return d;
+  //     };
+  //     let sum = 0;
+  //     for (let i = 0; i < path.length - 1; i++) {
+  //       sum =
+  //         sum +
+  //         distancefunc(
+  //           path[i].lat,
+  //           path[i].lng,
+  //           path[i + 1].lat,
+  //           path[i + 1].lng
+  //         );
+  //     }
+  //     setDistance(sum.toFixed(2));
+  //   }
+  // }, [tripData]);
 
   // Set Maximum Speed
-  useEffect(() => {
-    if (tripData.length > 0) {
-      const maxFloat = Math.max(...spdData);
-      setMaxSpd(Math.round(maxFloat));
-    }
-  }, [tripData, spdData]);
+  // useEffect(() => {
+  //   if (tripData.length > 0) {
+  //     const maxFloat = Math.max(...spdData);
+  //     setMaxSpd(Math.round(maxFloat));
+  //   }
+  // }, [tripData, spdData]);
 
-  // Set Average Speed
-  useEffect(() => {
-    if (tripData.length > 0 && distance > 0 && durationInSec > 0) {
-      const distanceInKM = parseFloat(distance);
-      const distanceInMeter = distanceInKM * 1000; // meters
-      const time = parseFloat(durationInSec); // seconds
-      const averageSpeed = distanceInMeter / time; // meters per second
-      //   console.log(averageSpeed / 1000);
+  // // Set Average Speed
+  // useEffect(() => {
+  //   if (tripData.length > 0 && distance > 0 && durationInSec > 0) {
+  //     const distanceInKM = parseFloat(distance);
+  //     const distanceInMeter = distanceInKM * 1000; // meters
+  //     const time = parseFloat(durationInSec); // seconds
+  //     const averageSpeed = distanceInMeter / time; // meters per second
+  //     //   console.log(averageSpeed / 1000);
 
-      setAvgSpd(Math.round(averageSpeed));
-    }
-  }, [tripData, distance, durationInSec]);
+  //     setAvgSpd(Math.round(averageSpeed));
+  //   }
+  // }, [tripData, distance, durationInSec]);
 
   //   Set faultcount locations and data
   const [markers, setMarkers] = useState([]);
@@ -955,6 +972,126 @@ const CompletedTripView = () => {
                         </div>
                         <Badge bg="primary" pill>
                           {distraction}
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <Form.Group className="" controlId="dms3">
+                            <Form.Check type="checkbox" label="Overspeeding" />
+                          </Form.Group>
+                        </div>
+                        <Badge bg="primary" pill>
+                          0
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <Form.Group className="" controlId="dms4">
+                            <Form.Check type="checkbox" label="No Seatbelt" />
+                          </Form.Group>
+                        </div>
+                        <Badge bg="primary" pill>
+                          0
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <Form.Group className="" controlId="dms5">
+                            <Form.Check type="checkbox" label="Using Phone" />
+                          </Form.Group>
+                        </div>
+                        <Badge bg="primary" pill>
+                          0
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <Form.Group className="" controlId="dms6">
+                            <Form.Check
+                              type="checkbox"
+                              label="Unknown Driver"
+                            />
+                          </Form.Group>
+                        </div>
+                        <Badge bg="primary" pill>
+                          0
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <Form.Group className="" controlId="dms7">
+                            <Form.Check type="checkbox" label="No Driver" />
+                          </Form.Group>
+                        </div>
+                        <Badge bg="primary" pill>
+                          0
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <Form.Group className="" controlId="dms8">
+                            <Form.Check type="checkbox" label="Smoking" />
+                          </Form.Group>
+                        </div>
+                        <Badge bg="primary" pill>
+                          0
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <Form.Group className="" controlId="dms9">
+                            <Form.Check type="checkbox" label="Rash Driving" />
+                          </Form.Group>
+                        </div>
+                        <Badge bg="primary" pill>
+                          0
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <Form.Group className="" controlId="dms10">
+                            <Form.Check type="checkbox" label="Accident" />
+                          </Form.Group>
+                        </div>
+                        <Badge bg="primary" pill>
+                          0
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <Form.Group className="" controlId="dms11">
+                            <Form.Check type="checkbox" label="Trip Start" />
+                          </Form.Group>
+                        </div>
+                        <Badge bg="primary" pill>
+                          0
                         </Badge>
                       </ListGroup.Item>
                     </ListGroup>

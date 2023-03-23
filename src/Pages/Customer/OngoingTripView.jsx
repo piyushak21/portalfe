@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { Container, Tabs, Tab, ListGroup, Badge, Form } from "react-bootstrap";
 import { BsPinMapFill, BsArrowLeft } from "react-icons/bs";
 import car from "../../Assets/icons/liveIcon.svg";
+import Iframe from "react-iframe";
 
 const OngoingTripView = () => {
   let { id } = useParams();
@@ -21,19 +22,18 @@ const OngoingTripView = () => {
   const [startAddress, setStartAddress] = useState("");
   const [endPoint, setEndPoint] = useState({});
   const [startTime, setStartTime] = useState();
-  const [lastTime, setLastTime] = useState();
+  // const [lastTime, setLastTime] = useState();
   const [endAddress, setEndAddress] = useState("");
-  const [distance, setDistance] = useState("");
-  const [duration, setDuration] = useState("");
-  const [maxSpd, setMaxSpd] = useState("");
-  const [durationInSec, setDurationInSec] = useState();
-  const [avgSpd, setAvgSpd] = useState();
-  const [spdData, setSpdData] = useState([]);
+  // const [distance, setDistance] = useState("");
+  // const [duration, setDuration] = useState("");
+  // const [maxSpd, setMaxSpd] = useState("");
+  // const [durationInSec, setDurationInSec] = useState();
+  // const [avgSpd, setAvgSpd] = useState();
+  // const [spdData, setSpdData] = useState([]);
   const [vehicle, setVehicle] = useState([]);
-  const [media, setMedia] = useState({});
   const [dmsMedia, setDmsMedia] = useState("");
   const [drowsiness, setDrowsiness] = useState(0);
-  const [distraction, setDistraction] = useState(0);
+  const [media, setMedia] = useState({});
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -74,7 +74,6 @@ const OngoingTripView = () => {
             );
 
             // Set end point
-
             setEndPoint({
               lat: parseFloat(res.data[dataLength].lat),
               lng: parseFloat(res.data[dataLength].lng),
@@ -86,29 +85,30 @@ const OngoingTripView = () => {
             setStartTime(updateStTime.toLocaleString());
 
             // Set Last time
-            let edtime = res.data[dataLength].timestamp;
-            setLastTime(edtime);
+            // let edtime = res.data[dataLength].timestamp;
+            // let updateEDTime = new Date(edtime * 1000);
+            // setLastTime(updateEDTime.toLocaleString());
 
             // Set the duration
-            let difference = edtime - sttime;
-            setDurationInSec(difference); // this is use for calculate the avg speed
+            // let difference = edtime - sttime;
+            // setDurationInSec(difference); // this is use for calculate the avg speed
 
-            let hours = Math.floor(difference / 3600);
-            difference = difference % 3600;
+            // let hours = Math.floor(difference / 3600);
+            // difference = difference % 3600;
 
-            let minutes = Math.floor(difference / 60);
-            difference = difference % 60;
-            let seconds = difference;
-            if (hours > 0) {
-              setDuration(
-                hours + " hours " + minutes + " Mins " + seconds + " Sec"
-              );
-            } else {
-              setDuration(minutes + " Mins " + seconds + " Sec");
-            }
+            // let minutes = Math.floor(difference / 60);
+            // difference = difference % 60;
+            // let seconds = difference;
+            // if (hours > 0) {
+            //   setDuration(
+            //     hours + " hours " + minutes + " Mins " + seconds + " Sec"
+            //   );
+            // } else {
+            //   setDuration(minutes + " Mins " + seconds + " Sec");
+            // }
 
-            // Calculate average speed
-            setSpdData(res.data.map((speed) => speed.spd));
+            // // Calculate average speed
+            // setSpdData(res.data.map((speed) => speed.spd));
 
             // set DMS data
             for (let i = 0; i < res.data.length; i++) {
@@ -140,72 +140,73 @@ const OngoingTripView = () => {
   }, [tripData]);
 
   // Set total distance
-  useEffect(() => {
-    if (tripData.length > 0) {
-      let distancefunc = (lat1, lng1, lat2, lng2) => {
-        let R = 6371;
-        let dLat = 0.0174533 * (lat1 - lat2);
-        let dLng = 0.0174533 * (lng1 - lng2);
-        let a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(0.0174533 * lat1) *
-            Math.cos(0.0174533 * lat2) *
-            Math.sin(dLng / 2) *
-            Math.sin(dLng / 2);
+  // useEffect(() => {
+  //   if (tripData.length > 0) {
+  //     let distancefunc = (lat1, lng1, lat2, lng2) => {
+  //       let R = 6371;
+  //       let dLat = 0.0174533 * (lat1 - lat2);
+  //       let dLng = 0.0174533 * (lng1 - lng2);
+  //       let a =
+  //         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+  //         Math.cos(0.0174533 * lat1) *
+  //           Math.cos(0.0174533 * lat2) *
+  //           Math.sin(dLng / 2) *
+  //           Math.sin(dLng / 2);
 
-        let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        let d = R * c;
-        return d;
-      };
-      let sum = 0;
-      for (let i = 0; i < path.length - 1; i++) {
-        sum =
-          sum +
-          distancefunc(
-            path[i].lat,
-            path[i].lng,
-            path[i + 1].lat,
-            path[i + 1].lng
-          );
-      }
-      setDistance(sum.toFixed(2));
-    }
-  }, [tripData]);
+  //       let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  //       let d = R * c;
+  //       return d;
+  //     };
+  //     let sum = 0;
+
+  //     for (let i = 0; i < path.length - 1; i++) {
+  //       sum =
+  //         sum +
+  //         distancefunc(
+  //           path[i].lat,
+  //           path[i].lng,
+  //           path[i + 1].lat,
+  //           path[i + 1].lng
+  //         );
+  //     }
+  //     setDistance(sum.toFixed(2));
+  //   }
+  // }, [tripData]);
 
   // Set Maximum Speed
-  useEffect(() => {
-    if (tripData.length > 0) {
-      const maxFloat = Math.max(...spdData);
-      setMaxSpd(Math.round(maxFloat));
-    }
-  }, [tripData]);
+  // useEffect(() => {
+  //   if (tripData.length > 0) {
+  //     const maxFloat = Math.max(...spdData);
+  //     setMaxSpd(Math.round(maxFloat));
+  //   }
+  // }, [tripData]);
 
-  // Set Average Speed
-  useEffect(() => {
-    if (tripData.length > 0 && distance > 0 && durationInSec > 0) {
-      const distanceInKM = parseFloat(distance);
-      const distanceInMeter = distanceInKM * 1000; // meters
-      const time = parseFloat(durationInSec); // seconds
-      const averageSpeed = distanceInMeter / time; // meters per second
-      //   console.log(averageSpeed / 1000);
+  // // Set Average Speed
+  // useEffect(() => {
+  //   if (tripData.length > 0 && distance > 0 && durationInSec > 0) {
+  //     const distanceInKM = parseFloat(distance);
+  //     const distanceInMeter = distanceInKM * 1000; // meters
+  //     const time = parseFloat(durationInSec); // seconds
+  //     const averageSpeed = distanceInMeter / time; // meters per second
+  //     //   console.log(averageSpeed / 1000);
 
-      setAvgSpd(Math.round(averageSpeed));
-    }
-  }, [tripData, distance, durationInSec]);
+  //     setAvgSpd(Math.round(averageSpeed));
+  //   }
+  // }, [tripData, distance, durationInSec]);
 
   // Set DMS media
   useEffect(() => {
     if (media.length > 0) {
       let mediaParse = JSON.parse(media);
       setDmsMedia(mediaParse.data.media);
-      console.log(dmsMedia);
+      // console.log(dmsMedia);
 
       if (mediaParse.data.alert_type === "DROWSINESS") {
         setDrowsiness((prev) => prev + 1);
       }
-      if (mediaParse.data.alert_type === "Distraction") {
-        setDistraction((prev) => prev + 1);
-      }
+      // if (mediaParse.data.alert_type === "Distraction") {
+      //   setDistraction((prev) => prev + 1);
+      // }
     }
   }, [media]);
 
@@ -226,53 +227,53 @@ const OngoingTripView = () => {
   }, [tripData]);
 
   // Check the time difference for trip end logic
-  useEffect(() => {
-    if (tripData.length > 0 && lastTime > 0) {
-      const currentTime = Math.floor(+new Date() / 1000);
-      const timeDiff = currentTime - lastTime;
-      const timeDiffInMin = timeDiff / 60;
+  // useEffect(() => {
+  //   if (tripData.length > 0 && lastTime > 0) {
+  //     const currentTime = Math.floor(+new Date() / 1000);
+  //     const timeDiff = currentTime - lastTime;
+  //     const timeDiffInMin = timeDiff / 60;
 
-      if (timeDiffInMin > 6) {
-        let values = {
-          source: startAddress,
-          destination: endAddress,
-          trip_end_time: lastTime,
-          total_distance: distance,
-          duration: duration,
-          avg_spd: avgSpd,
-          max_spd: maxSpd,
-          trip_status: 1,
-        };
+  //     if (timeDiffInMin > 6) {
+  //       let values = {
+  //         source: startAddress,
+  //         destination: endAddress,
+  //         trip_end_time: lastTime,
+  //         total_distance: distance,
+  //         duration: duration,
+  //         avg_spd: avgSpd,
+  //         max_spd: maxSpd,
+  //         trip_status: 1,
+  //       };
 
-        endTrip(values);
-      } else {
-        console.log("data is coming");
-      }
-    }
-  }, [tripData]);
+  //       endTrip(values);
+  //     } else {
+  //       console.log("data is coming");
+  //     }
+  //   }
+  // }, [tripData]);
 
   // End trip
-  const endTrip = (params) => {
-    axios
-      .put(
-        `${process.env.REACT_APP_BASE_URL}/ongoingTrip/endTripById/${id}`,
-        params,
-        {
-          headers: { authorization: `bearer ${token}` },
-        }
-      )
-      .then((res) => {
-        if (res.status === 200) {
-          console.log("Trip end");
-          clearInterval();
-        } else {
-          console.log("trip end error");
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+  // const endTrip = (params) => {
+  //   axios
+  //     .put(
+  //       `${process.env.REACT_APP_BASE_URL}/ongoingTrip/endTripById/${id}`,
+  //       params,
+  //       {
+  //         headers: { authorization: `bearer ${token}` },
+  //       }
+  //     )
+  //     .then((res) => {
+  //       if (res.status === 200) {
+  //         console.log("Trip end");
+  //         clearInterval();
+  //       } else {
+  //         console.log("trip end error");
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     });
+  // };
 
   // Customized Icon
   const liveIcon = {
@@ -352,7 +353,7 @@ const OngoingTripView = () => {
                       </p>
                       <p className="mb-0">{endAddress}</p>
                       <span>
-                        {/* <small><strong>{endTime}</strong></small> */}
+                        <small>{/* <strong>{lastTime}</strong> */}</small>
                       </span>
                     </div>
                   </div>
@@ -638,7 +639,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {distraction}
+                            {/* {distraction} */}
                           </Badge>
                         </ListGroup.Item>
                       </ListGroup>
@@ -647,13 +648,7 @@ const OngoingTripView = () => {
                 </div>
                 <div className="col-md-8">
                   <h5>DMS Media</h5>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <video width="320" height="240" controls>
-                        <source src={dmsMedia} type="video/mp4" controls />
-                      </video>
-                    </div>
-                  </div>
+                  <Iframe src={dmsMedia} width="320px" height="300px"></Iframe>
                 </div>
               </div>
             </Tab>

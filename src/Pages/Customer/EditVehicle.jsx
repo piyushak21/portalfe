@@ -112,18 +112,20 @@ const EditVehicle = () => {
         <div className={styles.formdiv}>
           <form onSubmit={handleSubmit}>
             <div>
-              <Link to="/vehicle">Vehicles</Link>
+              <div>
+                <Link to="/vehicle">Vehicle</Link>
+              </div>
+              <div>
+                <h3>Edit Vehicle</h3>
+              </div>
             </div>
             <div>
-              <h3>Add Vehicle</h3>
-            </div>
-            <div className="d-flex gap-4 justify-content-center">
               <div className={styles.griddiv}>
                 <div>
                   <p>Vehicle_Name</p>
                   <InputGroup className="mb-3">
                     <Form.Control
-                      placeholder="VEHICLE_NAME"
+                      defaultValue={idData[0].vehicle_name}
                       name="vehicle_name"
                       onChange={handleChange}
                     />
@@ -133,7 +135,7 @@ const EditVehicle = () => {
                   <p>Registration Number</p>
                   <InputGroup className="mb-3">
                     <Form.Control
-                      placeholder="VEHICLE_REGISTRATION"
+                      defaultValue={idData[0].vehicle_registration}
                       name="vehicle_registration"
                       onChange={handleChange}
                     />
@@ -144,7 +146,7 @@ const EditVehicle = () => {
                   <p>Featureset</p>
                   <InputGroup className="mb-3">
                     <Form.Control
-                      placeholder="FEATURESET"
+                      placeholder={`${idData[0].featureset}`}
                       name="featureset"
                       onChange={handleChange}
                     />
@@ -165,6 +167,7 @@ const EditVehicle = () => {
                   <p>Select ECU</p>
                   <Form.Select name="ecu" onChange={handleChange}>
                     <option>-Select ECU-</option>
+                    <option value={null}>Unassign</option>
                     {ecuData?.map((el) => {
                       return (
                         <option key={el.id} value={`${el.device_id}`}>
@@ -179,6 +182,7 @@ const EditVehicle = () => {
 
                   <Form.Select name="iot" onChange={handleChange}>
                     <option>-Select IoT-</option>
+                    <option value={null}>Unassign</option>
                     {iotData?.map((el) => {
                       return (
                         <option key={el.id} value={`${el.device_id}`}>

@@ -25,7 +25,7 @@ const AddDevice = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [token]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -92,7 +92,7 @@ const AddDevice = () => {
                   <div className="mb-3">
                     <label htmlFor="">Customer Name</label>
                     <select
-                      name="user_i"
+                      name="user_id"
                       className="form-control"
                       id=""
                       onChange={handleChange}
