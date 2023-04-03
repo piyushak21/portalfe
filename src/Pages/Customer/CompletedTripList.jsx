@@ -199,9 +199,6 @@ const CompletedTripList = () => {
             data={filtertripData}
             pagination
             highlightOnHover
-            subHeaderAlign="right"
-            className=""
-            autoWidth={true}
           />
         </div>
       </div>

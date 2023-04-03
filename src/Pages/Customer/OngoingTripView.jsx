@@ -31,9 +31,23 @@ const OngoingTripView = () => {
   // const [avgSpd, setAvgSpd] = useState();
   // const [spdData, setSpdData] = useState([]);
   const [vehicle, setVehicle] = useState([]);
-  const [dmsMedia, setDmsMedia] = useState("");
+  // const [dmsMedia, setDmsMedia] = useState("");
+  // const [drowsiness, setDrowsiness] = useState(0);
+
+  // SET DMS data & Alerts
+  const [media, setMedia] = useState([]);
   const [drowsiness, setDrowsiness] = useState(0);
-  const [media, setMedia] = useState({});
+  const [distraction, setDistraction] = useState(0);
+  const [dmsoverSpd, setDmsoverSpd] = useState(0);
+  const [noSeatbelt, setNotSeatBelt] = useState(0);
+  const [usePhone, setUsePhone] = useState(0);
+  const [unknownDriver, setUnknownDriver] = useState(0);
+  const [noDriver, setNoDriver] = useState(0);
+  const [smoking, setSmoking] = useState(0);
+  const [rashDrive, setRashDrive] = useState(0);
+  const [dmsAccident, setDmsAccident] = useState(0);
+  const [tripStartAlert, setTripStartAlert] = useState(0);
+
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -111,12 +125,12 @@ const OngoingTripView = () => {
             // setSpdData(res.data.map((speed) => speed.spd));
 
             // set DMS data
-            for (let i = 0; i < res.data.length; i++) {
-              // Set DMS Data
-              if (res.data[i].event === "DMS") {
-                setMedia(res.data[i].jsondata);
-              }
-            }
+            // for (let i = 0; i < res.data.length; i++) {
+            //   // Set DMS Data
+            //   if (res.data[i].event === "DMS") {
+            //     setMedia(res.data[i].jsondata);
+            //   }
+            // }
           });
       };
       fetchData();
@@ -181,7 +195,7 @@ const OngoingTripView = () => {
   //   }
   // }, [tripData]);
 
-  // // Set Average Speed
+  // Set Average Speed
   // useEffect(() => {
   //   if (tripData.length > 0 && distance > 0 && durationInSec > 0) {
   //     const distanceInKM = parseFloat(distance);
@@ -196,19 +210,61 @@ const OngoingTripView = () => {
 
   // Set DMS media
   useEffect(() => {
-    if (media.length > 0) {
-      let mediaParse = JSON.parse(media);
-      setDmsMedia(mediaParse.data.media);
-      // console.log(dmsMedia);
+    if (tripData.length > 0) {
+      let mediaData = [];
+      tripData.forEach((item) => {
+        if (item.event === "DMS") {
+          let dmsData = JSON.parse(item.jsondata);
+          mediaData.push(dmsData.data.media);
+          if (dmsData.data.alert_type === "DROWSINESS") {
+            setDrowsiness((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "TRIP_START") {
+            setTripStartAlert((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "DISTRACTION") {
+            setDistraction((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "OVERSPEEDING") {
+            setDmsoverSpd((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "NO_SEATBELT") {
+            setNotSeatBelt((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "USING_PHONE") {
+            setUsePhone((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "UNKNOWN_DRIVER") {
+            setUnknownDriver((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "NO_DRIVER") {
+            setNoDriver((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "SMOKING") {
+            setSmoking((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "RASH_DRIVING") {
+            setRashDrive((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "ACCIDENT") {
+            setDmsAccident((prev) => prev + 1);
+          }
+        }
+      });
 
-      if (mediaParse.data.alert_type === "DROWSINESS") {
-        setDrowsiness((prev) => prev + 1);
-      }
-      // if (mediaParse.data.alert_type === "Distraction") {
-      //   setDistraction((prev) => prev + 1);
-      // }
+      setMedia(mediaData);
     }
-  }, [media]);
+    // console.log(media);
+  }, [tripData]);
+
+  // Set Iframe for DMS
+  const dmsIframes = media.map((data) => {
+    return (
+      <div className="col-md-6 mb-2">
+        <Iframe src={data} width="100%" height="300px"></Iframe>
+      </div>
+    );
+  });
 
   // Set vehicle data
   useEffect(() => {
@@ -290,6 +346,9 @@ const OngoingTripView = () => {
           <BsArrowLeft /> <small>Ongoing Trip list</small>
         </Link>
         <div className="mb-3">
+          <p className="mb-0">
+            Trip ID: <strong>{id}</strong>
+          </p>
           <h4>{vehicle.vehicle_name} Ongoing Trip</h4>
         </div>
 
@@ -439,6 +498,7 @@ const OngoingTripView = () => {
                               <Form.Check
                                 type="checkbox"
                                 label="Automatic Braking"
+                                disabled
                               />
                             </Form.Group>
                           </div>
@@ -455,6 +515,7 @@ const OngoingTripView = () => {
                               <Form.Check
                                 type="checkbox"
                                 label="Accident Saved"
+                                disabled
                               />
                             </Form.Group>
                           </div>
@@ -481,6 +542,7 @@ const OngoingTripView = () => {
                               <Form.Check
                                 type="checkbox"
                                 label="Sleep Alert Missed"
+                                disabled
                               />
                             </Form.Group>
                           </div>
@@ -509,6 +571,7 @@ const OngoingTripView = () => {
                               <Form.Check
                                 type="checkbox"
                                 label="Harsh Acceleration"
+                                disabled
                               />
                             </Form.Group>
                           </div>
@@ -522,7 +585,11 @@ const OngoingTripView = () => {
                         >
                           <div className="ms-2 me-auto">
                             <Form.Group className="" controlId="de2">
-                              <Form.Check type="checkbox" label="Lane Change" />
+                              <Form.Check
+                                type="checkbox"
+                                label="Lane Change"
+                                disabled
+                              />
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
@@ -535,7 +602,11 @@ const OngoingTripView = () => {
                         >
                           <div className="ms-2 me-auto">
                             <Form.Group className="" controlId="de3">
-                              <Form.Check type="checkbox" label="Speed Bump" />
+                              <Form.Check
+                                type="checkbox"
+                                label="Speed Bump"
+                                disabled
+                              />
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
@@ -551,6 +622,7 @@ const OngoingTripView = () => {
                               <Form.Check
                                 type="checkbox"
                                 label="Sudden Braking"
+                                disabled
                               />
                             </Form.Group>
                           </div>
@@ -564,7 +636,11 @@ const OngoingTripView = () => {
                         >
                           <div className="ms-2 me-auto">
                             <Form.Group className="" controlId="de5">
-                              <Form.Check type="checkbox" label="Tailgating" />
+                              <Form.Check
+                                type="checkbox"
+                                label="Tailgating"
+                                disabled
+                              />
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
@@ -592,6 +668,7 @@ const OngoingTripView = () => {
                               <Form.Check
                                 type="checkbox"
                                 label="Overspeeding"
+                                disabled
                               />
                             </Form.Group>
                           </div>
@@ -621,8 +698,29 @@ const OngoingTripView = () => {
                           className="d-flex justify-content-between align-items-start border-0"
                         >
                           <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms11">
+                              <Form.Check
+                                type="checkbox"
+                                label="Trip Start"
+                                disabled
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {tripStartAlert}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
                             <Form.Group className="" controlId="dms1">
-                              <Form.Check type="checkbox" label="Drowsiness" />
+                              <Form.Check
+                                type="checkbox"
+                                label="Drowsiness"
+                                disabled
+                              />
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
@@ -635,11 +733,151 @@ const OngoingTripView = () => {
                         >
                           <div className="ms-2 me-auto">
                             <Form.Group className="" controlId="dms2">
-                              <Form.Check type="checkbox" label="Distraction" />
+                              <Form.Check
+                                type="checkbox"
+                                label="Distraction"
+                                disabled
+                              />
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {/* {distraction} */}
+                            {distraction}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms3">
+                              <Form.Check
+                                type="checkbox"
+                                label="Overspeeding"
+                                disabled
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {dmsoverSpd}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms4">
+                              <Form.Check
+                                type="checkbox"
+                                label="No Seatbelt"
+                                disabled
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {noSeatbelt}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms5">
+                              <Form.Check
+                                type="checkbox"
+                                label="Using Phone"
+                                disabled
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {usePhone}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms6">
+                              <Form.Check
+                                type="checkbox"
+                                label="Unknown Driver"
+                                disabled
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {unknownDriver}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms7">
+                              <Form.Check
+                                type="checkbox"
+                                label="No Driver"
+                                disabled
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {noDriver}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms8">
+                              <Form.Check
+                                type="checkbox"
+                                label="Smoking"
+                                disabled
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {smoking}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms9">
+                              <Form.Check
+                                type="checkbox"
+                                label="Rash Driving"
+                                disabled
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {rashDrive}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms10">
+                              <Form.Check
+                                type="checkbox"
+                                label="Accident"
+                                disabled
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {dmsAccident}
                           </Badge>
                         </ListGroup.Item>
                       </ListGroup>
@@ -648,7 +886,7 @@ const OngoingTripView = () => {
                 </div>
                 <div className="col-md-8">
                   <h5>DMS Media</h5>
-                  <Iframe src={dmsMedia} width="320px" height="300px"></Iframe>
+                  <div className="row">{dmsIframes}</div>
                 </div>
               </div>
             </Tab>
