@@ -145,7 +145,7 @@ const TopNavbar = () => {
                         <BsPersonFill />
                       </span>
                       <p className="mt-2">
-                        <small>Users</small>
+                        <small>Customers</small>
                       </p>
                     </div>
                   </Link>

@@ -19,7 +19,6 @@ const CompletedTripView = () => {
   let { id } = useParams();
   const [path, setPath] = useState([]);
   const [tripData, setTripData] = useState([]);
-  const [tripSummary, setTripSummary] = useState([]);
   const [center, setCenter] = useState({});
   const [startPoint, setStartPoint] = useState({});
   const [endPoint, setEndPoint] = useState({});
@@ -29,8 +28,8 @@ const CompletedTripView = () => {
   const [endTime, setEndTime] = useState();
   const [duration, setDuration] = useState("");
   // const [spdData, setSpdData] = useState([]);
-  const [media, setMedia] = useState({});
-  const [dmsMedia, setDmsMedia] = useState({});
+
+  // CAS faults
   const [accident, setAccident] = useState(0);
   const [harshacc, setHarshacc] = useState(0);
   const [sleeptAlt, setSleepAlt] = useState(0);
@@ -39,14 +38,28 @@ const CompletedTripView = () => {
   const [suddenBrk, setSuddenBrk] = useState(0);
   const [tailgating, setTailgating] = useState(0);
   const [overspeed, setOverspeed] = useState(0);
+
+  // SET DMS data & Alerts
+  const [media, setMedia] = useState([]);
   const [drowsiness, setDrowsiness] = useState(0);
   const [distraction, setDistraction] = useState(0);
+  const [dmsoverSpd, setDmsoverSpd] = useState(0);
+  const [noSeatbelt, setNotSeatBelt] = useState(0);
+  const [usePhone, setUsePhone] = useState(0);
+  const [unknownDriver, setUnknownDriver] = useState(0);
+  const [noDriver, setNoDriver] = useState(0);
+  const [smoking, setSmoking] = useState(0);
+  const [rashDrive, setRashDrive] = useState(0);
+  const [dmsAccident, setDmsAccident] = useState(0);
+  const [tripStartAlert, setTripStartAlert] = useState(0);
+
   const [vehicle, setVehicle] = useState([]);
   const [distance, setDistance] = useState("");
   const [maxSpd, setMaxSpd] = useState("");
   // const [durationInSec, setDurationInSec] = useState();
   const [avgSpd, setAvgSpd] = useState();
   const [autoBrk, setAutoBrk] = useState(0);
+  const [faultData, setFaultData] = useState(0);
 
   let token = localStorage.getItem("token");
 
@@ -60,7 +73,6 @@ const CompletedTripView = () => {
         }
       )
       .then((res) => {
-        setTripSummary(res.data);
         setAvgSpd(res.data[0].avg_spd);
         setDistance(res.data[0].total_distance);
         setMaxSpd(res.data[0].max_spd);
@@ -140,55 +152,6 @@ const CompletedTripView = () => {
 
         // Calculate average speed
         // setSpdData(res.data.map((speed) => speed.spd));
-
-        // set DMS data
-        for (let i = 0; i < res.data.length; i++) {
-          // Set DMS Data
-          if (res.data[i].event === "DMS") {
-            setMedia(res.data[i].jsondata);
-          }
-          // Set accident saved data
-          // if (res.data[i].event === "BRK") {
-          //   let brk = JSON.parse(res.data[i].jsondata);
-          //   let ttcdiff = brk.data.on_ttc - brk.data.off_ttc;
-          //   let acd = ttcdiff / brk.data.off_ttc;
-          //   let accSvd = acd * 100;
-          //   if (accSvd > 50 && accSvd < 100) {
-          //     setAccident(parseInt(accident) + 1);
-          //   }
-          //   if (brk.data.reason === 0) {
-          //     setAutoBrk((prevCount) => prevCount + 1);
-          //   }
-          // }
-
-          // Set all notifications data
-          if (res.data[i].event === "NTF") {
-            let ntfData = res.data[i].jsondata;
-            let ntfparse = JSON.parse(ntfData);
-
-            if (ntfparse.notification === 2) {
-              setHarshacc((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 13) {
-              setSleepAlt((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 5) {
-              setLaneChng((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 4) {
-              setSpdBump((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 3) {
-              setSuddenBrk((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 6) {
-              setTailgating((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 7) {
-              setOverspeed((prev) => prev + 1);
-            }
-          }
-        }
       })
       .catch((err) => {
         console.log(err);
@@ -210,22 +173,6 @@ const CompletedTripView = () => {
       getAddress(endPoint.lat, endPoint.lng, setEndAddress);
     }
   }, [tripData]);
-
-  // Set DMS media
-  useEffect(() => {
-    if (media.length > 0) {
-      let mediaParse = JSON.parse(media);
-      setDmsMedia(mediaParse.data.media);
-      console.log(dmsMedia);
-
-      if (mediaParse.data.alert_type === "DROWSINESS") {
-        setDrowsiness((prev) => prev + 1);
-      }
-      if (mediaParse.data.alert_type === "Distraction") {
-        setDistraction((prev) => prev + 1);
-      }
-    }
-  }, [media]);
 
   // Set vehicle data
   useEffect(() => {
@@ -311,26 +258,76 @@ const CompletedTripView = () => {
         }
       )
       .then((response) => {
+        setFaultData(response.data);
+
         let parameters = [];
         let params = {};
 
+        // Set all notifications data
+        for (let i = 0; i < response.data.length; i++) {
+          // Set accident saved data
+          // if (res.data[i].event === "BRK") {
+          //   let brk = JSON.parse(res.data[i].jsondata);
+          //   let ttcdiff = brk.data.on_ttc - brk.data.off_ttc;
+          //   let acd = ttcdiff / brk.data.off_ttc;
+          //   let accSvd = acd * 100;
+          //   if (accSvd > 50 && accSvd < 100) {
+          //     setAccident(parseInt(accident) + 1);
+          //   }
+          //   if (brk.data.reason === 0) {
+          //     setAutoBrk((prevCount) => prevCount + 1);
+          //   }
+          // }
+
+          if (response.data[i].event === "NTF") {
+            let ntfData = response.data[i].jsondata;
+            let ntfparse = JSON.parse(ntfData);
+
+            if (ntfparse.notification === 2) {
+              setHarshacc((prev) => prev + 1);
+            }
+            if (ntfparse.notification === 13) {
+              setSleepAlt((prev) => prev + 1);
+            }
+            if (ntfparse.notification === 5) {
+              setLaneChng((prev) => prev + 1);
+            }
+            if (ntfparse.notification === 4) {
+              setSpdBump((prev) => prev + 1);
+            }
+            if (ntfparse.notification === 3) {
+              setSuddenBrk((prev) => prev + 1);
+            }
+            if (ntfparse.notification === 6) {
+              setTailgating((prev) => prev + 1);
+            }
+            if (ntfparse.notification === 7) {
+              setOverspeed((prev) => prev + 1);
+            }
+          }
+        }
+
+        // loop to set markers
         for (let l = 0; l < response.data.length; l++) {
           ////////////////parsing break json
 
           let parseJson = JSON.parse(response.data[l].jsondata);
-          console.log(parseJson);
+          // console.log(parseJson);
           if (response.data[l].event == "BRK") {
             let ttcdiff = parseJson.data.on_ttc - parseJson.data.off_ttc;
             let acd = ttcdiff / parseJson.data.off_ttc;
             let accSvd = acd * 100;
+            let updatedTime = new Date(response.data[l].timestamp * 1000);
+            let contentTime = updatedTime.toLocaleString();
+
             if (accSvd > 50 && accSvd < 100) {
               setAccident((prevCount) => prevCount + 1);
               params = {
                 id: response.data[l].id,
                 lat: parseFloat(response.data[l].lat),
                 lng: parseFloat(response.data[l].lng),
-                title: response.data[l].message,
-                content: response.data[l].timestamp,
+                title: "ACCIDENT_SAVED",
+                content: contentTime,
                 speed: parseFloat(response.data[l].spd),
                 event: response.data[l].event,
                 reason: parseJson.data.reason,
@@ -342,8 +339,8 @@ const CompletedTripView = () => {
               id: response.data[l].id,
               lat: parseFloat(response.data[l].lat),
               lng: parseFloat(response.data[l].lng),
-              title: response.data[l].message,
-              content: response.data[l].timestamp,
+              title: "AUTOMATIC_BRAKING",
+              content: contentTime,
               speed: parseFloat(response.data[l].spd),
               event: response.data[l].event,
               reason: parseJson.data.reason,
@@ -351,14 +348,33 @@ const CompletedTripView = () => {
             parameters.push(params);
           }
 
+          // DMS markers
+          if (response.data[l].event == "DMS") {
+            let updatedTime = new Date(response.data[l].timestamp * 1000);
+            let contentTime = updatedTime.toLocaleString();
+            params = {
+              id: response.data[l].id,
+              lat: parseFloat(response.data[l].lat),
+              lng: parseFloat(response.data[l].lng),
+              title: parseJson.data.alert_type,
+              content: contentTime,
+              speed: parseJson.data.speed,
+              event: response.data[l].event,
+              reason: parseJson.data.alert_type,
+            };
+            parameters.push(params);
+          }
+
           ///////////////////////adding brk json to markers
           if (parseJson.notification !== undefined) {
+            let updatedTime = new Date(response.data[l].timestamp * 1000);
+            let contentTime = updatedTime.toLocaleString();
             params = {
               id: response.data[l].id,
               lat: parseFloat(response.data[l].lat),
               lng: parseFloat(response.data[l].lng),
               title: parseJson.notification,
-              content: response.data[l].timestamp,
+              content: contentTime,
               speed: parseFloat(response.data[l].spd),
               event: response.data[l].event,
               reason: parseJson.notification,
@@ -384,6 +400,77 @@ const CompletedTripView = () => {
         console.error(error);
       });
   }, [id]);
+
+  // Set DMS media
+  useEffect(() => {
+    if (faultData.length > 0) {
+      let mediaData = [];
+      faultData.forEach((item) => {
+        if (item.event === "DMS") {
+          let dmsData = JSON.parse(item.jsondata);
+          mediaData.push(dmsData.data.media);
+          if (dmsData.data.alert_type === "DROWSINESS") {
+            setDrowsiness((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "TRIP_START") {
+            setTripStartAlert((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "DISTRACTION") {
+            setDistraction((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "OVERSPEEDING") {
+            setDmsoverSpd((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "NO_SEATBELT") {
+            setNotSeatBelt((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "USING_PHONE") {
+            setUsePhone((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "UNKNOWN_DRIVER") {
+            setUnknownDriver((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "NO_DRIVER") {
+            setNoDriver((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "SMOKING") {
+            setSmoking((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "RASH_DRIVING") {
+            setRashDrive((prev) => prev + 1);
+          }
+          if (dmsData.data.alert_type === "ACCIDENT") {
+            setDmsAccident((prev) => prev + 1);
+          }
+        }
+      });
+
+      setMedia(mediaData);
+    }
+
+    // if (media.length > 0) {
+    //   let mediaParse = JSON.parse(media);
+    //   setDmsMedia(mediaParse.data.media);
+    //   // console.log(mediaParse.data);
+
+    //   if (mediaParse.data.alert_type === "DROWSINESS") {
+    //     setDrowsiness((prev) => prev + 1);
+    //   }
+    //   if (mediaParse.data.alert_type === "Distraction") {
+    //     setDistraction((prev) => prev + 1);
+    //   }
+    // }
+    // console.log(media);
+  }, [faultData]);
+
+  // Set Iframe for DMS
+  const dmsIframes = media.map((data) => {
+    return (
+      <div className="col-md-6 mb-2">
+        <Iframe src={data} width="100%" height="300px" key=""></Iframe>
+      </div>
+    );
+  });
 
   const handleMarkerClick = (marker) => {
     setSelectedMarker(marker);
@@ -414,10 +501,10 @@ const CompletedTripView = () => {
     }
   };
 
-  useEffect(() => {
-    console.log(markers);
-    console.log(filterMarker);
-  }, [markers, filterMarker]);
+  // useEffect(() => {
+  //   console.log(markers);
+  //   console.log(filterMarker);
+  // }, [markers, filterMarker]);
 
   // customized marker icons
   const markerIcons = {
@@ -441,6 +528,9 @@ const CompletedTripView = () => {
         <BsArrowLeft /> <small>Completed Trip list</small>
       </Link>
       <div className="mb-3">
+        <p className="mb-0">
+          Trip ID: <strong>{id}</strong>
+        </p>
         <h4>{vehicle.vehicle_name} Completed Trip</h4>
       </div>
       {/* <button onClick={handleShowMarkers}>
@@ -472,36 +562,34 @@ const CompletedTripView = () => {
                       {marker.reason === 0 ? (
                         <>
                           <div>
-                            Automatic Brake Due to{" "}
+                            {marker.title} Due to{" "}
                             <b>Collosion Avoidance System</b>
-                            <p className="mb-0">
-                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
-                              {marker.spd}
-                            </p>
+                            <p className="mb-0">{marker.content}</p>
                           </div>
                         </>
                       ) : (
                         <>
                           <div>
-                            Automatic Brake Due to <b>Sleep Alert Missed</b>
-                            <p className="mb-0">
-                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
-                              {marker.spd}
-                            </p>
+                            {marker.title} Due to <b>Sleep Alert Missed</b>
+                            <p className="mb-0">{marker.content}</p>
                           </div>
                         </>
                       )}
                     </div>
+                  ) : marker.event === "DMS" ? (
+                    <>
+                      <div>
+                        {marker.title}
+                        <p className="mb-0">{marker.content}</p>
+                      </div>
+                    </>
                   ) : (
                     <div>
                       <>
                         {marker.reason === 2 ? (
                           <div>
                             <b>Harsh Acceleration</b>
-                            <p className="mb-0">
-                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
-                              {marker.spd}
-                            </p>
+                            <p className="mb-0">{marker.content}</p>
                           </div>
                         ) : (
                           ""
@@ -509,10 +597,7 @@ const CompletedTripView = () => {
                         {marker.reason === 3 ? (
                           <div>
                             <b>Sudden Braking</b>
-                            <p className="mb-0">
-                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
-                              {marker.spd}
-                            </p>
+                            <p className="mb-0">{marker.content}</p>
                           </div>
                         ) : (
                           ""
@@ -520,10 +605,7 @@ const CompletedTripView = () => {
                         {marker.reason === 4 ? (
                           <div>
                             <b>Speed Bump</b>
-                            <p className="mb-0">
-                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
-                              {marker.spd}
-                            </p>
+                            <p className="mb-0">{marker.content}</p>
                           </div>
                         ) : (
                           ""
@@ -531,10 +613,7 @@ const CompletedTripView = () => {
                         {marker.reason === 5 ? (
                           <div>
                             <b>Lane change</b>
-                            <p className="mb-0">
-                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
-                              {marker.spd}
-                            </p>
+                            <p className="mb-0">{marker.content}</p>
                           </div>
                         ) : (
                           ""
@@ -542,10 +621,7 @@ const CompletedTripView = () => {
                         {marker.reason === 6 ? (
                           <div>
                             <b>Tailgating</b>
-                            <p className="mb-0">
-                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
-                              {marker.spd}
-                            </p>
+                            <p className="mb-0">{marker.content}</p>
                           </div>
                         ) : (
                           ""
@@ -553,10 +629,7 @@ const CompletedTripView = () => {
                         {marker.reason === 7 ? (
                           <div>
                             <b>Overspeed</b>
-                            <p className="mb-0">
-                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
-                              {marker.spd}
-                            </p>
+                            <p className="mb-0">{marker.content}</p>
                           </div>
                         ) : (
                           ""
@@ -564,10 +637,7 @@ const CompletedTripView = () => {
                         {marker.reason === 13 ? (
                           <div>
                             <b>Sleep Alert Missed</b>
-                            <p className="mb-0">
-                              GPS: Lat-{marker.lat}, Lng-{marker.lng}, Spd-
-                              {marker.spd}
-                            </p>
+                            <p className="mb-0">{marker.content}</p>
                           </div>
                         ) : (
                           ""
@@ -727,7 +797,7 @@ const CompletedTripView = () => {
                               disabled={autoBrk === 0}
                               type="checkbox"
                               label="Automatic Braking"
-                              value={6}
+                              value="AUTOMATIC_BRAKING"
                               data-custom-attribute="BRK"
                               onChange={handlecheckbox}
                             />
@@ -747,7 +817,7 @@ const CompletedTripView = () => {
                               disabled={accident === 0}
                               type="checkbox"
                               label="Accident Saved"
-                              value={6}
+                              value="ACCIDENT_SAVED"
                               data-custom-attribute="BRK"
                               onChange={handlecheckbox}
                             />
@@ -953,8 +1023,34 @@ const CompletedTripView = () => {
                         className="d-flex justify-content-between align-items-start border-0"
                       >
                         <div className="ms-2 me-auto">
+                          <Form.Group className="" controlId="dms11">
+                            <Form.Check
+                              type="checkbox"
+                              label="Trip Start"
+                              value="TRIP_START"
+                              data-custom-attribute="DMS"
+                              onChange={handlecheckbox}
+                            />
+                          </Form.Group>
+                        </div>
+                        <Badge bg="primary" pill>
+                          {tripStartAlert}
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
                           <Form.Group className="" controlId="dms1">
-                            <Form.Check type="checkbox" label="Drowsiness" />
+                            <Form.Check
+                              type="checkbox"
+                              label="Drowsiness"
+                              disabled={drowsiness === 0}
+                              value="DROWSINESS"
+                              data-custom-attribute="DMS"
+                              onChange={handlecheckbox}
+                            />
                           </Form.Group>
                         </div>
                         <Badge bg="primary" pill>
@@ -967,7 +1063,14 @@ const CompletedTripView = () => {
                       >
                         <div className="ms-2 me-auto">
                           <Form.Group className="" controlId="dms2">
-                            <Form.Check type="checkbox" label="Distraction" />
+                            <Form.Check
+                              type="checkbox"
+                              label="Distraction"
+                              disabled={distraction === 0}
+                              value="DISTRACTION"
+                              data-custom-attribute="DMS"
+                              onChange={handlecheckbox}
+                            />
                           </Form.Group>
                         </div>
                         <Badge bg="primary" pill>
@@ -980,11 +1083,18 @@ const CompletedTripView = () => {
                       >
                         <div className="ms-2 me-auto">
                           <Form.Group className="" controlId="dms3">
-                            <Form.Check type="checkbox" label="Overspeeding" />
+                            <Form.Check
+                              type="checkbox"
+                              label="Overspeeding"
+                              disabled={dmsoverSpd === 0}
+                              value="OVERSPEEDING"
+                              data-custom-attribute="DMS"
+                              onChange={handlecheckbox}
+                            />
                           </Form.Group>
                         </div>
                         <Badge bg="primary" pill>
-                          0
+                          {dmsoverSpd}
                         </Badge>
                       </ListGroup.Item>
                       <ListGroup.Item
@@ -993,11 +1103,18 @@ const CompletedTripView = () => {
                       >
                         <div className="ms-2 me-auto">
                           <Form.Group className="" controlId="dms4">
-                            <Form.Check type="checkbox" label="No Seatbelt" />
+                            <Form.Check
+                              type="checkbox"
+                              label="No Seatbelt"
+                              disabled={noSeatbelt === 0}
+                              value="NO_SEATBELT"
+                              data-custom-attribute="DMS"
+                              onChange={handlecheckbox}
+                            />
                           </Form.Group>
                         </div>
                         <Badge bg="primary" pill>
-                          0
+                          {noSeatbelt}
                         </Badge>
                       </ListGroup.Item>
                       <ListGroup.Item
@@ -1006,11 +1123,18 @@ const CompletedTripView = () => {
                       >
                         <div className="ms-2 me-auto">
                           <Form.Group className="" controlId="dms5">
-                            <Form.Check type="checkbox" label="Using Phone" />
+                            <Form.Check
+                              type="checkbox"
+                              label="Using Phone"
+                              disabled={usePhone === 0}
+                              value="USING_PHONE"
+                              data-custom-attribute="DMS"
+                              onChange={handlecheckbox}
+                            />
                           </Form.Group>
                         </div>
                         <Badge bg="primary" pill>
-                          0
+                          {usePhone}
                         </Badge>
                       </ListGroup.Item>
                       <ListGroup.Item
@@ -1022,11 +1146,15 @@ const CompletedTripView = () => {
                             <Form.Check
                               type="checkbox"
                               label="Unknown Driver"
+                              disabled={unknownDriver === 0}
+                              value="UNKNOWN_DRIVER"
+                              data-custom-attribute="DMS"
+                              onChange={handlecheckbox}
                             />
                           </Form.Group>
                         </div>
                         <Badge bg="primary" pill>
-                          0
+                          {unknownDriver}
                         </Badge>
                       </ListGroup.Item>
                       <ListGroup.Item
@@ -1035,11 +1163,18 @@ const CompletedTripView = () => {
                       >
                         <div className="ms-2 me-auto">
                           <Form.Group className="" controlId="dms7">
-                            <Form.Check type="checkbox" label="No Driver" />
+                            <Form.Check
+                              type="checkbox"
+                              label="No Driver"
+                              disabled={noDriver === 0}
+                              value="NO_DRIVER"
+                              data-custom-attribute="DMS"
+                              onChange={handlecheckbox}
+                            />
                           </Form.Group>
                         </div>
                         <Badge bg="primary" pill>
-                          0
+                          {noDriver}
                         </Badge>
                       </ListGroup.Item>
                       <ListGroup.Item
@@ -1048,11 +1183,18 @@ const CompletedTripView = () => {
                       >
                         <div className="ms-2 me-auto">
                           <Form.Group className="" controlId="dms8">
-                            <Form.Check type="checkbox" label="Smoking" />
+                            <Form.Check
+                              type="checkbox"
+                              label="Smoking"
+                              disabled={smoking === 0}
+                              value="SMOKING"
+                              data-custom-attribute="DMS"
+                              onChange={handlecheckbox}
+                            />
                           </Form.Group>
                         </div>
                         <Badge bg="primary" pill>
-                          0
+                          {smoking}
                         </Badge>
                       </ListGroup.Item>
                       <ListGroup.Item
@@ -1061,11 +1203,18 @@ const CompletedTripView = () => {
                       >
                         <div className="ms-2 me-auto">
                           <Form.Group className="" controlId="dms9">
-                            <Form.Check type="checkbox" label="Rash Driving" />
+                            <Form.Check
+                              type="checkbox"
+                              label="Rash Driving"
+                              disabled={rashDrive === 0}
+                              value="RASH_DRIVING"
+                              data-custom-attribute="DMS"
+                              onChange={handlecheckbox}
+                            />
                           </Form.Group>
                         </div>
                         <Badge bg="primary" pill>
-                          0
+                          {rashDrive}
                         </Badge>
                       </ListGroup.Item>
                       <ListGroup.Item
@@ -1074,24 +1223,18 @@ const CompletedTripView = () => {
                       >
                         <div className="ms-2 me-auto">
                           <Form.Group className="" controlId="dms10">
-                            <Form.Check type="checkbox" label="Accident" />
+                            <Form.Check
+                              type="checkbox"
+                              label="Accident"
+                              disabled={dmsAccident === 0}
+                              value="ACCIDENT"
+                              data-custom-attribute="DMS"
+                              onChange={handlecheckbox}
+                            />
                           </Form.Group>
                         </div>
                         <Badge bg="primary" pill>
-                          0
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms11">
-                            <Form.Check type="checkbox" label="Trip Start" />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          0
+                          {dmsAccident}
                         </Badge>
                       </ListGroup.Item>
                     </ListGroup>
@@ -1100,15 +1243,7 @@ const CompletedTripView = () => {
               </div>
               <div className="col-md-8">
                 <h5>DMS Media</h5>
-                <div className="row">
-                  <div className="col-md-6">
-                    <Iframe
-                      src={dmsMedia}
-                      width="320px"
-                      height="300px"
-                    ></Iframe>
-                  </div>
-                </div>
+                <div className="row">{dmsIframes}</div>
               </div>
             </div>
           </Tab>

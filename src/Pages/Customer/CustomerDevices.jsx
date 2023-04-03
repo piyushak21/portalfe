@@ -2,12 +2,17 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Badge, Container } from "react-bootstrap";
 import Table from "react-bootstrap/Table";
-import { Link } from "react-router-dom";
+import DataTable from "react-data-table-component";
+import { useNavigate } from "react-router-dom";
 
 const CustomerDevices = () => {
   const [devicesData, setDevicesData] = useState([]);
   const user_id = localStorage.getItem("user_id");
   const token = localStorage.getItem("token");
+  const [search1, setSearch1] = useState([]);
+  const [search2, setSearch2] = useState([]);
+  const [filterDevices, setFilterDevices] = useState([]);
+  const navigate = useNavigate();
 
   const getDevicesData = () => {
     axios
@@ -20,54 +25,137 @@ const CustomerDevices = () => {
       .then((res) => {
         console.log(res);
         setDevicesData(res.data.idData);
+        setFilterDevices(res.data.idData);
       })
       .catch((err) => console.log(err));
   };
-  console.log(devicesData);
   useEffect(() => {
     getDevicesData();
   }, []);
 
-  return (
-    <div className="mt-4">
-      <Container className="py-5">
-        <h4>Customer Devices</h4>
+  let counter = 1;
+  const columns = [
+    {
+      name: "#",
+      selector: (row) => counter++,
+      width: "70px",
+    },
+    {
+      name: "Device Id",
+      selector: (row) => row.device_id,
+    },
+    {
+      name: "Device Type",
+      selector: (row) => row.device_type,
+    },
+    {
+      name: "Sim Numbver",
+      selector: (row) => (row.sim_number == undefined ? "NA" : row.sim_number),
+    },
 
-        <div className="table-responsive">
-          <Table>
-            <thead>
-              <tr>
-                <th>SR.No</th>
-                <th>Device_id</th>
-                <th>Device_type</th>
-                <th>Sim_Number</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {devicesData?.map((el, index) => {
-                return (
-                  <tr key={index}>
-                    <td>{index + 1}</td>
-                    <td>{el.device_id}</td>
-                    <td>{el.device_type}</td>
-                    <td>{el.sim_number ? el.sim_number : "NA"}</td>
-                    <td>
-                      {" "}
-                      {el.status == "1" ? (
-                        <Badge bg="success">Active</Badge>
-                      ) : (
-                        <Badge bg="danger">Deactive</Badge>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
+    {
+      name: "Status",
+      selector: (row) =>
+        row.status == 1 ? (
+          <span class="badge bg-success">Active</span>
+        ) : (
+          <span class="badge bg-danger">Deactive</span>
+        ),
+      width: "100px",
+    },
+  ];
+
+  const customStyles = {
+    rows: {
+      style: {
+        minHeight: "50px",
+      },
+    },
+    headCells: {
+      style: {
+        backgroundColor: "#f5f5f5",
+        fontWeight: "bold",
+        fontSize: "16px",
+        border: "none",
+        minHeight: "50px",
+      },
+    },
+    cells: {
+      style: {
+        border: "none",
+        fontSize: "15px",
+      },
+    },
+  };
+
+  const CustomHeader = () => {
+    return (
+      <div>
+        <h4>Devices</h4>
+        <p className="mb-0">Total:{devicesData?.length}</p>
+      </div>
+    );
+  };
+
+  const searchOne = (e) => {
+    setSearch1(e.target.value);
+    const result = devicesData?.filter((el) => {
+      return el.device_id.toLowerCase().match(search1.toLowerCase());
+    });
+    setFilterDevices(result);
+  };
+
+  const searchTwo = (e) => {
+    setSearch2(e.target.value);
+    const result = devicesData?.filter((el) => {
+      return el.device_type.toLowerCase().match(search2.toLowerCase());
+    });
+    setFilterDevices(result);
+  };
+  useEffect(() => {
+    console.log(devicesData);
+  }, [search1, search2]);
+
+  return (
+    <Container className="my-4">
+      <div className="d-flex justify-content-between mb-3">
+        <div className="align-self-center">
+          <CustomHeader />
         </div>
-      </Container>
-    </div>
+        <div className="align-self-end">
+          <div className="d-flex gap-4 mt-1">
+            <div>
+              <input
+                type="text"
+                placeholder="Device Id"
+                className="form-control"
+                onChange={searchOne}
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                placeholder="Device type"
+                className="form-control "
+                onChange={searchTwo}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-body">
+          <DataTable
+            customStyles={customStyles}
+            columns={columns}
+            data={filterDevices}
+            pagination
+            highlightOnHover
+          />
+        </div>
+      </div>
+    </Container>
   );
 };
 

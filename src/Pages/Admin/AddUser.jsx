@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Button, Container, InputGroup } from "react-bootstrap";
+import { Container, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Form from "react-bootstrap/Form";
-import styles from "../../CSS/AddUser.module.css";
 import axios from "axios";
 
 //Customer Add Component
@@ -50,84 +49,73 @@ const AddUser = () => {
   };
 
   return (
-    <Container>
-      <div className={styles.formdiv}>
-        <div>
-          <Link to="/users">&#8592; Customers</Link>
-        </div>
-        <div>
-          <h3>Add Customers</h3>
-        </div>
-        <div>
-          <form onSubmit={handleSubmit}>
-            <div className={styles.griddiv}>
+    <Container className="my-4">
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
               <div>
-                <p>First_Name</p>
-                <InputGroup onChange={handleChange}>
-                  <Form.Control
-                    placeholder="first_name"
-                    name="first_name"
-                    type="text"
-                  />
-                </InputGroup>
+                <Link to="/users">&#8592; Customers</Link>
+                <h4>Add Customers</h4>
               </div>
               <div>
-                <p>Last_Name</p>
-                <InputGroup onChange={handleChange}>
-                  <Form.Control
-                    placeholder="Last_name"
-                    name="last_name"
-                    type="text"
-                  />
-                </InputGroup>
-              </div>
-              <div>
-                <p>Username</p>
-                <InputGroup onChange={handleChange}>
-                  <Form.Control
-                    placeholder="username"
-                    name="username"
-                    type="text"
-                  />
-                </InputGroup>
-              </div>
+                <form onSubmit={handleSubmit}>
+                  <div className="mb-3">
+                    <label htmlFor="">First Name</label>
+                    <InputGroup onChange={handleChange}>
+                      <Form.Control name="first_name" type="text" />
+                    </InputGroup>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="">Last Name</label>
+                    <InputGroup onChange={handleChange}>
+                      <Form.Control name="last_name" type="text" />
+                    </InputGroup>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="">Username</label>
+                    <InputGroup onChange={handleChange}>
+                      <Form.Control name="username" type="text" />
+                    </InputGroup>
+                  </div>
 
-              <div>
-                <p>Email</p>
-                <InputGroup onChange={handleChange}>
-                  <Form.Control type="email" placeholder="Email" name="email" />
-                </InputGroup>
-              </div>
-              <div>
-                <p>Password</p>
-                <InputGroup onChange={handleChange}>
-                  <Form.Control
-                    type="password"
-                    placeholder="Password"
-                    name="password"
-                  />
-                </InputGroup>
-              </div>
-              <div>
-                <p>Status</p>
-                <Form.Select onChange={handleChange} name="status">
-                  <option>-Select Status-</option>
-                  <option value="1">Active</option>
-                  <option value="2">Deactive</option>
-                </Form.Select>
+                  <div className="mb-3">
+                    <label htmlFor="">Email ID</label>
+                    <InputGroup onChange={handleChange}>
+                      <Form.Control
+                        type="email"
+                        placeholder="Email"
+                        name="email"
+                      />
+                    </InputGroup>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="">Password</label>
+                    <InputGroup onChange={handleChange}>
+                      <Form.Control type="password" name="password" />
+                    </InputGroup>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="">Status</label>
+                    <Form.Select onChange={handleChange} name="status">
+                      <option>-Select Status-</option>
+                      <option value="1">Active</option>
+                      <option value="2">Deactive</option>
+                    </Form.Select>
+                  </div>
+
+                  <div className="text-center">
+                    <button
+                      className="btn btn-theme w-100 btn-lg"
+                      type="submit"
+                    >
+                      SUBMIT
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
-            <div>
-              {" "}
-              <Button
-                className={styles.submitbtn}
-                type="submit"
-                variant="primary"
-              >
-                Submit
-              </Button>{" "}
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </Container>

@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Container, Table } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { Container } from "react-bootstrap";
 import axios from "axios";
+import DataTable from "react-data-table-component";
+import { AiFillEye } from "react-icons/ai";
 
 const OngoingTripList = () => {
   const [tripData, setTripData] = useState();
   let token = localStorage.getItem("token");
   let user_id = localStorage.getItem("user_id");
+  const [search1, setSearch1] = useState([]);
+  const [search2, setSearch2] = useState([]);
+  const [filtertripData, setFiltertripData] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = (async) => {
@@ -19,6 +25,7 @@ const OngoingTripList = () => {
         )
         .then((res) => {
           setTripData(res.data);
+          setFiltertripData(res.data);
         })
         .catch((err) => {
           console.log(err);
@@ -31,67 +38,165 @@ const OngoingTripList = () => {
     let updateStTime = new Date(time * 1000);
     return updateStTime.toString();
   };
+  let counter = 1;
+
+  const columns = [
+    {
+      name: "#",
+      selector: (row) => counter++,
+      sortable: true,
+      width: "70px",
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <button
+          onClick={() => navigate(`/ongoing-trips/${row.trip_id}`)}
+          className="btn btn-outline-primary btn-sm"
+        >
+          View
+          <AiFillEye className="h6 mb-0 ms-1" />
+        </button>
+      ),
+      width: "120px",
+    },
+    {
+      name: "Trip ID",
+      selector: (row) => row.trip_id,
+      wrap: true,
+    },
+    {
+      name: "Vehicle Name",
+      selector: (row) => row.vehicle_name,
+      wrap: true,
+    },
+    {
+      name: "Reg Number",
+      selector: (row) => row.vehicle_registration,
+      wrap: true,
+    },
+    {
+      name: "Trip Start",
+      selector: (row) => {
+        return convertTime(row.trip_start_time);
+      },
+      wrap: true,
+    },
+    {
+      name: "Trip End",
+      selector: (row) => {
+        return convertTime(row.trip_end_time);
+      },
+      wrap: true,
+    },
+    {
+      name: "Distance",
+      selector: (row) => row.total_distance,
+      wrap: true,
+    },
+    {
+      name: "Duration",
+      selector: (row) => row.duration,
+      wrap: true,
+    },
+  ];
+
+  const customStyles = {
+    rows: {
+      style: {
+        minHeight: "70px",
+      },
+    },
+    headCells: {
+      style: {
+        backgroundColor: "#f1f1f1",
+        fontWeight: "bold",
+        fontSize: "16px",
+        border: "none",
+        minHeight: "50px",
+        color: "#333",
+      },
+    },
+    cells: {
+      style: {
+        border: "none",
+        fontSize: "15px",
+      },
+    },
+  };
+
+  const CustomHeader = () => {
+    return (
+      <div>
+        <h4>Ongoing Trips</h4>
+        <p className="mb-0">Total:{tripData?.length}</p>
+      </div>
+    );
+  };
+
+  const searchOne = (e) => {
+    setSearch1(e.target.value);
+    const result = tripData?.filter((el) => {
+      return el.trip_id.toLowerCase().match(search1.toLowerCase());
+    });
+    setFiltertripData(result);
+  };
+
+  const searchTwo = (e) => {
+    setSearch2(e.target.value);
+    const result = tripData?.filter((el) => {
+      return el.vehicle_name.toLowerCase().match(search2.toLowerCase());
+    });
+    setFiltertripData(result);
+  };
+  useEffect(() => {
+    // console.log(tripData);
+  }, [search1, search2]);
 
   return (
-    <Container className="my-5">
-      <div className="d-flex justify-content-between my-4">
-        <div>
-          <h4>Ongoing Trips List</h4>
-          <small>
-            <span>Total: {tripData?.length}</span>
-          </small>
+    <Container className="my-4">
+      <div className="d-flex justify-content-between mb-3">
+        <div className="align-self-center">
+          <CustomHeader />
         </div>
-        <div>
-          <Link to="/completed-trips">
-            <button className="btn btn-info">Check Completed Trips</button>
-          </Link>
+        <div className="text-end">
+          <button
+            onClick={() => navigate("/completed-trips")}
+            className="btn btn-theme"
+          >
+            Completed Trips
+          </button>
+          <div className="d-flex gap-4 mt-1">
+            <div>
+              <input
+                type="text"
+                placeholder="Trip Id"
+                className="form-control"
+                onChange={searchOne}
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                placeholder="Vehicle Name"
+                className="form-control "
+                onChange={searchTwo}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* List of vehicles */}
-      <div className="table-responsive">
-        <Table striped hover>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Trip ID</th>
-              <th>Vehicle Name</th>
-              <th>Registration Number</th>
-              <th>Trip Start</th>
-              <th>Trip End</th>
-              <th>Distance Travelled</th>
-              <th>Duration</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tripData &&
-              tripData.map((row, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{row.trip_id}</td>
-                  <td>{row.vehicle_name}</td>
-                  <td>{row.vehicle_registration}</td>
-                  <td>{convertTime(row.trip_start_time)}</td>
-                  <td>{row.trip_end_time && convertTime(row.trip_end_time)}</td>
-                  <td>{row.total_distance} Km</td>
-                  <td>{row.duration}</td>
-                  <td>
-                    <span className="text-primary">
-                      <small>
-                        <Link
-                          to={`/ongoing-trips/${row.trip_id}`}
-                          className="btn btn-primary btn-sm"
-                        >
-                          View
-                        </Link>
-                      </small>
-                    </span>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </Table>
+      <div className="card">
+        <div className="card-body">
+          <DataTable
+            customStyles={customStyles}
+            columns={columns}
+            data={filtertripData}
+            pagination
+            highlightOnHover
+          />
+        </div>
       </div>
     </Container>
   );

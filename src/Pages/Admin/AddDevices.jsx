@@ -66,13 +66,10 @@ const AddDevice = () => {
             <div className="card-body">
               <form onSubmit={handleSubmit}>
                 <div>
-                  <div>
-                    <Link to="/devices">&#8592; Devices</Link>
-                  </div>
-                  <div>
-                    <h3>Add Device</h3>
-                  </div>
+                  <Link to="/devices">&#8592; Devices</Link>
+                  <h4>Add Device</h4>
                 </div>
+                <hr />
                 <div>
                   <div className="mb-3">
                     <label htmlFor="">Device Id</label>
@@ -110,11 +107,7 @@ const AddDevice = () => {
                   <div className="mb-3">
                     <label htmlFor="">Sim Number</label>
                     <InputGroup onChange={handleChange}>
-                      <Form.Control
-                        placeholder="Sim Number"
-                        name="sim_number"
-                        maxLength={10}
-                      />
+                      <Form.Control name="sim_number" maxLength={10} />
                     </InputGroup>
                   </div>
                   <div className="mb-3">
@@ -126,10 +119,10 @@ const AddDevice = () => {
                     </Form.Select>
                   </div>
                 </div>
-                <div>
-                  <Button type="submit" variant="primary">
-                    Submit
-                  </Button>{" "}
+                <div className="text-center">
+                  <button className="btn btn-theme w-100 btn-lg" type="submit">
+                    SUBMIT
+                  </button>
                 </div>
               </form>
             </div>

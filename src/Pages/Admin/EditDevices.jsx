@@ -10,6 +10,7 @@ const EditDevices = () => {
   const [idData, setIdData] = useState(["Starkenn"]);
   const [data, setData] = useState([]);
   const [customerData, setCustomerData] = useState([]);
+  let token = localStorage.getItem("token");
 
   useEffect(() => {
     axios
@@ -23,38 +24,27 @@ const EditDevices = () => {
       .catch((err) => {
         console.log(err);
       });
-  });
-
-  let token = localStorage.getItem("token");
+  }, [token]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log(data);
 
-    if (
-      data.device_id &&
-      data.device_type &&
-      data.user_id &&
-      data.sim_number &&
-      data.status
-    ) {
-      axios
-        .put(
-          `${process.env.REACT_APP_BASE_URL}/devices/edit-device/${id}`,
-          data,
-          {
-            headers: { authorization: `bearer ${token}` },
-          }
-        )
-        .then((res) => {
-          console.log(res);
-          alert("Device Updated Successfully");
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    } else {
-      alert("Fill All Details");
-    }
+    axios
+      .put(
+        `${process.env.REACT_APP_BASE_URL}/devices/edit-device/${id}`,
+        data,
+        {
+          headers: { authorization: `bearer ${token}` },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        alert("Device Updated Successfully");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   useEffect(() => {
@@ -68,7 +58,7 @@ const EditDevices = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [token]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -77,26 +67,27 @@ const EditDevices = () => {
 
   return (
     <div>
-      <Container className="py-5">
+      <Container className="my-4">
         <div className="row justify-content-center">
           <div className="col-md-6">
             <form onSubmit={handleSubmit}>
-              <div>
-                <div>
-                  <Link to="/devices">&#8592; Devices</Link>
-                </div>
-                <div>
-                  <h4>Edit Device</h4>
-                </div>
-              </div>
               <div className="card mt-3">
                 <div className="card-body">
+                  <div>
+                    <div>
+                      <Link to="/devices">&#8592; Devices</Link>
+                    </div>
+                    <div>
+                      <h4>Edit Device</h4>
+                    </div>
+                  </div>
+                  <hr />
                   <div className="mb-3">
                     <label htmlFor="">Device Id</label>
                     <input
                       type="text"
                       className="form-control"
-                      value={idData[0].device_id || ""}
+                      defaultValue={idData[0].device_id || ""}
                       name="device_id"
                       onChange={handleChange}
                     />
@@ -107,7 +98,7 @@ const EditDevices = () => {
                     <Form.Select
                       name="device_type"
                       onChange={handleChange}
-                      value={idData[0].device_type || ""}
+                      defaultValue={idData[0].device_type || ""}
                     >
                       <option>- Select Device type -</option>
                       <option value="ECU">ECU</option>
@@ -119,9 +110,9 @@ const EditDevices = () => {
                   <div className="mb-3">
                     <label htmlFor="">Customer Name</label>
                     <select
-                      name="user_i"
+                      name="user_id"
                       className="form-control"
-                      value={idData[0].user_id || ""}
+                      defaultValue={idData[0].user_id || ""}
                       onChange={handleChange}
                     >
                       <option value="">- Select Customer -</option>
@@ -140,8 +131,9 @@ const EditDevices = () => {
                     <input
                       type="number"
                       className="form-control"
-                      value={idData[0].sim_number || ""}
+                      defaultValue={idData[0].sim_number || ""}
                       name="sim_number"
+                      maxLength={10}
                       onChange={handleChange}
                     />
                   </div>
@@ -151,7 +143,7 @@ const EditDevices = () => {
                     <Form.Select
                       name="status"
                       onChange={handleChange}
-                      value={idData[0].status || ""}
+                      defaultValue={idData[0].status || ""}
                     >
                       <option>- Select -</option>
                       <option value="1">Active</option>
@@ -159,13 +151,14 @@ const EditDevices = () => {
                     </Form.Select>
                   </div>
 
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    className="mt-2 w-100"
-                  >
-                    Submit
-                  </Button>
+                  <div className="text-center">
+                    <button
+                      className="btn btn-theme w-100 btn-lg"
+                      type="submit"
+                    >
+                      SUBMIT
+                    </button>
+                  </div>
                 </div>
               </div>
             </form>

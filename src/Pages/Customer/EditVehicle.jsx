@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
-import Button from "react-bootstrap/Button";
-import styles from "../../CSS/VehicleEdit.module.css";
 import { Container } from "react-bootstrap";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
@@ -73,33 +71,23 @@ const EditVehicle = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(data);
-    if (
-      data.vehicle_name &&
-      data.vehicle_registration &&
-      data.status &&
-      data.iot &&
-      data.ecu &&
-      data.featureset
-    ) {
-      axios
-        .put(
-          `${process.env.REACT_APP_BASE_URL}/vehicles/editvehicle/${user_id}/${vehicle_id}`,
-          data,
-          {
-            headers: { authorization: `bearer ${token}` },
-          }
-        )
-        .then((res) => {
-          console.log(res);
-          alert("Data Updated Successfully");
-        })
-        .catch((err) => {
-          console.log(err);
-          alert("Error in Updating Data");
-        });
-    } else {
-      alert("Fill All Credentials");
-    }
+
+    axios
+      .put(
+        `${process.env.REACT_APP_BASE_URL}/vehicles/editvehicle/${user_id}/${vehicle_id}`,
+        data,
+        {
+          headers: { authorization: `bearer ${token}` },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        alert("Data Updated Successfully");
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("Error in Updating Data");
+      });
   };
 
   const handleChange = (e) => {
@@ -107,22 +95,18 @@ const EditVehicle = () => {
     setData({ ...data, [name]: value });
   };
   return (
-    <Container>
-      <div>
-        <div className={styles.formdiv}>
+    <Container className="my-4">
+      <div className="row justify-content-center">
+        <div className="col-md-6">
           <form onSubmit={handleSubmit}>
             <div>
-              <div>
-                <Link to="/vehicle">Vehicle</Link>
-              </div>
-              <div>
-                <h3>Edit Vehicle</h3>
-              </div>
+              <Link to="/vehicle">&#8592; Vehicle</Link>
+              <h4>Edit Vehicle</h4>
             </div>
-            <div>
-              <div className={styles.griddiv}>
+            <div className="card">
+              <div className="card-body">
                 <div>
-                  <p>Vehicle_Name</p>
+                  <label htmlFor="">Vehicle Name</label>
                   <InputGroup className="mb-3">
                     <Form.Control
                       defaultValue={idData[0].vehicle_name}
@@ -132,7 +116,7 @@ const EditVehicle = () => {
                   </InputGroup>
                 </div>
                 <div>
-                  <p>Registration Number</p>
+                  <label htmlFor="">Registration Number</label>
                   <InputGroup className="mb-3">
                     <Form.Control
                       defaultValue={idData[0].vehicle_registration}
@@ -143,7 +127,7 @@ const EditVehicle = () => {
                 </div>
 
                 <div>
-                  <p>Featureset</p>
+                  <label htmlFor="">Featureset</label>
                   <InputGroup className="mb-3">
                     <Form.Control
                       placeholder={`${idData[0].featureset}`}
@@ -153,19 +137,26 @@ const EditVehicle = () => {
                   </InputGroup>
                 </div>
                 <div>
-                  <p>Status</p>
-                  <Form.Select onChange={handleChange} name="status">
+                  <label htmlFor="">Status</label>
+                  <Form.Select
+                    onChange={handleChange}
+                    name="status"
+                    className="mb-3"
+                  >
                     <option>-Select Status-</option>
                     <option value="0">Deleted</option>
                     <option value="1">Active</option>
                     <option value="2">Deactive</option>
                   </Form.Select>
                 </div>
-              </div>
-              <div className={styles.griddiv}>
+
                 <div>
-                  <p>Select ECU</p>
-                  <Form.Select name="ecu" onChange={handleChange}>
+                  <label htmlFor="">Select ECU</label>
+                  <Form.Select
+                    name="ecu"
+                    onChange={handleChange}
+                    className="mb-3"
+                  >
                     <option>-Select ECU-</option>
                     <option value={null}>Unassign</option>
                     {ecuData?.map((el) => {
@@ -178,9 +169,12 @@ const EditVehicle = () => {
                   </Form.Select>
                 </div>
                 <div>
-                  <p>Select IoT</p>
-
-                  <Form.Select name="iot" onChange={handleChange}>
+                  <label htmlFor="">Select IoT</label>
+                  <Form.Select
+                    name="iot"
+                    onChange={handleChange}
+                    className="mb-3"
+                  >
                     <option>-Select IoT-</option>
                     <option value={null}>Unassign</option>
                     {iotData?.map((el) => {
@@ -193,8 +187,7 @@ const EditVehicle = () => {
                   </Form.Select>
                 </div>
                 <div>
-                  <p>Select DMS</p>
-
+                  <label htmlFor="">Select DMS</label>
                   <Form.Select name="dms" onChange={handleChange}>
                     <option>-Select DMS-</option>
                     <option value={null}>Unassign</option>
@@ -207,16 +200,13 @@ const EditVehicle = () => {
                     })}
                   </Form.Select>
                 </div>
+
+                <div className="text-center mt-3">
+                  <button className="btn btn-theme w-100 btn-lg" type="submit">
+                    SUBMIT
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="d-flex justify-content-center">
-              <Button
-                style={{ width: "600px", marginTop: "2rem" }}
-                type="submit"
-                variant="primary"
-              >
-                SUBMIT
-              </Button>{" "}
             </div>
           </form>
         </div>

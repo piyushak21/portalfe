@@ -89,19 +89,19 @@ const CustomerDashboard = () => {
     <div className="mt-4">
       <Container className="py-5">
         <div className="row">
-          <div onClick={() => navigate("/vehicle")} className="col-md-3">
-            <div className="card border-0 shadow mb-3">
+          <div onClick={() => navigate("/vehicle")} className="col-md-3 ">
+            <div className="card border mb-3 cursor">
               <div className="card-body text-center text-muted">
-                <BsTruck className="h1 display-4 my-2" />
+                <BsTruck className="h1 display-4 my-2 theme-text" />
                 <h1 className="display-4 text-dark">{vehicleData?.length}</h1>
                 <h5>Vehicle</h5>
               </div>
             </div>
           </div>
           <div onClick={() => navigate("/ongoing-trips")} className="col-md-3">
-            <div className="card border-0 shadow mb-3">
+            <div className="card border mb-3 cursor">
               <div className="card-body text-center text-muted">
-                <BsRecycle className="h1 display-4 my-2" />
+                <BsRecycle className="h1 display-4 my-2 theme-text" />
                 <h1 className="display-4 text-dark">{tripsOngoing?.length}</h1>
                 <h5>Ongoing</h5>
               </div>
@@ -111,9 +111,9 @@ const CustomerDashboard = () => {
             onClick={() => navigate("/completed-trips/")}
             className="col-md-3"
           >
-            <div className="card border-0 shadow mb-3">
+            <div className="card border mb-3 cursor">
               <div className="card-body text-center text-muted">
-                <BsFillCheckSquareFill className="h1 display-4 my-2" />
+                <BsFillCheckSquareFill className="h1 display-4 my-2 theme-text" />
                 <h1 className="display-4 text-dark">
                   {tripsCompleted?.length}
                 </h1>
@@ -124,10 +124,10 @@ const CustomerDashboard = () => {
           <div className="col-md-3">
             <div
               onClick={() => navigate("/customer-devices")}
-              className="card border-0 shadow mb-3"
+              className="card border mb-3 cursor"
             >
               <div className="card-body text-center text-muted">
-                <BsFillCpuFill className="h1 display-4 my-2" />
+                <BsFillCpuFill className="h1 display-4 my-2 theme-text" />
                 <h1 className="display-4 text-dark">{devicesData?.length}</h1>
                 <h5>Devices</h5>
               </div>

@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
-import Button from "react-bootstrap/Button";
 import { Link } from "react-router-dom";
-import styles from "../../CSS/AddVehicle.module.css";
 import axios from "axios";
 
 const AddVehicle = () => {
@@ -85,33 +83,26 @@ const AddVehicle = () => {
   }, [token]);
 
   return (
-    <Container>
-      <div>
-        <div className={styles.formdiv}>
-          <form onSubmit={handleSubmit}>
-            <div>
-              <Link to="/vehicle">Vehicles</Link>
-            </div>
-            <div>
-              <h3>Add Vehicle</h3>
-            </div>
-            <div className="d-flex gap-4 justify-content-center">
-              <div className={styles.griddiv}>
+    <Container className="my-4">
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
+              <form onSubmit={handleSubmit}>
+                <div className="">
+                  <Link to="/vehicle">&#8592; Vehicles</Link>
+                  <h4>Add Vehicle</h4>
+                </div>
                 <div>
-                  <p>Vehicle_Name</p>
+                  <label htmlFor="">Vehicle Name</label>
                   <InputGroup className="mb-3">
-                    <Form.Control
-                      placeholder="VEHICLE_NAME"
-                      name="vehicle_name"
-                      onChange={handleChange}
-                    />
+                    <Form.Control name="vehicle_name" onChange={handleChange} />
                   </InputGroup>
                 </div>
                 <div>
-                  <p>Registration Number</p>
+                  <label htmlFor="">Registration Number</label>
                   <InputGroup className="mb-3">
                     <Form.Control
-                      placeholder="VEHICLE_REGISTRATION"
                       name="vehicle_registration"
                       onChange={handleChange}
                     />
@@ -119,29 +110,19 @@ const AddVehicle = () => {
                 </div>
 
                 <div>
-                  <p>Featureset</p>
+                  <label htmlFor="">Featureset</label>
                   <InputGroup className="mb-3">
-                    <Form.Control
-                      placeholder="FEATURESET"
-                      name="featureset"
-                      onChange={handleChange}
-                    />
+                    <Form.Control name="featureset" onChange={handleChange} />
                   </InputGroup>
                 </div>
+
                 <div>
-                  <p>Status</p>
-                  <Form.Select onChange={handleChange} name="status">
-                    <option>-Select Status-</option>
-                    <option value="0">Deleted</option>
-                    <option value="1">Active</option>
-                    <option value="2">Deactive</option>
-                  </Form.Select>
-                </div>
-              </div>
-              <div className={styles.griddiv}>
-                <div>
-                  <p>Select ECU</p>
-                  <Form.Select name="ecu" onChange={handleChange}>
+                  <label htmlFor="">Select ECU</label>
+                  <Form.Select
+                    name="ecu"
+                    onChange={handleChange}
+                    className="mb-3"
+                  >
                     <option>-Select ECU-</option>
                     {ecuData?.map((el) => {
                       return (
@@ -153,9 +134,12 @@ const AddVehicle = () => {
                   </Form.Select>
                 </div>
                 <div>
-                  <p>Select IoT</p>
-
-                  <Form.Select name="iot" onChange={handleChange}>
+                  <label htmlFor="">Select IoT</label>
+                  <Form.Select
+                    name="iot"
+                    onChange={handleChange}
+                    className="mb-3"
+                  >
                     <option>-Select IoT-</option>
                     {iotData?.map((el) => {
                       return (
@@ -167,9 +151,12 @@ const AddVehicle = () => {
                   </Form.Select>
                 </div>
                 <div>
-                  <p>Select DMS</p>
-
-                  <Form.Select name="dms" onChange={handleChange}>
+                  <label htmlFor="">Select DMS</label>
+                  <Form.Select
+                    name="dms"
+                    onChange={handleChange}
+                    className="mb-3"
+                  >
                     <option>-Select DMS-</option>
                     <option value={null}>Unassign</option>
                     {dmsData?.map((el) => {
@@ -181,18 +168,27 @@ const AddVehicle = () => {
                     })}
                   </Form.Select>
                 </div>
-              </div>
+                <div>
+                  <label htmlFor="">Status</label>
+                  <Form.Select
+                    onChange={handleChange}
+                    name="status"
+                    className="mb-3"
+                  >
+                    <option>-Select Status-</option>
+                    <option value="0">Deleted</option>
+                    <option value="1">Active</option>
+                    <option value="2">Deactive</option>
+                  </Form.Select>
+                </div>
+                <div className="text-center">
+                  <button className="btn btn-theme w-100 btn-lg" type="submit">
+                    SUBMIT
+                  </button>
+                </div>
+              </form>
             </div>
-            <div className="d-flex justify-content-center">
-              <Button
-                style={{ width: "600px", marginTop: "2rem" }}
-                type="submit"
-                variant="primary"
-              >
-                SUBMIT
-              </Button>{" "}
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </Container>
