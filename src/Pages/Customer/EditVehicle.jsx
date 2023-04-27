@@ -66,7 +66,7 @@ const EditVehicle = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [vehicle_id, token]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

@@ -1,14 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Container, Table, Modal, Button } from "react-bootstrap";
-import { Link, useParams } from "react-router-dom";
-import { BsTruck, BsArrowLeft } from "react-icons/bs";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { BsTruck, BsArrowLeft, BsGearFill } from "react-icons/bs";
 import JSONInput from "react-json-editor-ajrm";
 import locale from "react-json-editor-ajrm/locale/en";
-
+import DatePicker from "react-datepicker";
 import axios from "axios";
+import logo from "../../Assets/img/logo.png";
+import { DownloadTableExcel } from "react-export-table-to-excel";
+import { useReactToPrint } from "react-to-print";
 
 const VehicleShow = () => {
   const [show, setShow] = useState(false);
+  const tableRef = useRef(null);
+
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [faultCount, setCount] = useState(0);
+  // const [filteredData, setFilteredData] = useState();
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [isDownloadDisabled, setIsDownloadDisabled] = useState(true);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -17,8 +28,12 @@ const VehicleShow = () => {
   const [idData, setIdData] = useState(["starkenn"]);
   const [tripData, setTripdata] = useState();
 
-  const token = localStorage.getItem("token");
+  let navigate = useNavigate();
 
+  const token = localStorage.getItem("token");
+  const userID = localStorage.getItem("user_id");
+
+  // Get vehicle data
   useEffect(() => {
     axios
       .get(
@@ -35,6 +50,7 @@ const VehicleShow = () => {
       });
   }, [token, vehicle_id]);
 
+  // Get completed trips by using vehicle ID
   useEffect(() => {
     axios
       .get(
@@ -51,14 +67,84 @@ const VehicleShow = () => {
       });
   }, [vehicle_id, token]);
 
+  const handleDateChange = (date, field) => {
+    if (field === "start") {
+      setStartDate(date);
+    } else {
+      setEndDate(date);
+      setIsButtonDisabled(false);
+    }
+  };
+
+  const filterData = () => {
+    let filteredData = tripData;
+    if (startDate && endDate) {
+      filteredData = filteredData.filter((item) => {
+        let upStTime = convertTime(item.trip_start_time);
+        const chkdate = new Date(upStTime);
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        return chkdate >= startDateObj && chkdate <= endDateObj;
+      });
+    }
+    return filteredData;
+    // console.log("Start:", startDate, "End:", endDate);
+  };
+
   const convertTime = (time) => {
+    let updateStTime = new Date(time * 1000);
+    // return updateStTime;
+    return updateStTime.toString();
+  };
+
+  const curretDate = new Date();
+  const year = curretDate.getFullYear();
+  const month = String(curretDate.getMonth() + 1).padStart(2, "0");
+  const day = String(curretDate.getDate()).padStart(2, "0");
+
+  const convertTimeToLocal = (time) => {
     let updateStTime = new Date(time * 1000);
     return updateStTime.toLocaleString();
   };
 
+  // Redirect to trip page
+  const handleRedirect = (tripId) => {
+    navigate(`/completed-trips/${tripId}`);
+  };
+
+  const handleFault = (e) => {
+    let fault = e.target.value;
+    console.log(startDate, endDate);
+    if (fault !== "") {
+      axios
+        .get(
+          `${process.env.REACT_APP_BASE_URL}/completedTrip/getAllAlertsByVehicleId/${userID}/${vehicle_id}/${fault}/${startDate}/${endDate}`,
+          {
+            headers: { authorization: `bearer ${token}` },
+          }
+        )
+        .then((response) => {
+          // console.log(response.data);
+          setCount(response.data.count);
+          setIsDownloadDisabled(false);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      setCount(0);
+    }
+  };
+
+  const generatePDF = useReactToPrint({
+    content: () => tableRef.current,
+    documentTitle: "tripData",
+    onAfterPrint: () => alert("Data saved in PDF"),
+  });
+
   return (
     <>
-      <Container className="my-5">
+      <Container className="my-4" ref={tableRef}>
         <Link to="/vehicle">
           <BsArrowLeft /> <small>Vehicles</small>
         </Link>
@@ -68,29 +154,110 @@ const VehicleShow = () => {
               <div className="card-body">
                 <div className="d-flex">
                   <div className="px-4 align-self-center">
-                    <span className="h1">
+                    <span className="h1 mb-0">
                       <BsTruck />
                     </span>
                   </div>
-                  <div className="px-4">
-                    <h5>{idData[0].vehicle_name}</h5>
+                  <div className="px-4 w-100">
+                    <div className="d-flex justify-content-between">
+                      <h5>{idData[0].vehicle_name}</h5>
+                      <span onClick={handleShow} className="cursor">
+                        <BsGearFill />
+                      </span>
+                    </div>
                     <p className="mb-0">
                       <strong>Registration Number:</strong>{" "}
                       {idData[0].vehicle_registration}
                     </p>
-                    <p className="">
+                    <p className="mb-0">
                       <strong>ECU:</strong> {idData[0].ecu} |{" "}
-                      <strong>IoT:</strong> {idData[0].iot}
+                      <strong>IoT:</strong> {idData[0].iot} |{" "}
+                      <strong>DMS:</strong> {idData[0].dms}
                     </p>
-                    <button
-                      className="btn btn-info btn-sm"
-                      onClick={handleShow}
-                    >
-                      Feature set
-                    </button>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+          <div className="col-md-6">
+            <div className="d-flex gap-3">
+              <div>
+                <label htmlFor="start-date-picker">From Date: </label>
+                <DatePicker
+                  id="start-date-picker"
+                  selected={startDate}
+                  onChange={(date) => handleDateChange(date, "start")}
+                  dateFormat="M/d/yyyy, H:mm:ss"
+                  className="form-control"
+                  placeholderText="-Select Date-"
+                />
+              </div>
+              <div>
+                <label htmlFor="end-date-picker">To Date: </label>
+                <DatePicker
+                  id="end-date-picker"
+                  selected={endDate}
+                  onChange={(date) => handleDateChange(date, "end")}
+                  dateFormat="M/d/yyyy, H:mm:ss"
+                  className="form-control"
+                  placeholderText="-Select Date-"
+                />
+              </div>
+            </div>
+
+            <div className="mt-2 bg-dark text-light border p-2 rounded-2 d-flex justify-content-between mb-2">
+              <select
+                className="form-control w-50"
+                name="faults"
+                onChange={handleFault}
+                disabled={isButtonDisabled}
+              >
+                <option value="">-Select Faults -</option>
+                <option value="AutoBrk">Automatic Braking</option>
+                <option value="2">Accident Saved</option>
+                <option value="13">Sleep Alert Missed</option>
+                <option value="2">Harsh Acceleration</option>
+                <option value="5">Lane Change</option>
+                <option value="4">Speed Bump</option>
+                <option value="3">Sudden Braking</option>
+                <option value="6">Tailgating</option>
+                <option value="7">Overspeeding</option>
+                <option value="Drowsiness">Drowsiness</option>
+                <option value="Distraction">Distraction</option>
+                <option value="DMS_Overspeeding">DMS Overspeeding</option>
+                <option value="No_Seatbelt">No Seatbelt</option>
+                <option value="Using_Phone">Using Phone</option>
+                <option value="Unknown_Driver">Unknown Driver</option>
+                <option value="No_Driver">No Driver</option>
+                <option value="Smoking">Smoking</option>
+                <option value="Rash_Driving">Rash Driving</option>
+                <option value="DMS_Accident">DMS Accident</option>
+              </select>
+              <p className="mb-0 align-self-center">
+                Total Count: {faultCount}
+              </p>
+            </div>
+
+            <div className="text-end d-flex gap-3">
+              <button
+                onClick={generatePDF}
+                className="btn btn-info btn-sm border-dark"
+                // disabled={isDownloadDisabled}
+              >
+                PDF
+              </button>
+              <DownloadTableExcel
+                filename={`${idData[0].vehicle_name}_${year}-${month}-${day}.pdf`}
+                sheet={`${idData[0].vehicle_name}_${year}-${month}-${day}`}
+                currentTableRef={tableRef.current}
+              >
+                <button
+                  className="btn btn-info btn-sm border-dark"
+                  // disabled={isDownloadDisabled}
+                >
+                  Excel{" "}
+                </button>
+              </DownloadTableExcel>
             </div>
           </div>
         </div>
@@ -118,10 +285,10 @@ const VehicleShow = () => {
         </Modal>
 
         <div className="mt-4">
-          <div>
-            <h4>Toyota Bengluru Trips</h4>
-            <p>Total: {tripData?.length}</p>
-          </div>
+          <h4>{idData[0].vehicle_name} Trips</h4>
+          <p className="mb-0 align-self-center">
+            Total Trips: {filterData()?.length}
+          </p>
           <Table striped hover>
             <thead>
               <tr>
@@ -131,34 +298,25 @@ const VehicleShow = () => {
                 <th>Registration Number</th>
                 <th>Trip Start</th>
                 <th>Trip End</th>
-                <th>Distance Travelled (KM)</th>
+                <th>Distance</th>
                 <th>Duration</th>
-                <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {tripData?.map((row, index) => (
-                <tr>
+              {filterData()?.map((row, index) => (
+                <tr
+                  key={index}
+                  onClick={() => handleRedirect(row.trip_id)}
+                  className="cursor"
+                >
                   <td>{index + 1}</td>
                   <td>{row.trip_id}</td>
                   <td>{row.vehicle_name}</td>
                   <td>{row.vehicle_registration}</td>
-                  <td>{convertTime(row.trip_start_time)}</td>
-                  <td>{row.trip_end_time && convertTime(row.trip_end_time)}</td>
+                  <td>{convertTimeToLocal(row.trip_start_time)}</td>
+                  <td>{convertTimeToLocal(row.trip_end_time)}</td>
                   <td>{row.total_distance} Km</td>
                   <td>{row.duration}</td>
-                  <td>
-                    <span className="text-primary">
-                      <small>
-                        <Link
-                          to={`/completed-trips/${row.trip_id}`}
-                          className="btn btn-primary btn-sm"
-                        >
-                          View
-                        </Link>
-                      </small>
-                    </span>
-                  </td>
                 </tr>
               ))}
             </tbody>

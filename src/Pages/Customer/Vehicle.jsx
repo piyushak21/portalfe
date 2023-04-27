@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Container } from "react-bootstrap";
-import { AiFillEdit, AiFillEye } from "react-icons/ai";
+import { AiFillEdit } from "react-icons/ai";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 
@@ -32,11 +32,11 @@ const Vehicle = () => {
       });
   }, [user_id, token]);
 
-  let counter = 1;
   const columns = [
     {
       name: "#",
-      selector: (row) => counter++,
+      selector: "index",
+      sortable: true,
       width: "70px",
     },
     {
@@ -50,23 +50,23 @@ const Vehicle = () => {
     },
     {
       name: "ECU",
-      selector: (row) => (row.ecu == "" ? "NA" : row.ecu),
+      selector: (row) => (row.ecu === "" ? "NA" : row.ecu),
     },
     {
       name: "IoT",
-      selector: (row) => (row.iot == "" ? "NA" : row.iot),
+      selector: (row) => (row.iot === "" ? "NA" : row.iot),
     },
     {
       name: "DMS",
-      selector: (row) => (row.dms == undefined ? "NA" : row.dms),
+      selector: (row) => (row.dms === undefined ? "NA" : row.dms),
     },
     {
       name: "Status",
       selector: (row) =>
-        row.status == 1 ? (
-          <span class="badge bg-success">Active</span>
+        row.status === 1 ? (
+          <span className="badge bg-success">Active</span>
         ) : (
-          <span class="badge bg-danger">Deactive</span>
+          <span className="badge bg-danger">Deactive</span>
         ),
       width: "100px",
     },
@@ -80,10 +80,6 @@ const Vehicle = () => {
               className="text-decnone"
             >
               <AiFillEdit size={18} className="text-dark mx-2 h4" />
-            </Link>
-
-            <Link to={`/vehicle-show/${row.vehicle_id}`}>
-              <AiFillEye className="h5 text-dark" />
             </Link>
           </small>
         </span>
@@ -143,6 +139,20 @@ const Vehicle = () => {
     // console.log(vehicleData);
   }, [search1, search2]);
 
+  const handleClick = (row) => {
+    navigate(`/vehicle-show/${row.vehicle_id}`);
+  };
+
+  let dataWithIndex = "";
+  if (filterVehicle) {
+    dataWithIndex = filterVehicle.map((item, index) => {
+      return {
+        ...item,
+        index: index + 1,
+      };
+    });
+  }
+
   return (
     <Container className="my-4">
       <div className="d-flex justify-content-between mb-3">
@@ -177,14 +187,16 @@ const Vehicle = () => {
         </div>
       </div>
 
-      <div className="card border-0">
+      <div className="card">
         <div className="card-body">
           <DataTable
             customStyles={customStyles}
             columns={columns}
-            data={filterVehicle}
+            data={dataWithIndex}
             pagination
             highlightOnHover
+            onRowClicked={handleClick}
+            pointerOnHover
           />
         </div>
       </div>

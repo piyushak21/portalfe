@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Container from "react-bootstrap/Container";
-import Button from "react-bootstrap/Button";
-import Table from "react-bootstrap/Table";
 import { Link, useNavigate } from "react-router-dom";
 import { AiFillEdit, AiFillEye } from "react-icons/ai";
-import Badge from "react-bootstrap/Badge";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 

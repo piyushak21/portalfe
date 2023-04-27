@@ -23,8 +23,10 @@ const Login = () => {
         localStorage.setItem("user_id", res.data.user_id);
         if (res.data.user_type === 1) {
           navigate("/admin-dashboard");
+          alert("Successfully Loggedin");
         } else {
           navigate("/customer-dashboard");
+          alert("Successfully Loggedin");
         }
       })
       .catch((err) => {
@@ -61,6 +63,7 @@ const Login = () => {
                           onChange={handleChange}
                           name="email"
                           type="email"
+                          maxLength={20}
                           placeholder="Email Address"
                           aria-label="Username"
                           aria-describedby="basic-addon1"
@@ -74,6 +77,7 @@ const Login = () => {
                           onChange={handleChange}
                           name="password"
                           type="password"
+                          minLength={6}
                           placeholder="Password"
                           aria-label="Username"
                           aria-describedby="basic-addon1"

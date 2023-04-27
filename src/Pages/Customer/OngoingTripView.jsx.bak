@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 import { Container, Tabs, Tab, ListGroup, Badge, Form } from "react-bootstrap";
 import { BsPinMapFill, BsArrowLeft } from "react-icons/bs";
 import car from "../../Assets/icons/liveIcon.svg";
-import Iframe from "react-iframe";
+// import Iframe from "react-iframe";
 
 const OngoingTripView = () => {
   let { id } = useParams();
@@ -19,21 +19,21 @@ const OngoingTripView = () => {
   const [tripData, setTripData] = useState([]);
   const [center, setCenter] = useState({});
   const [startPoint, setStartPoint] = useState({});
-  const [startAddress, setStartAddress] = useState("");
+  // const [startAddress, setStartAddress] = useState("");
   const [endPoint, setEndPoint] = useState({});
   const [startTime, setStartTime] = useState();
   // const [lastTime, setLastTime] = useState();
-  const [endAddress, setEndAddress] = useState("");
+  // const [endAddress, setEndAddress] = useState("");
   // const [distance, setDistance] = useState("");
   // const [duration, setDuration] = useState("");
   // const [maxSpd, setMaxSpd] = useState("");
   // const [durationInSec, setDurationInSec] = useState();
   // const [avgSpd, setAvgSpd] = useState();
   // const [spdData, setSpdData] = useState([]);
-  const [vehicle, setVehicle] = useState([]);
-  const [dmsMedia, setDmsMedia] = useState("");
-  const [drowsiness, setDrowsiness] = useState(0);
-  const [media, setMedia] = useState({});
+  // const [vehicle, setVehicle] = useState([]);
+  // const [dmsMedia, setDmsMedia] = useState("");
+  // const [drowsiness, setDrowsiness] = useState(0);
+  // const [media, setMedia] = useState({});
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -110,34 +110,34 @@ const OngoingTripView = () => {
             // // Calculate average speed
             // setSpdData(res.data.map((speed) => speed.spd));
 
-            // set DMS data
-            for (let i = 0; i < res.data.length; i++) {
-              // Set DMS Data
-              if (res.data[i].event === "DMS") {
-                setMedia(res.data[i].jsondata);
-              }
-            }
+            // // set DMS data
+            // for (let i = 0; i < res.data.length; i++) {
+            //   // Set DMS Data
+            //   if (res.data[i].event === "DMS") {
+            //     setMedia(res.data[i].jsondata);
+            //   }
+            // }
           });
       };
       fetchData();
-    }, 5000);
+    }, 15000);
   }, []);
 
   // Set Address
-  useEffect(() => {
-    if (tripData.length > 0 && startPoint !== "" && endPoint !== "") {
-      const getAddress = async (lat, lng, setAddress) => {
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
-        );
-        const data = await response.json();
-        setAddress(data.results[0].formatted_address);
-      };
+  // useEffect(() => {
+  //   if (tripData.length > 0 && startPoint !== "" && endPoint !== "") {
+  //     const getAddress = async (lat, lng, setAddress) => {
+  //       const response = await fetch(
+  //         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
+  //       );
+  //       const data = await response.json();
+  //       setAddress(data.results[0].formatted_address);
+  //     };
 
-      getAddress(startPoint.lat, startPoint.lng, setStartAddress);
-      getAddress(endPoint.lat, endPoint.lng, setEndAddress);
-    }
-  }, [tripData]);
+  //     getAddress(startPoint.lat, startPoint.lng, setStartAddress);
+  //     getAddress(endPoint.lat, endPoint.lng, setEndAddress);
+  //   }
+  // }, [tripData]);
 
   // Set total distance
   // useEffect(() => {
@@ -195,36 +195,36 @@ const OngoingTripView = () => {
   // }, [tripData, distance, durationInSec]);
 
   // Set DMS media
-  useEffect(() => {
-    if (media.length > 0) {
-      let mediaParse = JSON.parse(media);
-      setDmsMedia(mediaParse.data.media);
-      console.log(dmsMedia);
+  // useEffect(() => {
+  //   if (media.length > 0) {
+  //     let mediaParse = JSON.parse(media);
+  //     setDmsMedia(mediaParse.data.media);
+  //     // console.log(dmsMedia);
 
-      if (mediaParse.data.alert_type === "DROWSINESS") {
-        setDrowsiness((prev) => prev + 1);
-      }
-      // if (mediaParse.data.alert_type === "Distraction") {
-      //   setDistraction((prev) => prev + 1);
-      // }
-    }
-  }, [media]);
+  //     if (mediaParse.data.alert_type === "DROWSINESS") {
+  //       setDrowsiness((prev) => prev + 1);
+  //     }
+  //     // if (mediaParse.data.alert_type === "Distraction") {
+  //     //   setDistraction((prev) => prev + 1);
+  //     // }
+  //   }
+  // }, [media]);
 
   // Set vehicle data
-  useEffect(() => {
-    if (tripData.length > 0) {
-      axios
-        .get(
-          `${process.env.REACT_APP_BASE_URL}/vehicles/getVehicleByTripId/${id}`,
-          {
-            headers: { authorization: `bearer ${token}` },
-          }
-        )
-        .then((res) => {
-          setVehicle(res.data[0]);
-        });
-    }
-  }, [tripData]);
+  // useEffect(() => {
+  //   if (tripData.length > 0) {
+  //     axios
+  //       .get(
+  //         `${process.env.REACT_APP_BASE_URL}/vehicles/getVehicleByTripId/${id}`,
+  //         {
+  //           headers: { authorization: `bearer ${token}` },
+  //         }
+  //       )
+  //       .then((res) => {
+  //         setVehicle(res.data[0]);
+  //       });
+  //   }
+  // }, [tripData]);
 
   // Check the time difference for trip end logic
   // useEffect(() => {
@@ -290,7 +290,10 @@ const OngoingTripView = () => {
           <BsArrowLeft /> <small>Ongoing Trip list</small>
         </Link>
         <div className="mb-3">
-          <h4>{vehicle.vehicle_name} Ongoing Trip</h4>
+          <h4>
+            {/* {vehicle.vehicle_name}  */}
+            Ongoing Trip
+          </h4>
         </div>
 
         {/* Google Map */}
@@ -330,7 +333,7 @@ const OngoingTripView = () => {
                           <em>Source</em>
                         </small>
                       </p>
-                      <p className="mb-0">{startAddress}</p>
+                      {/* <p className="mb-0">{startAddress}</p> */}
                       <span>
                         <small>
                           <strong>{startTime}</strong>
@@ -351,7 +354,7 @@ const OngoingTripView = () => {
                           <em>Current Location</em>
                         </small>
                       </p>
-                      <p className="mb-0">{endAddress}</p>
+                      {/* <p className="mb-0">{endAddress}</p> */}
                       <span>
                         <small>{/* <strong>{lastTime}</strong> */}</small>
                       </span>
@@ -626,7 +629,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {drowsiness}
+                            {/* {drowsiness} */}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -646,10 +649,10 @@ const OngoingTripView = () => {
                     </div>
                   </div>
                 </div>
-                <div className="col-md-8">
+                {/* <div className="col-md-8">
                   <h5>DMS Media</h5>
                   <Iframe src={dmsMedia} width="320px" height="300px"></Iframe>
-                </div>
+                </div> */}
               </div>
             </Tab>
 
@@ -661,17 +664,20 @@ const OngoingTripView = () => {
                     <div className="card-header">Vehicle Details</div>
                     <div className="card-body">
                       <p>
-                        <strong>Vehicle Name:</strong> {vehicle.vehicle_name}
+                        <strong>Vehicle Name:</strong>
+                        {/* {vehicle.vehicle_name} */}
                       </p>
                       <p>
                         <strong>Registration Number:</strong>{" "}
-                        {vehicle.vehicle_registration}
+                        {/* {vehicle.vehicle_registration} */}
                       </p>
                       <p>
-                        <strong>ECU:</strong> {vehicle.ecu}
+                        <strong>ECU:</strong>
+                        {/* {vehicle.ecu} */}
                       </p>
                       <p>
-                        <strong>IoT:</strong> {vehicle.iot}
+                        <strong>IoT:</strong>
+                        {/* {vehicle.iot} */}
                       </p>
                     </div>
                   </div>

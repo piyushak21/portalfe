@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 import { Container, Tabs, Tab, ListGroup, Badge, Form } from "react-bootstrap";
 import { BsPinMapFill, BsArrowLeft } from "react-icons/bs";
 import car from "../../Assets/icons/liveIcon.svg";
-import Iframe from "react-iframe";
+// import Iframe from "react-iframe";
 
 const OngoingTripView = () => {
   let { id } = useParams();
@@ -19,38 +19,25 @@ const OngoingTripView = () => {
   const [tripData, setTripData] = useState([]);
   const [center, setCenter] = useState({});
   const [startPoint, setStartPoint] = useState({});
-  const [startAddress, setStartAddress] = useState("");
+  // const [startAddress, setStartAddress] = useState("");
   const [endPoint, setEndPoint] = useState({});
   const [startTime, setStartTime] = useState();
   // const [lastTime, setLastTime] = useState();
-  const [endAddress, setEndAddress] = useState("");
+  // const [endAddress, setEndAddress] = useState("");
   // const [distance, setDistance] = useState("");
   // const [duration, setDuration] = useState("");
   // const [maxSpd, setMaxSpd] = useState("");
   // const [durationInSec, setDurationInSec] = useState();
   // const [avgSpd, setAvgSpd] = useState();
   // const [spdData, setSpdData] = useState([]);
-  const [vehicle, setVehicle] = useState([]);
+  // const [vehicle, setVehicle] = useState([]);
   // const [dmsMedia, setDmsMedia] = useState("");
   // const [drowsiness, setDrowsiness] = useState(0);
-
-  // SET DMS data & Alerts
-  const [media, setMedia] = useState([]);
-  const [drowsiness, setDrowsiness] = useState(0);
-  const [distraction, setDistraction] = useState(0);
-  const [dmsoverSpd, setDmsoverSpd] = useState(0);
-  const [noSeatbelt, setNotSeatBelt] = useState(0);
-  const [usePhone, setUsePhone] = useState(0);
-  const [unknownDriver, setUnknownDriver] = useState(0);
-  const [noDriver, setNoDriver] = useState(0);
-  const [smoking, setSmoking] = useState(0);
-  const [rashDrive, setRashDrive] = useState(0);
-  const [dmsAccident, setDmsAccident] = useState(0);
-  const [tripStartAlert, setTripStartAlert] = useState(0);
-
+  // const [media, setMedia] = useState({});
   const token = localStorage.getItem("token");
 
   useEffect(() => {
+    console.log("One");
     setInterval(() => {
       const fetchData = (async) => {
         axios
@@ -124,7 +111,7 @@ const OngoingTripView = () => {
             // // Calculate average speed
             // setSpdData(res.data.map((speed) => speed.spd));
 
-            // set DMS data
+            // // set DMS data
             // for (let i = 0; i < res.data.length; i++) {
             //   // Set DMS Data
             //   if (res.data[i].event === "DMS") {
@@ -134,24 +121,24 @@ const OngoingTripView = () => {
           });
       };
       fetchData();
-    }, 5000);
+    }, 15000);
   }, []);
 
   // Set Address
-  useEffect(() => {
-    if (tripData.length > 0 && startPoint !== "" && endPoint !== "") {
-      const getAddress = async (lat, lng, setAddress) => {
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
-        );
-        const data = await response.json();
-        setAddress(data.results[0].formatted_address);
-      };
+  // useEffect(() => {
+  //   if (tripData.length > 0 && startPoint !== "" && endPoint !== "") {
+  //     const getAddress = async (lat, lng, setAddress) => {
+  //       const response = await fetch(
+  //         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
+  //       );
+  //       const data = await response.json();
+  //       setAddress(data.results[0].formatted_address);
+  //     };
 
-      getAddress(startPoint.lat, startPoint.lng, setStartAddress);
-      getAddress(endPoint.lat, endPoint.lng, setEndAddress);
-    }
-  }, [tripData]);
+  //     getAddress(startPoint.lat, startPoint.lng, setStartAddress);
+  //     getAddress(endPoint.lat, endPoint.lng, setEndAddress);
+  //   }
+  // }, [tripData]);
 
   // Set total distance
   // useEffect(() => {
@@ -195,7 +182,7 @@ const OngoingTripView = () => {
   //   }
   // }, [tripData]);
 
-  // Set Average Speed
+  // // Set Average Speed
   // useEffect(() => {
   //   if (tripData.length > 0 && distance > 0 && durationInSec > 0) {
   //     const distanceInKM = parseFloat(distance);
@@ -209,78 +196,36 @@ const OngoingTripView = () => {
   // }, [tripData, distance, durationInSec]);
 
   // Set DMS media
-  useEffect(() => {
-    if (tripData.length > 0) {
-      let mediaData = [];
-      tripData.forEach((item) => {
-        if (item.event === "DMS") {
-          let dmsData = JSON.parse(item.jsondata);
-          mediaData.push(dmsData.data.media);
-          if (dmsData.data.alert_type === "DROWSINESS") {
-            setDrowsiness((prev) => prev + 1);
-          }
-          if (dmsData.data.alert_type === "TRIP_START") {
-            setTripStartAlert((prev) => prev + 1);
-          }
-          if (dmsData.data.alert_type === "DISTRACTION") {
-            setDistraction((prev) => prev + 1);
-          }
-          if (dmsData.data.alert_type === "OVERSPEEDING") {
-            setDmsoverSpd((prev) => prev + 1);
-          }
-          if (dmsData.data.alert_type === "NO_SEATBELT") {
-            setNotSeatBelt((prev) => prev + 1);
-          }
-          if (dmsData.data.alert_type === "USING_PHONE") {
-            setUsePhone((prev) => prev + 1);
-          }
-          if (dmsData.data.alert_type === "UNKNOWN_DRIVER") {
-            setUnknownDriver((prev) => prev + 1);
-          }
-          if (dmsData.data.alert_type === "NO_DRIVER") {
-            setNoDriver((prev) => prev + 1);
-          }
-          if (dmsData.data.alert_type === "SMOKING") {
-            setSmoking((prev) => prev + 1);
-          }
-          if (dmsData.data.alert_type === "RASH_DRIVING") {
-            setRashDrive((prev) => prev + 1);
-          }
-          if (dmsData.data.alert_type === "ACCIDENT") {
-            setDmsAccident((prev) => prev + 1);
-          }
-        }
-      });
+  // useEffect(() => {
+  //   if (media.length > 0) {
+  //     let mediaParse = JSON.parse(media);
+  //     setDmsMedia(mediaParse.data.media);
+  //     // console.log(dmsMedia);
 
-      setMedia(mediaData);
-    }
-    // console.log(media);
-  }, [tripData]);
-
-  // Set Iframe for DMS
-  const dmsIframes = media.map((data) => {
-    return (
-      <div className="col-md-6 mb-2">
-        <Iframe src={data} width="100%" height="300px"></Iframe>
-      </div>
-    );
-  });
+  //     if (mediaParse.data.alert_type === "DROWSINESS") {
+  //       setDrowsiness((prev) => prev + 1);
+  //     }
+  //     // if (mediaParse.data.alert_type === "Distraction") {
+  //     //   setDistraction((prev) => prev + 1);
+  //     // }
+  //   }
+  // }, [media]);
 
   // Set vehicle data
-  useEffect(() => {
-    if (tripData.length > 0) {
-      axios
-        .get(
-          `${process.env.REACT_APP_BASE_URL}/vehicles/getVehicleByTripId/${id}`,
-          {
-            headers: { authorization: `bearer ${token}` },
-          }
-        )
-        .then((res) => {
-          setVehicle(res.data[0]);
-        });
-    }
-  }, [tripData]);
+  // useEffect(() => {
+  //   if (tripData.length > 0) {
+  //     axios
+  //       .get(
+  //         `${process.env.REACT_APP_BASE_URL}/vehicles/getVehicleByTripId/${id}`,
+  //         {
+  //           headers: { authorization: `bearer ${token}` },
+  //         }
+  //       )
+  //       .then((res) => {
+  //         setVehicle(res.data[0]);
+  //       });
+  //   }
+  // }, [tripData]);
 
   // Check the time difference for trip end logic
   // useEffect(() => {
@@ -349,7 +294,7 @@ const OngoingTripView = () => {
           <p className="mb-0">
             Trip ID: <strong>{id}</strong>
           </p>
-          <h4>{vehicle.vehicle_name} Ongoing Trip</h4>
+          {/* <h4>{vehicle.vehicle_name} Ongoing Trip</h4> */}
         </div>
 
         {/* Google Map */}
@@ -389,7 +334,7 @@ const OngoingTripView = () => {
                           <em>Source</em>
                         </small>
                       </p>
-                      <p className="mb-0">{startAddress}</p>
+                      {/* <p className="mb-0">{startAddress}</p> */}
                       <span>
                         <small>
                           <strong>{startTime}</strong>
@@ -410,7 +355,7 @@ const OngoingTripView = () => {
                           <em>Current Location</em>
                         </small>
                       </p>
-                      <p className="mb-0">{endAddress}</p>
+                      {/* <p className="mb-0">{endAddress}</p> */}
                       <span>
                         <small>{/* <strong>{lastTime}</strong> */}</small>
                       </span>
@@ -515,7 +460,6 @@ const OngoingTripView = () => {
                               <Form.Check
                                 type="checkbox"
                                 label="Accident Saved"
-                                disabled
                               />
                             </Form.Group>
                           </div>
@@ -707,7 +651,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {tripStartAlert}
+                            {/* {tripStartAlert} */}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -724,7 +668,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {drowsiness}
+                            {/* {drowsiness} */}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -741,7 +685,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {distraction}
+                            {/* {distraction} */}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -758,7 +702,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {dmsoverSpd}
+                            {/* {dmsoverSpd} */}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -775,7 +719,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {noSeatbelt}
+                            {/* {noSeatbelt} */}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -792,7 +736,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {usePhone}
+                            {/* {usePhone} */}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -809,7 +753,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {unknownDriver}
+                            {/* {unknownDriver} */}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -826,7 +770,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {noDriver}
+                            {/* {noDriver} */}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -843,7 +787,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {smoking}
+                            {/* {smoking} */}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -860,7 +804,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {rashDrive}
+                            {/* {rashDrive} */}
                           </Badge>
                         </ListGroup.Item>
                         <ListGroup.Item
@@ -877,7 +821,7 @@ const OngoingTripView = () => {
                             </Form.Group>
                           </div>
                           <Badge bg="primary" pill>
-                            {dmsAccident}
+                            {/* {dmsAccident} */}
                           </Badge>
                         </ListGroup.Item>
                       </ListGroup>
@@ -886,7 +830,7 @@ const OngoingTripView = () => {
                 </div>
                 <div className="col-md-8">
                   <h5>DMS Media</h5>
-                  <div className="row">{dmsIframes}</div>
+                  {/* <div className="row">{dmsIframes}</div> */}
                 </div>
               </div>
             </Tab>
@@ -899,17 +843,20 @@ const OngoingTripView = () => {
                     <div className="card-header">Vehicle Details</div>
                     <div className="card-body">
                       <p>
-                        <strong>Vehicle Name:</strong> {vehicle.vehicle_name}
+                        <strong>Vehicle Name:</strong>
+                        {/* {vehicle.vehicle_name} */}
                       </p>
                       <p>
                         <strong>Registration Number:</strong>{" "}
-                        {vehicle.vehicle_registration}
+                        {/* {vehicle.vehicle_registration} */}
                       </p>
                       <p>
-                        <strong>ECU:</strong> {vehicle.ecu}
+                        <strong>ECU:</strong>
+                        {/* {vehicle.ecu} */}
                       </p>
                       <p>
-                        <strong>IoT:</strong> {vehicle.iot}
+                        <strong>IoT:</strong>
+                        {/* {vehicle.iot} */}
                       </p>
                     </div>
                   </div>

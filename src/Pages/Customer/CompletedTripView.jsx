@@ -27,6 +27,9 @@ const CompletedTripView = () => {
   const [startTime, setStartTime] = useState();
   const [endTime, setEndTime] = useState();
   const [duration, setDuration] = useState("");
+  const [alarm1, setAlarm1] = useState(0);
+  const [alarm2, setAlarm2] = useState(0);
+  const [alarm3, setAlarm3] = useState(0);
   // const [spdData, setSpdData] = useState([]);
 
   // CAS faults
@@ -65,6 +68,7 @@ const CompletedTripView = () => {
 
   // Get trip summary data
   useEffect(() => {
+    console.log("1");
     axios
       .get(
         `${process.env.REACT_APP_BASE_URL}/completedTrip/getTripSummaryById/${id}`,
@@ -85,6 +89,7 @@ const CompletedTripView = () => {
 
   //   Set all trip analytics
   useEffect(() => {
+    console.log("2");
     axios
       .get(
         `${process.env.REACT_APP_BASE_URL}/completedTrip/getTripById/${id}`,
@@ -160,6 +165,7 @@ const CompletedTripView = () => {
 
   // Set Address
   useEffect(() => {
+    console.log("3");
     if (tripData.length > 0 && startPoint !== "" && endPoint !== "") {
       const getAddress = async (lat, lng, setAddress) => {
         const response = await fetch(
@@ -176,6 +182,7 @@ const CompletedTripView = () => {
 
   // Set vehicle data
   useEffect(() => {
+    console.log("4");
     if (tripData.length > 0) {
       axios
         .get(
@@ -250,6 +257,7 @@ const CompletedTripView = () => {
   const [filterMarker, setFilterMarker] = useState([]);
 
   useEffect(() => {
+    console.log("5");
     axios
       .get(
         `${process.env.REACT_APP_BASE_URL}/completedTrip/getFaultsByTripId/${id}`,
@@ -278,7 +286,20 @@ const CompletedTripView = () => {
           //     setAutoBrk((prevCount) => prevCount + 1);
           //   }
           // }
-
+          if (response.data[i].event === "ALM") {
+            let almData = response.data[i].jsondata;
+            let almparse = JSON.parse(almData);
+            if (almparse.data.alarm === 2) {
+              console.log(almparse.td);
+              setAlarm1((prev) => prev + 1);
+            }
+            if (almparse.data.alarm === 3) {
+              setAlarm2((prev) => prev + 1);
+            }
+            if (almparse.data.alarm === 3) {
+              setAlarm3((prev) => prev + 1);
+            }
+          }
           if (response.data[i].event === "NTF") {
             let ntfData = response.data[i].jsondata;
             let ntfparse = JSON.parse(ntfData);
@@ -313,7 +334,7 @@ const CompletedTripView = () => {
 
           let parseJson = JSON.parse(response.data[l].jsondata);
           // console.log(parseJson);
-          if (response.data[l].event == "BRK") {
+          if (response.data[l].event === "BRK") {
             let ttcdiff = parseJson.data.on_ttc - parseJson.data.off_ttc;
             let acd = ttcdiff / parseJson.data.off_ttc;
             let accSvd = acd * 100;
@@ -349,7 +370,7 @@ const CompletedTripView = () => {
           }
 
           // DMS markers
-          if (response.data[l].event == "DMS") {
+          if (response.data[l].event === "DMS") {
             let updatedTime = new Date(response.data[l].timestamp * 1000);
             let contentTime = updatedTime.toLocaleString();
             params = {
@@ -381,7 +402,7 @@ const CompletedTripView = () => {
             };
             parameters.push(params);
           }
-          if (parseJson.event == "BRK") {
+          if (parseJson.event === "BRK") {
             params = {
               id: response.data[l].id,
               lat: parseFloat(response.data[l].lat),
@@ -1005,6 +1026,50 @@ const CompletedTripView = () => {
                   </div>
                 </div>
               </div>
+              <div className="col-md-4 mb-3">
+                <div className="card">
+                  <div className="card-header">
+                    <strong>Alarm Data</strong>
+                  </div>
+                  <div className="card-body">
+                    <ListGroup>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <label>Alarm1</label>
+                        </div>
+                        <Badge bg="primary" pill>
+                          {alarm1}
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <label>Alarm2</label>
+                        </div>
+                        <Badge bg="primary" pill>
+                          {alarm2}
+                        </Badge>
+                      </ListGroup.Item>
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex justify-content-between align-items-start border-0"
+                      >
+                        <div className="ms-2 me-auto">
+                          <label>Alarm1</label>
+                        </div>
+                        <Badge bg="primary" pill>
+                          {alarm3}
+                        </Badge>
+                      </ListGroup.Item>
+                    </ListGroup>
+                  </div>
+                </div>
+              </div>
             </div>
           </Tab>
 
@@ -1259,7 +1324,7 @@ const CompletedTripView = () => {
                       <strong>Vehicle Name:</strong> {vehicle.vehicle_name}
                     </p>
                     <p>
-                      <strong>Registration Number:</strong>
+                      <strong>Registration Number: </strong>
                       {vehicle.vehicle_registration}
                     </p>
                     <p>

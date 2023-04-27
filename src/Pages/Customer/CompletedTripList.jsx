@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import axios from "axios";
 import DataTable from "react-data-table-component";
-import { AiFillEye } from "react-icons/ai";
 
 const CompletedTripList = () => {
   const [tripData, setTripData] = useState();
@@ -13,6 +12,7 @@ const CompletedTripList = () => {
   const navigate = useNavigate();
   let token = localStorage.getItem("token");
   let user_id = localStorage.getItem("user_id");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     axios
@@ -33,40 +33,25 @@ const CompletedTripList = () => {
     let updateStTime = new Date(time * 1000);
     return updateStTime.toLocaleString();
   };
-  let counter = 1;
+
   const columns = [
     {
       name: "#",
-      selector: (row) => counter++,
+      selector: "index",
       sortable: true,
       width: "70px",
-    },
-    {
-      name: "Action",
-      cell: (row) => (
-        <>
-          <button
-            onClick={() => navigate(`/completed-trips/${row.trip_id}`)}
-            className="btn btn-outline-primary btn-sm"
-          >
-            View
-            <AiFillEye className="h6 mb-1 ms-1" />
-          </button>
-        </>
-      ),
-      width: "120px",
     },
     {
       name: "Trip ID",
       selector: (row) => row.trip_id,
       wrap: true,
+      width: "200px",
     },
     {
       name: "Vehicle Name",
       selector: (row) => row.vehicle_name,
       wrap: true,
     },
-
     {
       name: "Trip Start",
       selector: (row) => {
@@ -157,6 +142,24 @@ const CompletedTripList = () => {
     console.log(tripData);
   }, [search1, search2, tripData]);
 
+  const handleClick = (row) => {
+    navigate(`/completed-trips/${row.trip_id}`);
+  };
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+  };
+
+  let dataWithIndex = "";
+  if (tripData) {
+    dataWithIndex = tripData.map((item, index) => {
+      return {
+        ...item,
+        index: index + 1,
+      };
+    });
+  }
+
   return (
     <Container className="my-4">
       <div className="d-flex justify-content-between mb-3">
@@ -170,6 +173,7 @@ const CompletedTripList = () => {
           >
             Ongoing Trips
           </button>
+          {/* Search bar */}
           <div className="d-flex gap-4 mt-1">
             <div>
               <input
@@ -191,14 +195,19 @@ const CompletedTripList = () => {
         </div>
       </div>
 
-      <div className="card border-0">
+      <div className="card">
         <div className="card-body">
           <DataTable
-            customStyles={customStyles}
+            noHeader
             columns={columns}
-            data={filtertripData}
+            data={dataWithIndex}
+            searchable={true}
+            searchQuery={searchQuery}
+            onSearch={handleSearch}
             pagination
             highlightOnHover
+            onRowClicked={handleClick}
+            pointerOnHover
           />
         </div>
       </div>

@@ -83,13 +83,6 @@ const OngoingTripList = () => {
       wrap: true,
     },
     {
-      name: "Trip End",
-      selector: (row) => {
-        return convertTime(row.trip_end_time);
-      },
-      wrap: true,
-    },
-    {
       name: "Distance",
       selector: (row) => row.total_distance,
       wrap: true,

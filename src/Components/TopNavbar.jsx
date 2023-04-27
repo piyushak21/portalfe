@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./TopNavbar.css";
-import { Navbar, Container, Nav, Offcanvas } from "react-bootstrap";
+import { Navbar, Nav, Offcanvas } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BsFillGrid3X3GapFill,
@@ -44,7 +44,7 @@ const TopNavbar = () => {
           <div className="d-flex justify-content-between">
             <div>
               <Navbar.Brand>
-                {user_type == 1 ? (
+                {user_type === 1 ? (
                   <Link to="/admin-dashboard">
                     <img src={logo} alt="" className="logo" />
                   </Link>
