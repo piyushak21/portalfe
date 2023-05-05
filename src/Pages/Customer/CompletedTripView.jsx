@@ -29,7 +29,6 @@ const CompletedTripView = () => {
   const [duration, setDuration] = useState("");
   const [alarm1, setAlarm1] = useState(0);
   const [alarm2, setAlarm2] = useState(0);
-  const [alarm3, setAlarm3] = useState(0);
   // const [spdData, setSpdData] = useState([]);
 
   // CAS faults
@@ -197,60 +196,6 @@ const CompletedTripView = () => {
     }
   }, [tripData]);
 
-  // Set total distance
-  // useEffect(() => {
-  //   if (tripData.length > 0) {
-  //     let distancefunc = (lat1, lng1, lat2, lng2) => {
-  //       let R = 6371;
-  //       let dLat = 0.0174533 * (lat1 - lat2);
-  //       let dLng = 0.0174533 * (lng1 - lng2);
-  //       let a =
-  //         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-  //         Math.cos(0.0174533 * lat1) *
-  //           Math.cos(0.0174533 * lat2) *
-  //           Math.sin(dLng / 2) *
-  //           Math.sin(dLng / 2);
-
-  //       let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  //       let d = R * c;
-  //       return d;
-  //     };
-  //     let sum = 0;
-  //     for (let i = 0; i < path.length - 1; i++) {
-  //       sum =
-  //         sum +
-  //         distancefunc(
-  //           path[i].lat,
-  //           path[i].lng,
-  //           path[i + 1].lat,
-  //           path[i + 1].lng
-  //         );
-  //     }
-  //     setDistance(sum.toFixed(2));
-  //   }
-  // }, [tripData]);
-
-  // Set Maximum Speed
-  // useEffect(() => {
-  //   if (tripData.length > 0) {
-  //     const maxFloat = Math.max(...spdData);
-  //     setMaxSpd(Math.round(maxFloat));
-  //   }
-  // }, [tripData, spdData]);
-
-  // // Set Average Speed
-  // useEffect(() => {
-  //   if (tripData.length > 0 && distance > 0 && durationInSec > 0) {
-  //     const distanceInKM = parseFloat(distance);
-  //     const distanceInMeter = distanceInKM * 1000; // meters
-  //     const time = parseFloat(durationInSec); // seconds
-  //     const averageSpeed = distanceInMeter / time; // meters per second
-  //     //   console.log(averageSpeed / 1000);
-
-  //     setAvgSpd(Math.round(averageSpeed));
-  //   }
-  // }, [tripData, distance, durationInSec]);
-
   //   Set faultcount locations and data
   const [markers, setMarkers] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
@@ -273,33 +218,19 @@ const CompletedTripView = () => {
 
         // Set all notifications data
         for (let i = 0; i < response.data.length; i++) {
-          // Set accident saved data
-          // if (res.data[i].event === "BRK") {
-          //   let brk = JSON.parse(res.data[i].jsondata);
-          //   let ttcdiff = brk.data.on_ttc - brk.data.off_ttc;
-          //   let acd = ttcdiff / brk.data.off_ttc;
-          //   let accSvd = acd * 100;
-          //   if (accSvd > 50 && accSvd < 100) {
-          //     setAccident(parseInt(accident) + 1);
-          //   }
-          //   if (brk.data.reason === 0) {
-          //     setAutoBrk((prevCount) => prevCount + 1);
-          //   }
-          // }
+          // Set Alarm data
           if (response.data[i].event === "ALM") {
             let almData = response.data[i].jsondata;
             let almparse = JSON.parse(almData);
             if (almparse.data.alarm === 2) {
-              console.log(almparse.td);
               setAlarm1((prev) => prev + 1);
             }
             if (almparse.data.alarm === 3) {
               setAlarm2((prev) => prev + 1);
             }
-            if (almparse.data.alarm === 3) {
-              setAlarm3((prev) => prev + 1);
-            }
           }
+
+          // Set Notification data
           if (response.data[i].event === "NTF") {
             let ntfData = response.data[i].jsondata;
             let ntfparse = JSON.parse(ntfData);
@@ -330,10 +261,9 @@ const CompletedTripView = () => {
 
         // loop to set markers
         for (let l = 0; l < response.data.length; l++) {
-          ////////////////parsing break json
-
+          // parsing break json
           let parseJson = JSON.parse(response.data[l].jsondata);
-          // console.log(parseJson);
+
           if (response.data[l].event === "BRK") {
             let ttcdiff = parseJson.data.on_ttc - parseJson.data.off_ttc;
             let acd = ttcdiff / parseJson.data.off_ttc;
@@ -341,6 +271,7 @@ const CompletedTripView = () => {
             let updatedTime = new Date(response.data[l].timestamp * 1000);
             let contentTime = updatedTime.toLocaleString();
 
+            // Set Accident save
             if (accSvd > 50 && accSvd < 100) {
               setAccident((prevCount) => prevCount + 1);
               params = {
@@ -352,6 +283,8 @@ const CompletedTripView = () => {
                 speed: parseFloat(response.data[l].spd),
                 event: response.data[l].event,
                 reason: parseJson.data.reason,
+                brake_duration:
+                  parseJson.data.off_timestamp - parseJson.data.on_timestamp,
               };
               parameters.push(params);
             }
@@ -362,9 +295,12 @@ const CompletedTripView = () => {
               lng: parseFloat(response.data[l].lng),
               title: "AUTOMATIC_BRAKING",
               content: contentTime,
+              bypass: parseJson.data.bypass,
               speed: parseFloat(response.data[l].spd),
               event: response.data[l].event,
               reason: parseJson.data.reason,
+              brake_duration:
+                parseJson.data.off_timestamp - parseJson.data.on_timestamp,
             };
             parameters.push(params);
           }
@@ -382,11 +318,14 @@ const CompletedTripView = () => {
               speed: parseJson.data.speed,
               event: response.data[l].event,
               reason: parseJson.data.alert_type,
+              alert_type: parseJson.data.alert_type,
+              media: parseJson.data.media,
+              severity: parseJson.data.severity,
             };
             parameters.push(params);
           }
 
-          ///////////////////////adding brk json to markers
+          // adding brk json to markers
           if (parseJson.notification !== undefined) {
             let updatedTime = new Date(response.data[l].timestamp * 1000);
             let contentTime = updatedTime.toLocaleString();
@@ -410,7 +349,28 @@ const CompletedTripView = () => {
               title: response.data[l].message,
               event: response.data[l].event,
               reason: parseJson.data.reason,
+              bypass: parseJson.data.bypass,
               speed: parseFloat(response.data[l].spd),
+              brake_duration:
+                parseJson.data.off_timestamp - parseJson.data.on_timestamp,
+            };
+            parameters.push(params);
+          }
+
+          // ALM markers
+          if (response.data[l].event === "ALM") {
+            let updatedTime = new Date(response.data[l].timestamp * 1000);
+            let contentTime = updatedTime.toLocaleString();
+            params = {
+              id: response.data[l].id,
+              lat: parseFloat(response.data[l].lat),
+              lng: parseFloat(response.data[l].lng),
+              reason: response.data[l].message,
+              title: response.data[l].message,
+              speed: response.data[l].spd,
+              content: contentTime,
+              event: parseJson.data.alarm == 2 ? "ALM2" : "ALM3",
+              alarm_no: parseJson.data.alarm,
             };
             parameters.push(params);
           }
@@ -468,20 +428,6 @@ const CompletedTripView = () => {
 
       setMedia(mediaData);
     }
-
-    // if (media.length > 0) {
-    //   let mediaParse = JSON.parse(media);
-    //   setDmsMedia(mediaParse.data.media);
-    //   // console.log(mediaParse.data);
-
-    //   if (mediaParse.data.alert_type === "DROWSINESS") {
-    //     setDrowsiness((prev) => prev + 1);
-    //   }
-    //   if (mediaParse.data.alert_type === "Distraction") {
-    //     setDistraction((prev) => prev + 1);
-    //   }
-    // }
-    // console.log(media);
   }, [faultData]);
 
   // Set Iframe for DMS
@@ -496,6 +442,7 @@ const CompletedTripView = () => {
   const handleMarkerClick = (marker) => {
     setSelectedMarker(marker);
   };
+
   const handlecheckbox = (e) => {
     const { value, dataset } = e.target;
     // console.log("value:", value);
@@ -585,14 +532,27 @@ const CompletedTripView = () => {
                           <div>
                             {marker.title} Due to{" "}
                             <b>Collosion Avoidance System</b>
-                            <p className="mb-0">{marker.content}</p>
+                            <p className="mb-0">TimeStamp: {marker.content}</p>
+                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                            <p className="mb-0">
+                              Brake Duration: {marker.brake_duration}Sec
+                            </p>
+                            <p className="mb-0">
+                              Bypass:{" "}
+                              {marker.bypass !== 0 ? "Bypass" : "No Bypass"}
+                            </p>
                           </div>
                         </>
                       ) : (
                         <>
                           <div>
                             {marker.title} Due to <b>Sleep Alert Missed</b>
-                            <p className="mb-0">{marker.content}</p>
+                            <p className="mb-0">TimeStamp: {marker.content}</p>
+                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                            {/* <p className="mb-0">
+                              Brake Duration: {marker.brake_duration}
+                            </p> */}
+                            <p></p>
                           </div>
                         </>
                       )}
@@ -601,7 +561,18 @@ const CompletedTripView = () => {
                     <>
                       <div>
                         {marker.title}
-                        <p className="mb-0">{marker.content}</p>
+                        <p className="mb-0">TimeStamp: {marker.content}</p>
+                        <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                        <p className="mb-0">
+                          Alert_type: {marker.alert_type}Kmph
+                        </p>
+                        <p className="mb-0">Severity:{marker.severity}</p>
+                        <Iframe
+                          src={marker.media}
+                          width="80%"
+                          height="200px"
+                          key=""
+                        ></Iframe>
                       </div>
                     </>
                   ) : (
@@ -610,7 +581,8 @@ const CompletedTripView = () => {
                         {marker.reason === 2 ? (
                           <div>
                             <b>Harsh Acceleration</b>
-                            <p className="mb-0">{marker.content}</p>
+                            <p className="mb-0">TimeStamp: {marker.content}</p>
+                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
                           </div>
                         ) : (
                           ""
@@ -618,7 +590,8 @@ const CompletedTripView = () => {
                         {marker.reason === 3 ? (
                           <div>
                             <b>Sudden Braking</b>
-                            <p className="mb-0">{marker.content}</p>
+                            <p className="mb-0">TimeStamp: {marker.content}</p>
+                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
                           </div>
                         ) : (
                           ""
@@ -626,15 +599,17 @@ const CompletedTripView = () => {
                         {marker.reason === 4 ? (
                           <div>
                             <b>Speed Bump</b>
-                            <p className="mb-0">{marker.content}</p>
+                            <p className="mb-0">TimeStamp: {marker.content}</p>
+                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
                           </div>
                         ) : (
                           ""
                         )}
-                        {marker.reason === 5 ? (
+                        {marker.reason === 5 && marker.event == "NTF" ? (
                           <div>
                             <b>Lane change</b>
-                            <p className="mb-0">{marker.content}</p>
+                            <p className="mb-0">TimeStamp: {marker.content}</p>
+                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
                           </div>
                         ) : (
                           ""
@@ -642,7 +617,8 @@ const CompletedTripView = () => {
                         {marker.reason === 6 ? (
                           <div>
                             <b>Tailgating</b>
-                            <p className="mb-0">{marker.content}</p>
+                            <p className="mb-0">TimeStamp: {marker.content}</p>
+                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
                           </div>
                         ) : (
                           ""
@@ -650,7 +626,8 @@ const CompletedTripView = () => {
                         {marker.reason === 7 ? (
                           <div>
                             <b>Overspeed</b>
-                            <p className="mb-0">{marker.content}</p>
+                            <p className="mb-0">TimeStamp: {marker.content}</p>
+                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
                           </div>
                         ) : (
                           ""
@@ -658,7 +635,20 @@ const CompletedTripView = () => {
                         {marker.reason === 13 ? (
                           <div>
                             <b>Sleep Alert Missed</b>
-                            <p className="mb-0">{marker.content}</p>
+                            <p className="mb-0">TimeStamp: {marker.content}</p>
+                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                          </div>
+                        ) : (
+                          ""
+                        )}
+                        {marker.reason === 5 &&
+                        (marker.event == "ALM2" || marker.event == "ALM3") &&
+                        marker.alarm_no !== 0 ? (
+                          <div>
+                            <b>Alarm</b>
+                            <p className="mb-0">TimeStamp: {marker.content}</p>
+                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                            <p className="mb-0">Alarm_NO: {marker.alarm_no}</p>
                           </div>
                         ) : (
                           ""
@@ -1037,9 +1027,16 @@ const CompletedTripView = () => {
                         as="li"
                         className="d-flex justify-content-between align-items-start border-0"
                       >
-                        <div className="ms-2 me-auto">
-                          <label>Alarm1</label>
-                        </div>
+                        <Form.Group className="" controlId="alr1">
+                          <Form.Check
+                            disabled={alarm1 === 0}
+                            type="checkbox"
+                            label="Alarm 2"
+                            value={5}
+                            data-custom-attribute="ALM2"
+                            onChange={handlecheckbox}
+                          />
+                        </Form.Group>
                         <Badge bg="primary" pill>
                           {alarm1}
                         </Badge>
@@ -1048,22 +1045,18 @@ const CompletedTripView = () => {
                         as="li"
                         className="d-flex justify-content-between align-items-start border-0"
                       >
-                        <div className="ms-2 me-auto">
-                          <label>Alarm2</label>
-                        </div>
+                        <Form.Group className="" controlId="alr2">
+                          <Form.Check
+                            disabled={alarm2 === 0}
+                            type="checkbox"
+                            label="Alarm 3"
+                            value={5}
+                            data-custom-attribute="ALM3"
+                            onChange={handlecheckbox}
+                          />
+                        </Form.Group>
                         <Badge bg="primary" pill>
                           {alarm2}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <label>Alarm1</label>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {alarm3}
                         </Badge>
                       </ListGroup.Item>
                     </ListGroup>
@@ -1093,6 +1086,7 @@ const CompletedTripView = () => {
                               type="checkbox"
                               label="Trip Start"
                               value="TRIP_START"
+                              disabled={tripStartAlert === 0}
                               data-custom-attribute="DMS"
                               onChange={handlecheckbox}
                             />

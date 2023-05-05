@@ -238,10 +238,10 @@ const VehicleShow = () => {
               </p>
             </div>
 
-            <div className="text-end d-flex gap-3">
+            <div className="justify-content-end d-flex gap-3">
               <button
                 onClick={generatePDF}
-                className="btn btn-info btn-sm border-dark"
+                className="btn btn-light btn-sm border-dark"
                 // disabled={isDownloadDisabled}
               >
                 PDF
@@ -252,7 +252,7 @@ const VehicleShow = () => {
                 currentTableRef={tableRef.current}
               >
                 <button
-                  className="btn btn-info btn-sm border-dark"
+                  className="btn btn-light btn-sm border-dark"
                   // disabled={isDownloadDisabled}
                 >
                   Excel{" "}

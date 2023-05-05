@@ -66,7 +66,7 @@ const EditVehicle = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [vehicle_id, token]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -81,7 +81,6 @@ const EditVehicle = () => {
         }
       )
       .then((res) => {
-        console.log(res);
         alert("Data Updated Successfully");
       })
       .catch((err) => {

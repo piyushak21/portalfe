@@ -1,9 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Badge, Container } from "react-bootstrap";
-import Table from "react-bootstrap/Table";
+import { Container } from "react-bootstrap";
 import DataTable from "react-data-table-component";
-import { useNavigate } from "react-router-dom";
 
 const CustomerDevices = () => {
   const [devicesData, setDevicesData] = useState([]);
@@ -12,7 +10,6 @@ const CustomerDevices = () => {
   const [search1, setSearch1] = useState([]);
   const [search2, setSearch2] = useState([]);
   const [filterDevices, setFilterDevices] = useState([]);
-  const navigate = useNavigate();
 
   const getDevicesData = () => {
     axios
@@ -42,21 +39,21 @@ const CustomerDevices = () => {
     },
     {
       name: "Device Id",
-      selector: (row) => row.device_id,
+      selector: (row) => (!row.device_id ? "NA" : row.device_id),
     },
     {
       name: "Device Type",
-      selector: (row) => row.device_type,
+      selector: (row) => (!row.device_type ? "NA" : row.device_type),
     },
     {
       name: "Sim Numbver",
-      selector: (row) => (row.sim_number == undefined ? "NA" : row.sim_number),
+      selector: (row) => (!row.sim_number ? "NA" : row.sim_number),
     },
 
     {
       name: "Status",
       selector: (row) =>
-        row.status == 1 ? (
+        row.status === 1 ? (
           <span class="badge bg-success">Active</span>
         ) : (
           <span class="badge bg-danger">Deactive</span>

@@ -48,31 +48,19 @@ const OngoingTripList = () => {
       width: "70px",
     },
     {
-      name: "Action",
-      cell: (row) => (
-        <button
-          onClick={() => navigate(`/ongoing-trips/${row.trip_id}`)}
-          className="btn btn-outline-primary btn-sm"
-        >
-          View
-          <AiFillEye className="h6 mb-0 ms-1" />
-        </button>
-      ),
-      width: "120px",
-    },
-    {
       name: "Trip ID",
-      selector: (row) => row.trip_id,
+      selector: (row) => (!row.trip_id ? "NA" : row.trip_id),
       wrap: true,
     },
     {
       name: "Vehicle Name",
-      selector: (row) => row.vehicle_name,
+      selector: (row) => (!row.vehicle_name ? "NA" : row.vehicle_name),
       wrap: true,
     },
     {
       name: "Reg Number",
-      selector: (row) => row.vehicle_registration,
+      selector: (row) =>
+        !row.vehicle_registration ? "NA" : row.vehicle_registration,
       wrap: true,
     },
     {
@@ -80,23 +68,6 @@ const OngoingTripList = () => {
       selector: (row) => {
         return convertTime(row.trip_start_time);
       },
-      wrap: true,
-    },
-    {
-      name: "Trip End",
-      selector: (row) => {
-        return convertTime(row.trip_end_time);
-      },
-      wrap: true,
-    },
-    {
-      name: "Distance",
-      selector: (row) => row.total_distance,
-      wrap: true,
-    },
-    {
-      name: "Duration",
-      selector: (row) => row.duration,
       wrap: true,
     },
   ];
@@ -153,6 +124,10 @@ const OngoingTripList = () => {
     // console.log(tripData);
   }, [search1, search2]);
 
+  const handleClick = (row) => {
+    navigate(`/ongoing-trips/${row.trip_id}`);
+  };
+
   return (
     <Container className="my-4">
       <div className="d-flex justify-content-between mb-3">
@@ -195,6 +170,8 @@ const OngoingTripList = () => {
             data={filtertripData}
             pagination
             highlightOnHover
+            onRowClicked={handleClick}
+            pointerOnHover
           />
         </div>
       </div>

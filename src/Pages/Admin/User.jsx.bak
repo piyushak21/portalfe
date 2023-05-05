@@ -1,98 +1,92 @@
 import React, { useEffect, useState } from "react";
+import Container from "react-bootstrap/Container";
+import { AiFillEdit, AiFillEye } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
-import { Container } from "react-bootstrap";
-import { AiFillEdit } from "react-icons/ai";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 
-const Vehicle = () => {
-  const [vehicleData, setVehicleData] = useState([]);
-  const user_id = localStorage.getItem("user_id");
+///Display customer list
+
+const Users = () => {
+  const navigate = useNavigate();
+  const [customerData, setCustomerData] = useState([]);
   const token = localStorage.getItem("token");
   const [search1, setSearch1] = useState([]);
   const [search2, setSearch2] = useState([]);
-  const [filterVehicle, setFilterVehicle] = useState([]);
-  const navigate = useNavigate();
+  const [filterCustomer, setFilterCustomer] = useState([]);
 
   useEffect(() => {
     axios
-      .get(
-        `${process.env.REACT_APP_BASE_URL}/vehicles/user-vehicle/${user_id}`,
-        {
-          headers: { authorization: `bearer ${token}` },
-        }
-      )
+      .get(`${process.env.REACT_APP_BASE_URL}/customers/getall`, {
+        headers: { authorization: `bearer ${token}` },
+      })
       .then((res) => {
-        console.log(res);
-        setVehicleData(res.data.VehiData);
-        setFilterVehicle(res.data.VehiData);
+        setCustomerData(res.data.usersData);
+        setFilterCustomer(res.data.usersData);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, [user_id, token]);
+  }, []);
+
+  let counter = 1;
 
   const columns = [
     {
       name: "#",
-      selector: "index",
-      sortable: true,
+      selector: (row) => counter++,
       width: "70px",
     },
     {
-      name: "Vehicle Name",
-      selector: (row) => (!row.vehicle_name ? "NA" : row.vehicle_name),
-      sortable: true,
+      name: "First Name",
+      selector: (row) => (!row.first_name ? "NA" : row.first_name),
     },
     {
-      name: "Vehcile Registration",
-      selector: (row) =>
-        !row.vehicle_registration ? "NA" : row.vehicle_registration,
+      name: "Last Name",
+      selector: (row) => (!row.last_name ? "NA" : row.last_name),
     },
     {
-      name: "ECU",
-      selector: (row) => (!row.ecu ? "NA" : row.ecu),
+      name: "UserName",
+      selector: (row) => (!row.username ? "NA" : row.username),
     },
     {
-      name: "IoT",
-      selector: (row) => (!row.iot ? "NA" : row.iot),
+      name: "Email",
+      selector: (row) => (!row.email ? "NA" : row.email),
     },
-    {
-      name: "DMS",
-      selector: (row) => (!row.dms ? "NA" : row.dms),
-    },
+
     {
       name: "Status",
       selector: (row) =>
-        row.status === 1 ? (
-          <span className="badge bg-success">Active</span>
+        row.status == 1 ? (
+          <span class="badge bg-success">Active</span>
         ) : (
-          <span className="badge bg-danger">Deactive</span>
+          <span class="badge bg-danger">Deactive</span>
         ),
-      width: "100px",
+      width: "120px",
     },
     {
       name: "Action",
       cell: (row) => (
         <span>
           <small>
-            <Link
-              to={`/edit-vehicle/${row.vehicle_id}`}
-              className="text-decnone"
-            >
+            <Link to={`/users-edit/${row.user_id}`} className="text-decnone">
               <AiFillEdit size={18} className="text-dark mx-2 h4" />
+            </Link>
+
+            <Link to={`/users-show/${row.user_id}`}>
+              <AiFillEye className="h5 text-dark" />
             </Link>
           </small>
         </span>
       ),
-      width: "100px",
+      width: "120px",
     },
   ];
 
   const customStyles = {
     rows: {
       style: {
-        minHeight: "50px",
+        minHeight: "70px",
       },
     },
     headCells: {
@@ -115,44 +109,29 @@ const Vehicle = () => {
   const CustomHeader = () => {
     return (
       <div>
-        <h4>Vehicles</h4>
-        <p className="mb-0">Total:{vehicleData?.length}</p>
+        <h4>Customers</h4>
+        <p className="mb-0">Total:{customerData?.length}</p>
       </div>
     );
   };
-
   const searchOne = (e) => {
     setSearch1(e.target.value);
-    const result = vehicleData?.filter((el) => {
-      return el.vehicle_name.toLowerCase().match(search1.toLowerCase());
+    const result = customerData?.filter((el) => {
+      return el.first_name.toLowerCase().match(search1.toLowerCase());
     });
-    setFilterVehicle(result);
+    setFilterCustomer(result);
   };
 
   const searchTwo = (e) => {
     setSearch2(e.target.value);
-    const result = vehicleData?.filter((el) => {
-      return el.vehicle_registration.toLowerCase().match(search2.toLowerCase());
+    const result = customerData?.filter((el) => {
+      return el.email.toLowerCase().match(search2.toLowerCase());
     });
-    setFilterVehicle(result);
+    setFilterCustomer(result);
   };
   useEffect(() => {
-    // console.log(vehicleData);
-  }, [search1, search2]);
-
-  const handleClick = (row) => {
-    navigate(`/vehicle-show/${row.vehicle_id}`);
-  };
-
-  let dataWithIndex = "";
-  if (filterVehicle) {
-    dataWithIndex = filterVehicle.map((item, index) => {
-      return {
-        ...item,
-        index: index + 1,
-      };
-    });
-  }
+    console.log(filterCustomer);
+  }, [search1, search2, filterCustomer]);
 
   return (
     <Container className="my-4">
@@ -162,16 +141,16 @@ const Vehicle = () => {
         </div>
         <div className="text-end">
           <button
-            onClick={() => navigate("/add-vehicle")}
+            onClick={() => navigate("/users-add")}
             className="btn btn-theme"
           >
-            Add Vehicle
+            Add Customer
           </button>
           <div className="d-flex gap-4 mt-1">
             <div>
               <input
                 type="text"
-                placeholder="Vehicle Name"
+                placeholder="First name"
                 className="form-control "
                 onChange={searchOne}
               />
@@ -179,7 +158,7 @@ const Vehicle = () => {
             <div>
               <input
                 type="text"
-                placeholder="Vehicle Reg"
+                placeholder="Email"
                 className="form-control "
                 onChange={searchTwo}
               />
@@ -193,11 +172,9 @@ const Vehicle = () => {
           <DataTable
             customStyles={customStyles}
             columns={columns}
-            data={dataWithIndex}
+            data={filterCustomer}
             pagination
             highlightOnHover
-            onRowClicked={handleClick}
-            pointerOnHover
           />
         </div>
       </div>
@@ -205,4 +182,4 @@ const Vehicle = () => {
   );
 };
 
-export default Vehicle;
+export default Users;

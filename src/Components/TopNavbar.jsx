@@ -4,14 +4,13 @@ import { Navbar, Nav, Offcanvas } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BsFillGrid3X3GapFill,
-  BsFillBellFill,
-  BsFillHouseFill,
   BsColumnsGap,
   BsFillCpuFill,
   BsTruck,
   BsPinMapFill,
   BsPersonFill,
   BsArrowLeftCircle,
+  BsJoystick,
 } from "react-icons/bs";
 import logo from "../Assets/img/logo.png";
 
@@ -44,7 +43,7 @@ const TopNavbar = () => {
           <div className="d-flex justify-content-between">
             <div>
               <Navbar.Brand>
-                {user_type === 1 ? (
+                {user_type == "1" ? (
                   <Link to="/admin-dashboard">
                     <img src={logo} alt="" className="logo" />
                   </Link>
@@ -57,16 +56,6 @@ const TopNavbar = () => {
             </div>
             <div>
               <Nav className="ms-auto">
-                <Nav.Link to="/">
-                  <span className="h5 top-icon">
-                    <BsFillHouseFill />
-                  </span>
-                </Nav.Link>
-                <Nav.Link href="#link">
-                  <span className="h5 top-icon">
-                    <BsFillBellFill />
-                  </span>
-                </Nav.Link>
                 <Nav.Link onClick={handleShow}>
                   <span className="h5 top-icon">
                     <BsFillGrid3X3GapFill />
@@ -117,7 +106,7 @@ const TopNavbar = () => {
           </Offcanvas.Header>
           <Offcanvas.Body>
             <div className="d-flex nav-container">
-              {user_type === "1" ? (
+              {user_type == "1" ? (
                 <>
                   <Link to="/admin-dashboard">
                     <div className="nav-box">
@@ -182,13 +171,23 @@ const TopNavbar = () => {
                       </p>
                     </div>
                   </Link>
+                  <Link to="/ongoing-trips">
+                    <div className="nav-box">
+                      <span className="h2">
+                        <BsJoystick />
+                      </span>
+                      <p className="mt-2">
+                        <small>Ongoing Trips</small>
+                      </p>
+                    </div>
+                  </Link>
                   <Link to="/completed-trips">
                     <div className="nav-box">
                       <span className="h2">
                         <BsPinMapFill />
                       </span>
                       <p className="mt-2">
-                        <small>Trips</small>
+                        <small>Completed Trips</small>
                       </p>
                     </div>
                   </Link>

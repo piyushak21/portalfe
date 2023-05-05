@@ -78,8 +78,12 @@ const AddVehicle = () => {
       .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-dms`, {
         headers: { authorization: `bearer ${token}` },
       })
-      .then((res) => setDmsData(res.data.dmsData))
-      .catch((err) => console.log(err));
+      .then((res) => {
+        setDmsData(res.data.DMSdata);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, [token]);
 
   return (

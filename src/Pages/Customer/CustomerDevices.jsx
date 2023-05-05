@@ -2,13 +2,14 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
 import DataTable from "react-data-table-component";
+import { useNavigate } from "react-router-dom";
 
 const CustomerDevices = () => {
   const [devicesData, setDevicesData] = useState([]);
   const user_id = localStorage.getItem("user_id");
   const token = localStorage.getItem("token");
-  const [search1, setSearch1] = useState([]);
-  const [search2, setSearch2] = useState([]);
+  const [search1, setSearch1] = useState("");
+  const [search2, setSearch2] = useState("");
   const [filterDevices, setFilterDevices] = useState([]);
 
   const getDevicesData = () => {
@@ -20,7 +21,6 @@ const CustomerDevices = () => {
         }
       )
       .then((res) => {
-        console.log(res);
         setDevicesData(res.data.idData);
         setFilterDevices(res.data.idData);
       })
@@ -30,33 +30,32 @@ const CustomerDevices = () => {
     getDevicesData();
   }, []);
 
-  let counter = 1;
   const columns = [
     {
       name: "#",
-      selector: (row) => counter++,
+      selector: (row, ind) => (currentPage - 1) * itemsPerPage + ind + 1,
       width: "70px",
     },
     {
       name: "Device Id",
-      selector: (row) => row.device_id,
+      selector: (row) => (!row.device_id ? "NA" : row.device_id),
     },
     {
       name: "Device Type",
-      selector: (row) => row.device_type,
+      selector: (row) => (!row.device_type ? "NA" : row.device_type),
     },
     {
       name: "Sim Numbver",
-      selector: (row) => (row.sim_number == undefined ? "NA" : row.sim_number),
+      selector: (row) => (!row.sim_number ? "NA" : row.sim_number),
     },
 
     {
       name: "Status",
       selector: (row) =>
         row.status === 1 ? (
-          <span class="badge bg-success">Active</span>
+          <span className="badge px-3 bg-success">Active</span>
         ) : (
-          <span class="badge bg-danger">Deactive</span>
+          <span className="badge bg-danger">Deactive</span>
         ),
       width: "100px",
     },
@@ -84,6 +83,67 @@ const CustomerDevices = () => {
       },
     },
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.ceil(filterDevices.length / itemsPerPage);
+  const pageNumbers = [];
+
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+  const handleItemsPerPageChange = (e) => {
+    setCurrentPage(1);
+    setItemsPerPage(e.target.value);
+  };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filterDevices.slice(indexOfFirstItem, indexOfLastItem);
+  const Pagination = () => {
+    return (
+      <div>
+        <div>
+          <select onChange={handleItemsPerPageChange}>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+        </div>
+        <div>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          {currentPage > 1 && (
+            <button onClick={() => handlePageChange(currentPage - 1)}>
+              {currentPage - 1}
+            </button>
+          )}
+          <button disabled>{currentPage}</button>
+          {currentPage < totalPages && (
+            <button onClick={() => handlePageChange(currentPage + 1)}>
+              {currentPage + 1}
+            </button>
+          )}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+        <div>
+          Showing {currentItems.length} of {filterDevices.length} items
+        </div>
+      </div>
+    );
+  };
 
   const CustomHeader = () => {
     return (
@@ -94,23 +154,28 @@ const CustomerDevices = () => {
     );
   };
 
+  // Search with device_id
   const searchOne = (e) => {
     setSearch1(e.target.value);
-    const result = devicesData?.filter((el) => {
-      return el.device_id.toLowerCase().match(search1.toLowerCase());
-    });
-    setFilterDevices(result);
   };
 
+  // Search with device_type
   const searchTwo = (e) => {
     setSearch2(e.target.value);
-    const result = devicesData?.filter((el) => {
-      return el.device_type.toLowerCase().match(search2.toLowerCase());
-    });
-    setFilterDevices(result);
   };
   useEffect(() => {
-    console.log(devicesData);
+    if (search1) {
+      const result = devicesData?.filter((el) => {
+        return el.device_id?.toLowerCase().match(search1?.toLowerCase());
+      });
+      setFilterDevices(result);
+    }
+    if (search2) {
+      const result = devicesData?.filter((el) => {
+        return el.device_type?.toLowerCase().match(search2?.toLowerCase());
+      });
+      setFilterDevices(result);
+    }
   }, [search1, search2]);
 
   return (
@@ -146,12 +211,13 @@ const CustomerDevices = () => {
           <DataTable
             customStyles={customStyles}
             columns={columns}
-            data={filterDevices}
-            pagination
+            data={currentItems}
             highlightOnHover
+            pointerOnHover
           />
         </div>
       </div>
+      <Pagination />
     </Container>
   );
 };

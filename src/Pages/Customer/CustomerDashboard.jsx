@@ -8,6 +8,15 @@ import {
 import Container from "react-bootstrap/Container";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 const CustomerDashboard = () => {
   let user_id = localStorage.getItem("user_id");
@@ -85,6 +94,27 @@ const CustomerDashboard = () => {
     OngoingTrips();
   }, []);
 
+  const data = [
+    { name: "A", value: 20 },
+    { name: "B", value: 30 },
+    { name: "C", value: 10 },
+    { name: "D", value: 5 },
+    { name: "E", value: 15 },
+  ];
+
+  function HorizontalBarChart() {
+    return (
+      <BarChart width={600} height={300} data={data} layout="vertical">
+        <XAxis type="number" />
+        <YAxis type="category" dataKey="name" />
+        <CartesianGrid strokeDasharray="3 3" />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="value" fill="#8884d8" />
+      </BarChart>
+    );
+  }
+
   return (
     <div className="mt-4">
       <Container className="py-5">
@@ -133,6 +163,10 @@ const CustomerDashboard = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        <div>
+          <HorizontalBarChart />
         </div>
       </Container>
     </div>

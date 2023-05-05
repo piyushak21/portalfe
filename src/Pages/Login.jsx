@@ -23,15 +23,18 @@ const Login = () => {
         localStorage.setItem("user_id", res.data.user_id);
         if (res.data.user_type === 1) {
           navigate("/admin-dashboard");
-          alert("Successfully Loggedin");
+          alert("You have logged in successfully");
         } else {
           navigate("/customer-dashboard");
-          alert("Successfully Loggedin");
+          alert("You have logged in successfully");
         }
       })
       .catch((err) => {
-        console.log(err);
-        alert("InValid Credentials");
+        if (err.response.data == "Wrong Email") {
+          alert(`Wrong Email Invalid Credentials`);
+        } else {
+          alert(`Wrong Password Invalid Credentials`);
+        }
       });
   };
 

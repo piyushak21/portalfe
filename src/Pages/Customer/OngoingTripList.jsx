@@ -9,8 +9,8 @@ const OngoingTripList = () => {
   const [tripData, setTripData] = useState();
   let token = localStorage.getItem("token");
   let user_id = localStorage.getItem("user_id");
-  const [search1, setSearch1] = useState([]);
-  const [search2, setSearch2] = useState([]);
+  const [search1, setSearch1] = useState("");
+  const [search2, setSearch2] = useState("");
   const [filtertripData, setFiltertripData] = useState([]);
   const navigate = useNavigate();
 
@@ -82,16 +82,6 @@ const OngoingTripList = () => {
       },
       wrap: true,
     },
-    {
-      name: "Distance",
-      selector: (row) => row.total_distance,
-      wrap: true,
-    },
-    {
-      name: "Duration",
-      selector: (row) => row.duration,
-      wrap: true,
-    },
   ];
 
   const customStyles = {
@@ -117,6 +107,68 @@ const OngoingTripList = () => {
       },
     },
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.ceil(filtertripData.length / itemsPerPage);
+  const pageNumbers = [];
+
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+  const handleItemsPerPageChange = (e) => {
+    setCurrentPage(1);
+    setItemsPerPage(e.target.value);
+  };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filtertripData.slice(indexOfFirstItem, indexOfLastItem);
+  const Pagination = () => {
+    return (
+      <div>
+        <div>
+          <select value={itemsPerPage} onChange={handleItemsPerPageChange}>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+        </div>
+        <div>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+
+          {currentPage > 1 && (
+            <button onClick={() => handlePageChange(currentPage - 1)}>
+              {currentPage - 1}
+            </button>
+          )}
+          <button disabled>{currentPage}</button>
+          {currentPage < totalPages && (
+            <button onClick={() => handlePageChange(currentPage + 1)}>
+              {currentPage + 1}
+            </button>
+          )}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+        <div>
+          Showing {currentItems.length} of {filtertripData.length} items
+        </div>
+      </div>
+    );
+  };
 
   const CustomHeader = () => {
     return (
@@ -127,23 +179,29 @@ const OngoingTripList = () => {
     );
   };
 
+  // Search with trip ID
   const searchOne = (e) => {
     setSearch1(e.target.value);
-    const result = tripData?.filter((el) => {
-      return el.trip_id.toLowerCase().match(search1.toLowerCase());
-    });
-    setFiltertripData(result);
   };
 
+  // Search with Vehicle name
   const searchTwo = (e) => {
     setSearch2(e.target.value);
-    const result = tripData?.filter((el) => {
-      return el.vehicle_name.toLowerCase().match(search2.toLowerCase());
-    });
-    setFiltertripData(result);
   };
   useEffect(() => {
-    // console.log(tripData);
+    if (search1) {
+      const result = tripData?.filter((el) => {
+        return el.trip_id.toLowerCase().match(search1.toLowerCase());
+      });
+      setFiltertripData(result);
+    }
+
+    if (search2) {
+      const result = tripData?.filter((el) => {
+        return el.vehicle_name.toLowerCase().match(search2.toLowerCase());
+      });
+      setFiltertripData(result);
+    }
   }, [search1, search2]);
 
   return (
@@ -185,12 +243,12 @@ const OngoingTripList = () => {
           <DataTable
             customStyles={customStyles}
             columns={columns}
-            data={filtertripData}
-            pagination
+            data={currentItems}
             highlightOnHover
           />
         </div>
       </div>
+      <Pagination />
     </Container>
   );
 };

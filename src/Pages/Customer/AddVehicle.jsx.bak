@@ -2,15 +2,14 @@ import React, { useEffect, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
-import Button from "react-bootstrap/Button";
 import { Link } from "react-router-dom";
-import styles from "../../CSS/AddVehicle.module.css";
 import axios from "axios";
 
 const AddVehicle = () => {
   const [data, setData] = useState([]);
   const [iotData, setIotData] = useState([]);
   const [ecuData, setEcuData] = useState([]);
+  const [dmsData, setDmsData] = useState([]);
   const token = localStorage.getItem("token");
   const user_id = localStorage.getItem("user_id");
   const handleChange = (e) => {
@@ -73,97 +72,123 @@ const AddVehicle = () => {
       .catch((err) => {
         console.log(err);
       });
+
+    ///getting DMS data
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-dms`, {
+        headers: { authorization: `bearer ${token}` },
+      })
+      .then((res) => setDmsData(res.data.dmsData))
+      .catch((err) => console.log(err));
   }, [token]);
 
   return (
-    <Container>
-      <div>
-        <div className={styles.formdiv}>
-          <form onSubmit={handleSubmit}>
-            <div>
-              <Link to="/vehicle">Vehicles</Link>
-            </div>
-            <div>
-              <h3>Add Vehicle</h3>
-            </div>
-            <div className={styles.griddiv}>
-              <div>
-                <p>Vehicle_Name</p>
-                <InputGroup className="mb-3">
-                  <Form.Control
-                    placeholder="VEHICLE_NAME"
-                    name="vehicle_name"
-                    onChange={handleChange}
-                  />
-                </InputGroup>
-              </div>
-              <div>
-                <p>Registration Number</p>
-                <InputGroup className="mb-3">
-                  <Form.Control
-                    placeholder="VEHICLE_REGISTRATION"
-                    name="vehicle_registration"
-                    onChange={handleChange}
-                  />
-                </InputGroup>
-              </div>
-              <div>
-                <p>Select ECU</p>
-                <Form.Select name="ecu" onChange={handleChange}>
-                  <option>-Select ECU-</option>
-                  {ecuData?.map((el) => {
-                    return (
-                      <option key={el.id} value={`${el.device_id}`}>
-                        {el.device_id}
-                      </option>
-                    );
-                  })}
-                </Form.Select>
-              </div>
-              <div>
-                <p>Select IoT</p>
+    <Container className="my-4">
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
+              <form onSubmit={handleSubmit}>
+                <div className="">
+                  <Link to="/vehicle">&#8592; Vehicles</Link>
+                  <h4>Add Vehicle</h4>
+                </div>
+                <div>
+                  <label htmlFor="">Vehicle Name</label>
+                  <InputGroup className="mb-3">
+                    <Form.Control name="vehicle_name" onChange={handleChange} />
+                  </InputGroup>
+                </div>
+                <div>
+                  <label htmlFor="">Registration Number</label>
+                  <InputGroup className="mb-3">
+                    <Form.Control
+                      name="vehicle_registration"
+                      onChange={handleChange}
+                    />
+                  </InputGroup>
+                </div>
 
-                <Form.Select name="iot" onChange={handleChange}>
-                  <option>-Select IoT-</option>
-                  {iotData?.map((el) => {
-                    return (
-                      <option key={el.id} value={`${el.device_id}`}>
-                        {el.device_id}
-                      </option>
-                    );
-                  })}
-                </Form.Select>
-              </div>
-              <div>
-                <p>Featureset</p>
-                <InputGroup className="mb-3">
-                  <Form.Control
-                    placeholder="FEATURESET"
-                    name="featureset"
+                <div>
+                  <label htmlFor="">Featureset</label>
+                  <InputGroup className="mb-3">
+                    <Form.Control name="featureset" onChange={handleChange} />
+                  </InputGroup>
+                </div>
+
+                <div>
+                  <label htmlFor="">Select ECU</label>
+                  <Form.Select
+                    name="ecu"
                     onChange={handleChange}
-                  />
-                </InputGroup>
-              </div>
-              <div>
-                <p>Status</p>
-                <Form.Select onChange={handleChange} name="status">
-                  <option>-Select Status-</option>
-                  <option value="0">Deleted</option>
-                  <option value="1">Active</option>
-                  <option value="2">Deactive</option>
-                </Form.Select>
-              </div>
+                    className="mb-3"
+                  >
+                    <option>-Select ECU-</option>
+                    {ecuData?.map((el) => {
+                      return (
+                        <option key={el.id} value={`${el.device_id}`}>
+                          {el.device_id}
+                        </option>
+                      );
+                    })}
+                  </Form.Select>
+                </div>
+                <div>
+                  <label htmlFor="">Select IoT</label>
+                  <Form.Select
+                    name="iot"
+                    onChange={handleChange}
+                    className="mb-3"
+                  >
+                    <option>-Select IoT-</option>
+                    {iotData?.map((el) => {
+                      return (
+                        <option key={el.id} value={`${el.device_id}`}>
+                          {el.device_id}
+                        </option>
+                      );
+                    })}
+                  </Form.Select>
+                </div>
+                <div>
+                  <label htmlFor="">Select DMS</label>
+                  <Form.Select
+                    name="dms"
+                    onChange={handleChange}
+                    className="mb-3"
+                  >
+                    <option>-Select DMS-</option>
+                    <option value={null}>Unassign</option>
+                    {dmsData?.map((el) => {
+                      return (
+                        <option key={el.id} value={`${el.device_id}`}>
+                          {el.device_id}
+                        </option>
+                      );
+                    })}
+                  </Form.Select>
+                </div>
+                <div>
+                  <label htmlFor="">Status</label>
+                  <Form.Select
+                    onChange={handleChange}
+                    name="status"
+                    className="mb-3"
+                  >
+                    <option>-Select Status-</option>
+                    <option value="0">Deleted</option>
+                    <option value="1">Active</option>
+                    <option value="2">Deactive</option>
+                  </Form.Select>
+                </div>
+                <div className="text-center">
+                  <button className="btn btn-theme w-100 btn-lg" type="submit">
+                    SUBMIT
+                  </button>
+                </div>
+              </form>
             </div>
-            <div>
-              <Button
-                style={{ width: "600px", marginTop: "2rem" }}
-                type="submit"
-                variant="primary"
-              >
-                SUBMIT
-              </Button>{" "}
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </Container>

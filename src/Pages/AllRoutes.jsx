@@ -110,7 +110,7 @@ const AllRoutes = () => {
           </CustomerProtected>
         }
       />
-      {/* /////////////////Admin Routes/////////// */}
+      {/* Admin Routes */}
       <Route
         path="/admin-dashboard"
         element={

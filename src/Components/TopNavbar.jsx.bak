@@ -44,7 +44,7 @@ const TopNavbar = () => {
           <div className="d-flex justify-content-between">
             <div>
               <Navbar.Brand>
-                {user_type == 1 ? (
+                {user_type === "1" ? (
                   <Link to="/admin-dashboard">
                     <img src={logo} alt="" className="logo" />
                   </Link>

@@ -6,13 +6,12 @@ import DataTable from "react-data-table-component";
 
 const CompletedTripList = () => {
   const [tripData, setTripData] = useState();
-  const [search1, setSearch1] = useState([]);
-  const [search2, setSearch2] = useState([]);
+  const [search1, setSearch1] = useState("");
+  const [search2, setSearch2] = useState("");
   const [filtertripData, setFiltertripData] = useState([]);
   const navigate = useNavigate();
   let token = localStorage.getItem("token");
   let user_id = localStorage.getItem("user_id");
-  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     axios
@@ -37,19 +36,19 @@ const CompletedTripList = () => {
   const columns = [
     {
       name: "#",
-      selector: "index",
+      selector: (row, ind) => (currentPage - 1) * itemsPerPage + ind + 1,
       sortable: true,
       width: "70px",
     },
     {
       name: "Trip ID",
-      selector: (row) => row.trip_id,
+      selector: (row) => (!row.trip_id ? "NA" : row.trip_id),
       wrap: true,
       width: "200px",
     },
     {
       name: "Vehicle Name",
-      selector: (row) => row.vehicle_name,
+      selector: (row) => (!row.vehicle_name ? "NA" : row.vehicle_name),
       wrap: true,
     },
     {
@@ -75,7 +74,7 @@ const CompletedTripList = () => {
     },
     {
       name: "Duration",
-      selector: (row) => row.duration,
+      selector: (row) => (!row.duration ? "NA" : row.duration),
       wrap: true,
     },
   ];
@@ -104,6 +103,68 @@ const CompletedTripList = () => {
       },
     },
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.ceil(filtertripData.length / itemsPerPage);
+  const pageNumbers = [];
+
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+  const handleItemsPerPageChange = (e) => {
+    setCurrentPage(1);
+    setItemsPerPage(e.target.value);
+  };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filtertripData.slice(indexOfFirstItem, indexOfLastItem);
+  const Pagination = () => {
+    return (
+      <div>
+        <div>
+          <select value={itemsPerPage} onChange={handleItemsPerPageChange}>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+        </div>
+        <div>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+
+          {currentPage > 1 && (
+            <button onClick={() => handlePageChange(currentPage - 1)}>
+              {currentPage - 1}
+            </button>
+          )}
+          <button disabled>{currentPage}</button>
+          {currentPage < totalPages && (
+            <button onClick={() => handlePageChange(currentPage + 1)}>
+              {currentPage + 1}
+            </button>
+          )}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+        <div>
+          Showing {currentItems.length} of {filtertripData.length} items
+        </div>
+      </div>
+    );
+  };
 
   // Set page headings
   const CustomHeader = () => {
@@ -118,47 +179,31 @@ const CompletedTripList = () => {
   // Search with trip ID
   const searchOne = (e) => {
     setSearch1(e.target.value);
-    const result = tripData?.filter((el) => {
-      return el.trip_id.toLowerCase().match(search1.toLowerCase());
-    });
-    setFiltertripData(result);
-    if (e.target.value === "") {
-      setFiltertripData(tripData);
-    }
   };
 
   // Search with Vehicle name
   const searchTwo = (e) => {
     setSearch2(e.target.value);
-    const result = tripData?.filter((el) => {
-      return el.vehicle_name.toLowerCase().match(search2.toLowerCase());
-    });
-    setFiltertripData(result);
-    if (e.target.value === "") {
-      setFiltertripData(tripData);
-    }
   };
   useEffect(() => {
-    console.log(tripData);
-  }, [search1, search2, tripData]);
+    if (search1) {
+      const result = tripData?.filter((el) => {
+        return el.trip_id.toLowerCase().match(search1.toLowerCase());
+      });
+      setFiltertripData(result);
+    }
+
+    if (search2) {
+      const result = tripData?.filter((el) => {
+        return el.vehicle_name.toLowerCase().match(search2.toLowerCase());
+      });
+      setFiltertripData(result);
+    }
+  }, [search1, search2]);
 
   const handleClick = (row) => {
     navigate(`/completed-trips/${row.trip_id}`);
   };
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-  };
-
-  let dataWithIndex = "";
-  if (tripData) {
-    dataWithIndex = tripData.map((item, index) => {
-      return {
-        ...item,
-        index: index + 1,
-      };
-    });
-  }
 
   return (
     <Container className="my-4">
@@ -187,7 +232,7 @@ const CompletedTripList = () => {
               <input
                 type="text"
                 placeholder="Vehicle Name"
-                className="form-control "
+                className="form-control"
                 onChange={searchTwo}
               />
             </div>
@@ -200,17 +245,14 @@ const CompletedTripList = () => {
           <DataTable
             noHeader
             columns={columns}
-            data={dataWithIndex}
-            searchable={true}
-            searchQuery={searchQuery}
-            onSearch={handleSearch}
-            pagination
+            data={currentItems}
             highlightOnHover
             onRowClicked={handleClick}
             pointerOnHover
           />
         </div>
       </div>
+      <Pagination />
     </Container>
   );
 };
