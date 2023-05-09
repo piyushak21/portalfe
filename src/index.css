@@ -1,19 +1,25 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+  font-family: "Roboto", sans-serif !important;
+  /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+    sans-serif; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  width: 100%;
+  background-image: url(../src/Assets/img/5570863.jpg);
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: "Poppins", sans-serif;
 }
 
 :root {
-  --bg-theme: #1b66aa;
+  --bg-theme: #112b3c;
 }
 
 /* width */
@@ -49,6 +55,11 @@ a {
   background-color: var(--bg-theme) !important;
   color: #fff !important;
 }
+.btn-theme-border {
+  background-color: #fff;
+  color: var(--bg-theme) !important;
+  border: 1px solid var(--bg-theme) !important;
+}
 
 .form-control {
   border: none;
@@ -72,4 +83,29 @@ a {
 
 .cursor {
   cursor: pointer;
+}
+.footer-text {
+  font-size: 15px;
+}
+.cOhUY {
+  display: none !important;
+}
+.pages:disabled {
+  background-color: var(--bg-theme) !important;
+  color: #ffffff !important;
+  /* border-color: #1b66aa !important; */
+}
+.pages {
+  width: 33px;
+  height: 33px;
+}
+.next:hover {
+  background-color: #787a7c;
+}
+.prev:hover {
+  background-color: #787a7c !important;
+}
+.pages:hover {
+  background-color: #787a7c;
+  color: #fff !important;
 }

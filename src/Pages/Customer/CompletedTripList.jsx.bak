@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import axios from "axios";
 import DataTable from "react-data-table-component";
+import { BsArrowLeftRight } from "react-icons/bs";
+import { GrPrevious, GrNext } from "react-icons/gr";
 
 const CompletedTripList = () => {
   const [tripData, setTripData] = useState();
@@ -32,15 +34,13 @@ const CompletedTripList = () => {
     let updateStTime = new Date(time * 1000);
     return updateStTime.toLocaleString();
   };
-  let counter = 1;
+
   const columns = [
     {
-      name: "#",
-      selector: (row) => counter++,
-      sortable: true,
-      width: "70px",
+      name: "Sr No.",
+      selector: (row, ind) => (currentPage - 1) * itemsPerPage + ind + 1,
+      width: "100px",
     },
-
     {
       name: "Trip ID",
       selector: (row) => (!row.trip_id ? "NA" : row.trip_id),
@@ -52,7 +52,6 @@ const CompletedTripList = () => {
       selector: (row) => (!row.vehicle_name ? "NA" : row.vehicle_name),
       wrap: true,
     },
-
     {
       name: "Trip Start",
       selector: (row) => {
@@ -90,7 +89,7 @@ const CompletedTripList = () => {
     },
     headCells: {
       style: {
-        backgroundColor: "#f1f1f1",
+        backgroundColor: "#ddd",
         fontWeight: "bold",
         fontSize: "16px",
         border: "none",
@@ -105,13 +104,97 @@ const CompletedTripList = () => {
       },
     },
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.ceil(filtertripData.length / itemsPerPage);
+  const pageNumbers = [];
+
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+  const handleItemsPerPageChange = (e) => {
+    setCurrentPage(1);
+    setItemsPerPage(e.target.value);
+  };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filtertripData.slice(indexOfFirstItem, indexOfLastItem);
+  const Pagination = () => {
+    return (
+      <div className="d-flex justify-content-between mt-3 mb-5">
+        {/* <div>
+          <select onChange={handleItemsPerPageChange}>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+        </div> */}
+        <div>
+          Showing {currentItems.length} of {filtertripData.length} items
+        </div>
+        <div>
+          <button className="border prev text-dark mx-1 py-1 border-0 bg-light" title="Previous"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <GrPrevious />
+          </button>
+          {/* {currentPage > 1 && (
+            <button className="pages border text-dark py-1 px-2 border-dark" onClick={() => handlePageChange(currentPage - 2)}>
+              {currentPage - 2}
+            </button>
+          )}
+          
+          {currentPage > 1 && (
+            <button className=" pages border text-dark py-1 px-2 border-dark" onClick={() => handlePageChange(currentPage - 1)}>
+              {currentPage - 1}
+            </button>
+          )} */}
+          
+          <button className="pages border text-dark py-1 px-2 " disabled>{currentPage}</button>
+          {currentPage < totalPages && (
+            <button className="pages border-0 text-dark py-1 px-2" onClick={() => handlePageChange(currentPage + 1)} >
+              {currentPage + 1}
+            </button>
+          )}
+          {currentPage > 1 && (
+            <button className=" pages border-0 text-dark py-1 px-2" onClick={() => handlePageChange(currentPage + 2)}>
+              {currentPage + 2}
+            </button>
+          )}
+          <button className="border next text-dark mx-1 py-1" title="Next"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <GrNext/>
+          </button>
+        </div>
+        
+      </div>
+    );
+  };
 
   // Set page headings
   const CustomHeader = () => {
     return (
       <div>
-        <h4>Completed Trips</h4>
-        <p className="mb-0">Total: {tripData?.length}</p>
+        <h4>Completed Trips <span className="rounded-pill text-light bg-danger px-2 py-1" style={{ fontSize: "16px", fontWeight:"400" }}>{tripData?.length}</span></h4>
+        <div className="mt-4">
+          <span>Show&nbsp;</span>
+            <select onChange={handleItemsPerPageChange} className="px-1">
+              <option style={{ display: "none"}}>{itemsPerPage}</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+            </select>
+          <span>&nbsp;entries</span>
+        </div>
+        {/* <p className="mb-0" >Total: {tripData?.length}</p> */}
       </div>
     );
   };
@@ -152,14 +235,14 @@ const CompletedTripList = () => {
           <CustomHeader />
         </div>
         <div className="text-end">
-          <button
+        <button
             onClick={() => navigate("/ongoing-trips")}
             className="btn btn-theme"
           >
-            Ongoing Trips
+            Ongoing Trips&nbsp;&nbsp;<BsArrowLeftRight />
           </button>
           {/* Search bar */}
-          <div className="d-flex gap-4 mt-1">
+          <div className="d-flex gap-4 mt-4">
             <div>
               <input
                 type="text"
@@ -172,7 +255,7 @@ const CompletedTripList = () => {
               <input
                 type="text"
                 placeholder="Vehicle Name"
-                className="form-control"
+                className="form-control "
                 onChange={searchTwo}
               />
             </div>
@@ -186,14 +269,15 @@ const CompletedTripList = () => {
             customStyles={customStyles}
             noHeader
             columns={columns}
-            data={filtertripData}
-            pagination
+            data={currentItems}
+            // pagination
             highlightOnHover
             onRowClicked={handleClick}
             pointerOnHover
           />
         </div>
       </div>
+      <Pagination />
     </Container>
   );
 };

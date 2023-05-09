@@ -57,7 +57,7 @@ const TopNavbar = () => {
             <div>
               <Nav className="ms-auto">
                 <Nav.Link onClick={handleShow}>
-                  <span className="h5 top-icon">
+                  <span className="h5 top-icon theme-text">
                     <BsFillGrid3X3GapFill />
                   </span>
                 </Nav.Link>

@@ -1,37 +1,30 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { Container, Tabs, Tab, ListGroup, Badge, Form } from "react-bootstrap";
 import {
   GoogleMap,
   LoadScript,
   Marker,
   Polyline,
 } from "@react-google-maps/api";
-import { Link } from "react-router-dom";
-import { Container, Tabs, Tab, ListGroup, Badge, Form } from "react-bootstrap";
+import axios from "axios";
 import { BsPinMapFill, BsArrowLeft } from "react-icons/bs";
 import car from "../../Assets/icons/liveIcon.svg";
 import Iframe from "react-iframe";
 
-const OngoingTripView = () => {
+const TripView = () => {
   let { id } = useParams();
+  const token = localStorage.getItem("token");
+
   const [path, setPath] = useState([]);
   const [tripData, setTripData] = useState([]);
   const [center, setCenter] = useState({});
   const [startPoint, setStartPoint] = useState({});
   const [startAddress, setStartAddress] = useState("");
+  const [endAddress, setEndAddress] = useState("");
   const [endPoint, setEndPoint] = useState({});
   const [startTime, setStartTime] = useState();
-  // const [lastTime, setLastTime] = useState();
-  const [endAddress, setEndAddress] = useState("");
-  // const [distance, setDistance] = useState("");
-  // const [duration, setDuration] = useState("");
-  // const [maxSpd, setMaxSpd] = useState("");
-  // const [durationInSec, setDurationInSec] = useState();
-  // const [avgSpd, setAvgSpd] = useState();
-  // const [spdData, setSpdData] = useState([]);
   const [vehicle, setVehicle] = useState([]);
-  // const [dmsMedia, setDmsMedia] = useState("");
 
   // CAS faults
   const [autoBrk, setAutoBrk] = useState(0);
@@ -60,84 +53,56 @@ const OngoingTripView = () => {
   const [dmsAccident, setDmsAccident] = useState(0);
   const [tripStartAlert, setTripStartAlert] = useState(0);
 
-  const token = localStorage.getItem("token");
-
   useEffect(() => {
     console.log("One");
-    const interval = setInterval(() => {
-      axios
-        .get(
-          `${process.env.REACT_APP_BASE_URL}/ongoingTrip/getOngoingTripdataById/${id}`,
-          {
-            headers: { authorization: `bearer ${token}` },
-          }
-        )
-        .then((res) => {
-          // console.log(res.data);
-          // Set trip data
-          setTripData(res.data);
+    axios
+      .get(
+        `${process.env.REACT_APP_BASE_URL}/ongoingTrip/getOngoingTripdataById/${id}`,
+        {
+          headers: { authorization: `bearer ${token}` },
+        }
+      )
+      .then((res) => {
+        // console.log(res.data);
+        // Set trip data
+        setTripData(res.data);
 
-          const dataLength = res.data.length - 1;
+        const dataLength = res.data.length - 1;
 
-          // Set Map center
-          setCenter({
-            lat: parseFloat(res.data[dataLength].lat),
-            lng: parseFloat(res.data[dataLength].lng),
-          });
-
-          // Set start point
-          setStartPoint({
-            lat: parseFloat(res.data[0].lat),
-            lng: parseFloat(res.data[0].lng),
-          });
-
-          // Set path
-          setPath(
-            res.data.map((location) => ({
-              lat: parseFloat(location.lat),
-              lng: parseFloat(location.lng),
-            }))
-          );
-
-          // Set end point
-          setEndPoint({
-            lat: parseFloat(res.data[dataLength].lat),
-            lng: parseFloat(res.data[dataLength].lng),
-          });
-
-          // Set Start time
-          let sttime = res.data[0].timestamp;
-          let updateStTime = new Date(sttime * 1000);
-          setStartTime(updateStTime.toLocaleString());
-
-          // Set Last time
-          // let edtime = res.data[dataLength].timestamp;
-          // let updateEDTime = new Date(edtime * 1000);
-          // setLastTime(updateEDTime.toLocaleString());
-
-          // Set the duration
-          // let difference = edtime - sttime;
-          // setDurationInSec(difference); // this is use for calculate the avg speed
-
-          // let hours = Math.floor(difference / 3600);
-          // difference = difference % 3600;
-
-          // let minutes = Math.floor(difference / 60);
-          // difference = difference % 60;
-          // let seconds = difference;
-          // if (hours > 0) {
-          //   setDuration(
-          //     hours + " hours " + minutes + " Mins " + seconds + " Sec"
-          //   );
-          // } else {
-          //   setDuration(minutes + " Mins " + seconds + " Sec");
-          // }
-        })
-        .catch((error) => {
-          console.log(error);
+        // Set Map center
+        setCenter({
+          lat: parseFloat(res.data[dataLength].lat),
+          lng: parseFloat(res.data[dataLength].lng),
         });
-    }, 30000);
-    return () => clearInterval(interval);
+
+        // Set start point
+        setStartPoint({
+          lat: parseFloat(res.data[0].lat),
+          lng: parseFloat(res.data[0].lng),
+        });
+
+        // Set path
+        setPath(
+          res.data.map((location) => ({
+            lat: parseFloat(location.lat),
+            lng: parseFloat(location.lng),
+          }))
+        );
+
+        // Set end point
+        setEndPoint({
+          lat: parseFloat(res.data[dataLength].lat),
+          lng: parseFloat(res.data[dataLength].lng),
+        });
+
+        // Set Start time
+        let sttime = res.data[0].timestamp;
+        let updateStTime = new Date(sttime * 1000);
+        setStartTime(updateStTime.toLocaleString());
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }, [id, token]);
 
   // Set Address
@@ -148,6 +113,9 @@ const OngoingTripView = () => {
         const response = await fetch(
           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
         );
+        if (response) {
+          //   setIsLoading(false);
+        }
         const data = await response.json();
         // console.log(data);
         setAddress(data.results[0].formatted_address);
@@ -157,23 +125,6 @@ const OngoingTripView = () => {
       getAddress(endPoint.lat, endPoint.lng, setEndAddress);
     }
   }, [tripData]);
-
-  // Set vehicle data
-  useEffect(() => {
-    console.log("Four");
-    if (tripData.length > 0) {
-      axios
-        .get(
-          `${process.env.REACT_APP_BASE_URL}/vehicles/getVehicleByTripId/${id}`,
-          {
-            headers: { authorization: `bearer ${token}` },
-          }
-        )
-        .then((res) => {
-          setVehicle(res.data[0]);
-        });
-    }
-  }, []);
 
   // Get Faults by trip id
   useEffect(() => {
@@ -365,13 +316,31 @@ const OngoingTripView = () => {
   }, [tripData]);
 
   // Set Iframe for DMS
-  const dmsIframes = media.map((data) => {
+  const dmsIframes = media.map((data, index) => {
+    console.log(data);
     return (
-      <div className="col-md-6 mb-2">
-        <Iframe src={data} width="100%" height="300px"></Iframe>
+      <div className="col-md-3 mb-2" key={index}>
+        <Iframe src={data} width="100%" height="150px"></Iframe>
       </div>
     );
   });
+
+  // Set vehicle data
+  useEffect(() => {
+    console.log("Four");
+    if (tripData.length > 0) {
+      axios
+        .get(
+          `${process.env.REACT_APP_BASE_URL}/vehicles/getVehicleByTripId/${id}`,
+          {
+            headers: { authorization: `bearer ${token}` },
+          }
+        )
+        .then((res) => {
+          setVehicle(res.data[0]);
+        });
+    }
+  }, []);
 
   // Customized Icon
   const liveIcon = {
@@ -383,25 +352,32 @@ const OngoingTripView = () => {
 
   return (
     <>
-      <Container className="my-3">
+      <Container className="mt-4 mb-5">
         <Link to="/ongoing-trips">
           <BsArrowLeft /> <small>Ongoing Trip list</small>
         </Link>
-        <div className="mb-3">
+        <div className="my-3">
           <p className="mb-0">
-            Trip ID: <strong>{id}</strong>
+            <span className="text-muted">Trip ID:</span> <strong>{id}</strong>
           </p>
-          <h4>{vehicle.vehicle_name} Ongoing Trip</h4>
+          <h4>
+            <span className="text-muted">Ongoing Trip:</span>{" "}
+            {vehicle?.vehicle_name} |
+            <span className="h6">
+              {" "}
+              <span className="text-muted">Registration Number:</span>{" "}
+              {vehicle?.vehicle_registration}
+            </span>
+          </h4>
         </div>
 
-        {/* Google Map */}
         <LoadScript
           googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
         >
           <GoogleMap
             mapContainerClassName="map-container"
             center={center}
-            zoom={14}
+            zoom={10}
           >
             <Marker position={startPoint} icon={start} className="liveIcon" />
             <Polyline path={path} />
@@ -462,8 +438,8 @@ const OngoingTripView = () => {
                   </div>
                 </div>
                 <div className="col-md-8">
-                  <div className="card">
-                    <div className="card-header">
+                  <div className="card border-0 shadow">
+                    <div className="card-header bg-theme text-light">
                       <strong>Trip Ananlytics</strong>
                     </div>
                     <div className="card-body">
@@ -472,13 +448,13 @@ const OngoingTripView = () => {
                           <p className="mb-0">
                             <strong>Total Distance</strong>
                           </p>
-                          {/* <p>{distance} KM</p> */}
+                          ...{/* <p>{distance} KM</p> */}
                         </div>
                         <div className="col-sm-3 mb-3">
                           <p className="mb-0">
                             <strong>Travelled Time</strong>
                           </p>
-                          {/* <p>{duration}</p> */}
+                          ...{/* <p>{duration}</p> */}
                         </div>
                         {/* <div className="col-sm-3 mb-3">
                         <p className="mb-0">
@@ -490,32 +466,14 @@ const OngoingTripView = () => {
                           <p className="mb-0">
                             <strong>Average Speed</strong>
                           </p>
-                          {/* <p>{avgSpd} m/s</p> */}
+                          ...{/* <p>{avgSpd} m/s</p> */}
                         </div>
                         <div className="col-sm-3 mb-3">
                           <p className="mb-0">
                             <strong>Max speed</strong>
                           </p>
-                          {/* <p>{maxSpd} Kmph</p> */}
+                          ...{/* <p>{maxSpd} Kmph</p> */}
                         </div>
-                        {/* <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Braking Freq</strong>
-                        </p>
-                        <p>3 Min</p>
-                      </div>
-                      <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Driver Score</strong>
-                        </p>
-                        <p>40 Kmph</p>
-                      </div>
-                      <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Driver Incentive</strong>
-                        </p>
-                        <p>0</p>
-                      </div> */}
                       </div>
                     </div>
                   </div>
@@ -527,8 +485,8 @@ const OngoingTripView = () => {
             <Tab eventKey="fault" title="Fault Counts">
               <div className="row">
                 <div className="col-md-4 mb-3">
-                  <div className="card mb-3">
-                    <div className="card-header">
+                  <div className="card mb-3 border-0 shadoq">
+                    <div className="card-header bg-theme text-light">
                       <strong>CAS</strong>
                     </div>
                     <div className="card-body">
@@ -571,8 +529,8 @@ const OngoingTripView = () => {
                     </div>
                   </div>
 
-                  <div className="card mb-3">
-                    <div className="card-header">
+                  <div className="card mb-3 border-0 shadow">
+                    <div className="card-header bg-theme text-light">
                       <strong>Sleep Alert</strong>
                     </div>
                     <div className="card-body">
@@ -600,8 +558,8 @@ const OngoingTripView = () => {
                 </div>
 
                 <div className="col-md-4 mb-3">
-                  <div className="card">
-                    <div className="card-header">
+                  <div className="card border-0 shadow">
+                    <div className="card-header bg-theme text-light">
                       <strong>Driver Evaluation</strong>
                     </div>
                     <div className="card-body">
@@ -697,8 +655,8 @@ const OngoingTripView = () => {
                 </div>
 
                 <div className="col-md-4 mb-3">
-                  <div className="card mb-3">
-                    <div className="card-header">
+                  <div className="card mb-3 border-0 shadow">
+                    <div className="card-header bg-theme text-light">
                       <strong>Speed Governer</strong>
                     </div>
                     <div className="card-body">
@@ -724,8 +682,8 @@ const OngoingTripView = () => {
                     </div>
                   </div>
 
-                  <div className="card">
-                    <div className="card-header">
+                  <div className="card border-0 shadow">
+                    <div className="card-header bg-theme text-light">
                       <strong>Alarm Data</strong>
                     </div>
                     <div className="card-body">
@@ -775,9 +733,9 @@ const OngoingTripView = () => {
             <Tab eventKey="dms" title="Trip Media">
               <div className="row">
                 <div className="col-md-4 mb-3">
-                  <div className="card">
-                    <div className="card-header">
-                      <strong>DMS</strong>
+                  <div className="card border-0 shadow">
+                    <div className="card-header bg-theme text-light">
+                      <strong>DMS Faults</strong>
                     </div>
                     <div className="card-body">
                       <ListGroup>
@@ -978,32 +936,6 @@ const OngoingTripView = () => {
                 </div>
               </div>
             </Tab>
-
-            {/* Trip Details Vehicle and Driver */}
-            <Tab eventKey="details" title="Trip Details">
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <div className="card">
-                    <div className="card-header">Vehicle Details</div>
-                    <div className="card-body">
-                      <p>
-                        <strong>Vehicle Name:</strong> {vehicle.vehicle_name}
-                      </p>
-                      <p>
-                        <strong>Registration Number:</strong>{" "}
-                        {vehicle.vehicle_registration}
-                      </p>
-                      <p>
-                        <strong>ECU:</strong> {vehicle.ecu}
-                      </p>
-                      <p>
-                        <strong>IoT:</strong> {vehicle.iot}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Tab>
           </Tabs>
         </div>
       </Container>
@@ -1011,4 +943,4 @@ const OngoingTripView = () => {
   );
 };
 
-export default OngoingTripView;
+export default TripView;

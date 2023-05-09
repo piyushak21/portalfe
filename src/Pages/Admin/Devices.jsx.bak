@@ -7,8 +7,8 @@ import DataTable from "react-data-table-component";
 
 const Devices = () => {
   const navigate = useNavigate();
-  const [search1, setSearch1] = useState([]);
-  const [search2, setSearch2] = useState([]);
+  const [search1, setSearch1] = useState("");
+  const [search2, setSearch2] = useState("");
 
   const [filterDevices, setFilterDevices] = useState([]);
   const [deviceData, setDeviceData] = useState([]);
@@ -33,7 +33,7 @@ const Devices = () => {
   const columns = [
     {
       name: "SR.NO",
-      selector: (row) => counter++,
+      selector: (row, ind) => (currentPage - 1) * itemsPerPage + ind + 1,
     },
     {
       name: "Device Id",
@@ -57,7 +57,7 @@ const Devices = () => {
       name: "Status",
       selector: (row) =>
         row.status == 1 ? (
-          <span class="badge bg-success">Active</span>
+          <span class="badge px-3 bg-success">Active</span>
         ) : (
           <span class="badge bg-danger">Deactive</span>
         ),
@@ -103,6 +103,69 @@ const Devices = () => {
     },
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.ceil(filterDevices.length / itemsPerPage);
+  const pageNumbers = [];
+
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+  const handleItemsPerPageChange = (e) => {
+    setCurrentPage(1);
+    setItemsPerPage(e.target.value);
+  };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filterDevices.slice(indexOfFirstItem, indexOfLastItem);
+  const Pagination = () => {
+    return (
+      <div>
+        <div>
+          <select value={itemsPerPage} onChange={handleItemsPerPageChange}>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+        </div>
+        <div>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+
+          {currentPage > 1 && (
+            <button onClick={() => handlePageChange(currentPage - 1)}>
+              {currentPage - 1}
+            </button>
+          )}
+          <button disabled>{currentPage}</button>
+          {currentPage < totalPages && (
+            <button onClick={() => handlePageChange(currentPage + 1)}>
+              {currentPage + 1}
+            </button>
+          )}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+        <div>
+          Showing {currentItems.length} of {filterDevices.length} items
+        </div>
+      </div>
+    );
+  };
+
   const CustomHeader = () => {
     return (
       <div>
@@ -111,24 +174,28 @@ const Devices = () => {
       </div>
     );
   };
-
+  // Search with device_id
   const searchOne = (e) => {
     setSearch1(e.target.value);
-    const result = deviceData?.filter((el) => {
-      return el.device_id.toLowerCase().match(search1.toLowerCase());
-    });
-    setFilterDevices(result);
   };
 
+  // Search with device_type
   const searchTwo = (e) => {
     setSearch2(e.target.value);
-    const result = deviceData?.filter((el) => {
-      return el.device_type.toLowerCase().match(search2.toLowerCase());
-    });
-    setFilterDevices(result);
   };
   useEffect(() => {
-    console.log(filterDevices);
+    if (search1) {
+      const result = filterDevices?.filter((el) => {
+        return el.device_id?.toLowerCase().match(search1?.toLowerCase());
+      });
+      setFilterDevices(result);
+    }
+    if (search2) {
+      const result = filterDevices?.filter((el) => {
+        return el.device_type?.toLowerCase().match(search2?.toLowerCase());
+      });
+      setFilterDevices(result);
+    }
   }, [search1, search2]);
 
   return (
@@ -170,12 +237,13 @@ const Devices = () => {
           <DataTable
             customStyles={customStyles}
             columns={columns}
-            data={filterDevices}
-            pagination
+            data={currentItems}
             highlightOnHover
+            pointerOnHover
           />
         </div>
       </div>
+      <Pagination />
     </Container>
   );
 };

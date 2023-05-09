@@ -25,8 +25,7 @@ const AddVehicle = () => {
       data.vehicle_registration &&
       data.ecu &&
       data.iot &&
-      data.status &&
-      data.featureset
+      data.status
     ) {
       axios
         .post(
@@ -78,8 +77,12 @@ const AddVehicle = () => {
       .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-dms`, {
         headers: { authorization: `bearer ${token}` },
       })
-      .then((res) => setDmsData(res.data.dmsData))
-      .catch((err) => console.log(err));
+      .then((res) => {
+        setDmsData(res.data.DMSdata);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, [token]);
 
   return (
@@ -106,13 +109,6 @@ const AddVehicle = () => {
                       name="vehicle_registration"
                       onChange={handleChange}
                     />
-                  </InputGroup>
-                </div>
-
-                <div>
-                  <label htmlFor="">Featureset</label>
-                  <InputGroup className="mb-3">
-                    <Form.Control name="featureset" onChange={handleChange} />
                   </InputGroup>
                 </div>
 

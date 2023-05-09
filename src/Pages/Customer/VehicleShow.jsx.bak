@@ -7,12 +7,12 @@ import locale from "react-json-editor-ajrm/locale/en";
 import DatePicker from "react-datepicker";
 import axios from "axios";
 import logo from "../../Assets/img/logo.png";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import { DownloadTableExcel } from "react-export-table-to-excel";
+import { useReactToPrint } from "react-to-print";
 
 const VehicleShow = () => {
   const [show, setShow] = useState(false);
-  const tableRefone = useRef(null);
+  const tableRef = useRef(null);
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -97,6 +97,11 @@ const VehicleShow = () => {
     return updateStTime.toString();
   };
 
+  const curretDate = new Date();
+  const year = curretDate.getFullYear();
+  const month = String(curretDate.getMonth() + 1).padStart(2, "0");
+  const day = String(curretDate.getDate()).padStart(2, "0");
+
   const convertTimeToLocal = (time) => {
     let updateStTime = new Date(time * 1000);
     return updateStTime.toLocaleString();
@@ -131,34 +136,15 @@ const VehicleShow = () => {
     }
   };
 
-  const downloadPDF = () => {
-    const firstElement = tableRefone.current;
-
-    const curretDate = new Date();
-    const year = curretDate.getFullYear();
-    const month = String(curretDate.getMonth() + 1).padStart(2, "0");
-    const day = String(curretDate.getDate()).padStart(2, "0");
-
-    html2canvas(firstElement, { scale: 0.68 }).then((canvas) => {
-      const pdf = new jsPDF("p", "pt", "letter");
-      const imgData = canvas.toDataURL("image/png");
-      const imgWidth = pdf.internal.pageSize.getWidth();
-      const imgHeight = (imgWidth / canvas.width) * canvas.height;
-      console.log("width:", imgWidth, "Height:", imgHeight);
-
-      pdf.addImage(imgData, "PNG", 5, 18);
-      pdf.setFontSize(15);
-      pdf.text(`Date:-${year}-${month}-${day}`, 180, 12, {
-        align: "center",
-      });
-      pdf.addImage(logo, "PNG", 3, 3, 50, 13);
-      pdf.save(`${idData[0].vehicle_name}_${year}-${month}-${day}.pdf`);
-    });
-  };
+  const generatePDF = useReactToPrint({
+    content: () => tableRef.current,
+    documentTitle: "tripData",
+    onAfterPrint: () => alert("Data saved in PDF"),
+  });
 
   return (
     <>
-      <Container className="my-4" ref={tableRefone}>
+      <Container className="my-4" ref={tableRef}>
         <Link to="/vehicle">
           <BsArrowLeft /> <small>Vehicles</small>
         </Link>
@@ -252,14 +238,26 @@ const VehicleShow = () => {
               </p>
             </div>
 
-            <div className="text-end">
+            <div className="justify-content-end d-flex gap-3">
               <button
-                onClick={downloadPDF}
-                className="btn btn-info btn-sm border-dark"
-                disabled={isDownloadDisabled}
+                onClick={generatePDF}
+                className="btn btn-light btn-sm border-dark"
+                // disabled={isDownloadDisabled}
               >
-                Download PDF
+                PDF
               </button>
+              <DownloadTableExcel
+                filename={`${idData[0].vehicle_name}_${year}-${month}-${day}.pdf`}
+                sheet={`${idData[0].vehicle_name}_${year}-${month}-${day}`}
+                currentTableRef={tableRef.current}
+              >
+                <button
+                  className="btn btn-light btn-sm border-dark"
+                  // disabled={isDownloadDisabled}
+                >
+                  Excel{" "}
+                </button>
+              </DownloadTableExcel>
             </div>
           </div>
         </div>

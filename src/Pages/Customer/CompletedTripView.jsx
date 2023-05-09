@@ -9,12 +9,28 @@ import {
   Polyline,
 } from "@react-google-maps/api";
 import { Link } from "react-router-dom";
-import { Container, Tabs, Tab, ListGroup, Badge, Form } from "react-bootstrap";
-import { BsPinMapFill, BsArrowLeft } from "react-icons/bs";
+import {
+  Container,
+  Tabs,
+  Tab,
+  ListGroup,
+  Badge,
+  Form,
+  Modal,
+  Button,
+} from "react-bootstrap";
+import {
+  BsPinMapFill,
+  BsArrowLeft,
+  BsFillPlayCircleFill,
+} from "react-icons/bs";
 import Iframe from "react-iframe";
 import markerImage from "../../Assets/icons/marker.svg";
+import { Spinner } from "react-bootstrap";
 
 const CompletedTripView = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
   // Get completed trip data
   let { id } = useParams();
   const [path, setPath] = useState([]);
@@ -170,10 +186,13 @@ const CompletedTripView = () => {
         const response = await fetch(
           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
         );
+        if (response) {
+          setIsLoading(false);
+        }
+
         const data = await response.json();
         setAddress(data.results[0].formatted_address);
       };
-
       getAddress(startPoint.lat, startPoint.lng, setStartAddress);
       getAddress(endPoint.lat, endPoint.lng, setEndAddress);
     }
@@ -194,7 +213,8 @@ const CompletedTripView = () => {
           setVehicle(res.data[0]);
         });
     }
-  }, [tripData]);
+    console.log(isLoading);
+  }, [tripData, isLoading]);
 
   //   Set faultcount locations and data
   const [markers, setMarkers] = useState([]);
@@ -490,871 +510,965 @@ const CompletedTripView = () => {
     },
   };
 
-  return (
-    <Container className="my-3">
-      <Link to="/completed-trips">
-        <BsArrowLeft /> <small>Completed Trip list</small>
-      </Link>
-      <div className="mb-3">
-        <p className="mb-0">
-          Trip ID: <strong>{id}</strong>
-        </p>
-        <h4>{vehicle.vehicle_name} Completed Trip</h4>
-      </div>
-      {/* <button onClick={handleShowMarkers}>
-        {showMarkers ? "Hide markers" : "Show markers"}
-      </button> */}
-      {/* Google Map */}
-      <LoadScript googleMapsApiKey="AIzaSyB3W_lCZn6WX-bJsVp0ar7Q0KJboGsKnPk">
-        <GoogleMap
-          mapContainerClassName="map-container"
-          center={center}
-          zoom={12}
-        >
-          <Marker position={startPoint} icon={markerIcons.green} />
+  const [show, setShow] = useState(false);
 
-          {[].concat(...filterMarker)?.map((marker, index) => (
-            <Marker
-              key={`${marker.id}-${index}`}
-              position={{ lat: marker.lat, lng: marker.lng }}
-              onClick={() => handleMarkerClick(marker)}
-              icon={markerIcons.blue}
-            >
-              {selectedMarker === marker && (
-                <InfoWindow
-                  position={{ lat: marker.lat, lng: marker.lng }}
-                  onCloseClick={() => setSelectedMarker(null)}
-                >
-                  {marker.event === "BRK" ? (
-                    <div>
-                      {marker.reason === 0 ? (
-                        <>
-                          <div>
-                            {marker.title} Due to{" "}
-                            <b>Collosion Avoidance System</b>
-                            <p className="mb-0">TimeStamp: {marker.content}</p>
-                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
-                            <p className="mb-0">
-                              Brake Duration: {marker.brake_duration}Sec
-                            </p>
-                            <p className="mb-0">
-                              Bypass:{" "}
-                              {marker.bypass !== 0 ? "Bypass" : "No Bypass"}
-                            </p>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div>
-                            {marker.title} Due to <b>Sleep Alert Missed</b>
-                            <p className="mb-0">TimeStamp: {marker.content}</p>
-                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
-                            {/* <p className="mb-0">
-                              Brake Duration: {marker.brake_duration}
-                            </p> */}
-                            <p></p>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ) : marker.event === "DMS" ? (
-                    <>
-                      <div>
-                        {marker.title}
-                        <p className="mb-0">TimeStamp: {marker.content}</p>
-                        <p className="mb-0">Speed: {marker.speed}Kmph</p>
-                        <p className="mb-0">
-                          Alert_type: {marker.alert_type}Kmph
-                        </p>
-                        <p className="mb-0">Severity:{marker.severity}</p>
-                        <Iframe
-                          src={marker.media}
-                          width="80%"
-                          height="200px"
-                          key=""
-                        ></Iframe>
-                      </div>
-                    </>
-                  ) : (
-                    <div>
-                      <>
-                        {marker.reason === 2 ? (
-                          <div>
-                            <b>Harsh Acceleration</b>
-                            <p className="mb-0">TimeStamp: {marker.content}</p>
-                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
-                          </div>
-                        ) : (
-                          ""
-                        )}
-                        {marker.reason === 3 ? (
-                          <div>
-                            <b>Sudden Braking</b>
-                            <p className="mb-0">TimeStamp: {marker.content}</p>
-                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
-                          </div>
-                        ) : (
-                          ""
-                        )}
-                        {marker.reason === 4 ? (
-                          <div>
-                            <b>Speed Bump</b>
-                            <p className="mb-0">TimeStamp: {marker.content}</p>
-                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
-                          </div>
-                        ) : (
-                          ""
-                        )}
-                        {marker.reason === 5 && marker.event == "NTF" ? (
-                          <div>
-                            <b>Lane change</b>
-                            <p className="mb-0">TimeStamp: {marker.content}</p>
-                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
-                          </div>
-                        ) : (
-                          ""
-                        )}
-                        {marker.reason === 6 ? (
-                          <div>
-                            <b>Tailgating</b>
-                            <p className="mb-0">TimeStamp: {marker.content}</p>
-                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
-                          </div>
-                        ) : (
-                          ""
-                        )}
-                        {marker.reason === 7 ? (
-                          <div>
-                            <b>Overspeed</b>
-                            <p className="mb-0">TimeStamp: {marker.content}</p>
-                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
-                          </div>
-                        ) : (
-                          ""
-                        )}
-                        {marker.reason === 13 ? (
-                          <div>
-                            <b>Sleep Alert Missed</b>
-                            <p className="mb-0">TimeStamp: {marker.content}</p>
-                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
-                          </div>
-                        ) : (
-                          ""
-                        )}
-                        {marker.reason === 5 &&
-                        (marker.event == "ALM2" || marker.event == "ALM3") &&
-                        marker.alarm_no !== 0 ? (
-                          <div>
-                            <b>Alarm</b>
-                            <p className="mb-0">TimeStamp: {marker.content}</p>
-                            <p className="mb-0">Speed: {marker.speed}Kmph</p>
-                            <p className="mb-0">Alarm_NO: {marker.alarm_no}</p>
-                          </div>
-                        ) : (
-                          ""
-                        )}
-                      </>
-                    </div>
-                  )}
-                </InfoWindow>
-              )}
-            </Marker>
-          ))}
+  const handleClose = () => setShow(false);
+  const handleDMSVideoShow = () => setShow(true);
 
-          <Polyline
-            path={path}
-            options={{
-              strokeColor: "#4252E0", // Set the color of the polyline path
-              strokeWeight: 4, // Set the stroke size of the polyline
+  if (isLoading) {
+    return (
+      <div>
+        <div className="d-flex align-items-center justify-content-center mt-5 pt-5">
+          <Spinner
+            size="lg"
+            animation="border"
+            style={{
+              height: "7rem",
+              width: "7rem",
             }}
           />
-          <Marker position={endPoint} icon={markerIcons.red} />
-        </GoogleMap>
-      </LoadScript>
+          {/* <div
+            className="spinner-container"
+            style={{
+              height: "5rem",
+              width: "5rem",
+            }}
+            role="status"
+          >
+            <span className="visually-hidden">Loading...</span>
+          </div> */}
+        </div>
+      </div>
+    );
+  } else {
+    return (
+      <Container className="my-3">
+        <Link to="/completed-trips">
+          <BsArrowLeft /> <small>Completed Trip list</small>
+        </Link>
+        <div className="mb-3">
+          <p className="mb-0">
+            Trip ID: <strong>{id}</strong>
+          </p>
+          <h5>{vehicle.vehicle_name} Completed Trip</h5>
+        </div>
 
-      {/* Content Tabs */}
-      <div className="my-3">
-        <Tabs
-          defaultActiveKey="summary"
-          id="justify-tab-example"
-          className="mb-3"
-          justify
+        {/* Google Map */}
+        <LoadScript
+          googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
         >
-          {/* Trip summary tab */}
-          <Tab eventKey="summary" title="Trip Summary">
-            <div className="row">
-              <div className="col-md-4">
-                <div className="d-flex my-3">
-                  <div className="text-center">
-                    <span className="h2 text-muted">
-                      <BsPinMapFill className="text-success" />
-                    </span>
+          <GoogleMap
+            mapContainerClassName="map-container"
+            center={center}
+            zoom={12}
+          >
+            <Marker position={startPoint} icon={markerIcons.green} />
+
+            {[].concat(...filterMarker)?.map((marker, index) => (
+              <Marker
+                key={`${marker.id}-${index}`}
+                position={{ lat: marker.lat, lng: marker.lng }}
+                onClick={() => handleMarkerClick(marker)}
+                icon={markerIcons.blue}
+              >
+                {selectedMarker === marker && (
+                  <InfoWindow
+                    position={{ lat: marker.lat, lng: marker.lng }}
+                    onCloseClick={() => setSelectedMarker(null)}
+                  >
+                    {marker.event === "BRK" ? (
+                      <div>
+                        {marker.reason === 0 ? (
+                          <>
+                            <div>
+                              {marker.title} Due to{" "}
+                              <b>Collosion Avoidance System</b>
+                              <p className="mb-0">
+                                TimeStamp: {marker.content}
+                              </p>
+                              <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                              <p className="mb-0">
+                                Brake Duration: {marker.brake_duration}Sec
+                              </p>
+                              <p className="mb-0">
+                                Bypass:{" "}
+                                {marker.bypass !== 0 ? "Bypass" : "No Bypass"}
+                              </p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              {marker.title} Due to <b>Sleep Alert Missed</b>
+                              <p className="mb-0">
+                                TimeStamp: {marker.content}
+                              </p>
+                              <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                              {/* <p className="mb-0">
+                                Brake Duration: {marker.brake_duration}
+                              </p> */}
+                              <p></p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ) : marker.event === "DMS" ? (
+                      <>
+                        <div>
+                          <h6>
+                            <strong>{marker.title}</strong>
+                          </h6>
+                          <p className="mb-0">TimeStamp: {marker.content}</p>
+                          <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                          <p className="mb-0">
+                            Alert_type: {marker.alert_type}Kmph
+                          </p>
+                          <p className="mb-0">Severity:{marker.severity}</p>
+                          <button
+                            className="btn btn-danger btn-sm rounded-pill mt-2"
+                            onClick={handleDMSVideoShow}
+                          >
+                            Play <BsFillPlayCircleFill />
+                          </button>
+                          {/* <Iframe
+                            src={marker.media}
+                            width="80%"
+                            height="200px"
+                            key=""
+                          ></Iframe> */}
+                        </div>
+                      </>
+                    ) : (
+                      <div>
+                        <>
+                          {marker.reason === 2 ? (
+                            <div>
+                              <b>Harsh Acceleration</b>
+                              <p className="mb-0">
+                                TimeStamp: {marker.content}
+                              </p>
+                              <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                          {marker.reason === 3 ? (
+                            <div>
+                              <b>Sudden Braking</b>
+                              <p className="mb-0">
+                                TimeStamp: {marker.content}
+                              </p>
+                              <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                          {marker.reason === 4 ? (
+                            <div>
+                              <b>Speed Bump</b>
+                              <p className="mb-0">
+                                TimeStamp: {marker.content}
+                              </p>
+                              <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                          {marker.reason === 5 && marker.event == "NTF" ? (
+                            <div>
+                              <b>Lane change</b>
+                              <p className="mb-0">
+                                TimeStamp: {marker.content}
+                              </p>
+                              <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                          {marker.reason === 6 ? (
+                            <div>
+                              <b>Tailgating</b>
+                              <p className="mb-0">
+                                TimeStamp: {marker.content}
+                              </p>
+                              <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                          {marker.reason === 7 ? (
+                            <div>
+                              <b>Overspeed</b>
+                              <p className="mb-0">
+                                TimeStamp: {marker.content}
+                              </p>
+                              <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                          {marker.reason === 13 ? (
+                            <div>
+                              <b>Sleep Alert Missed</b>
+                              <p className="mb-0">
+                                TimeStamp: {marker.content}
+                              </p>
+                              <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                          {marker.reason === 5 &&
+                          (marker.event == "ALM2" || marker.event == "ALM3") &&
+                          marker.alarm_no !== 0 ? (
+                            <div>
+                              <b>Alarm</b>
+                              <p className="mb-0">
+                                TimeStamp: {marker.content}
+                              </p>
+                              <p className="mb-0">Speed: {marker.speed}Kmph</p>
+                              <p className="mb-0">
+                                Alarm_NO: {marker.alarm_no}
+                              </p>
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                        </>
+                      </div>
+                    )}
+                  </InfoWindow>
+                )}
+              </Marker>
+            ))}
+
+            <Polyline
+              path={path}
+              options={{
+                strokeColor: "#4252E0", // Set the color of the polyline path
+                strokeWeight: 4, // Set the stroke size of the polyline
+              }}
+            />
+            <Marker position={endPoint} icon={markerIcons.red} />
+          </GoogleMap>
+        </LoadScript>
+
+        {/* DMS videos pop-ups */}
+        <Modal show={show} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Modal heading</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={handleClose}>
+              Save Changes
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Content Tabs */}
+        <div className="mt-3 mb-5">
+          <Tabs
+            defaultActiveKey="summary"
+            id="justify-tab-example"
+            className="mb-3"
+            justify
+          >
+            {/* Trip summary tab */}
+            <Tab eventKey="summary" title="Trip Summary">
+              <div className="row">
+                <div className="col-md-4">
+                  <div className="d-flex my-3">
+                    <div className="text-center">
+                      <span className="h2 text-muted">
+                        <BsPinMapFill className="text-success" />
+                      </span>
+                    </div>
+                    <div className="px-4">
+                      <p className="mb-0 theme-text">
+                        <small>
+                          <em>Source</em>
+                        </small>
+                      </p>
+                      <p className="mb-0">{startAddress}</p>
+                      <span>
+                        <small>
+                          <strong>{startTime}</strong>
+                        </small>
+                      </span>
+                    </div>
                   </div>
-                  <div className="px-4">
-                    <p className="mb-0 text-muted">
-                      <small>
-                        <em>Source</em>
-                      </small>
-                    </p>
-                    <p className="mb-0">{startAddress}</p>
-                    <span>
-                      <small>
-                        <strong>{startTime}</strong>
-                      </small>
-                    </span>
+                  <hr />
+                  <div className="d-flex my-3">
+                    <div className="text-center">
+                      <span className="h2 text-muted">
+                        <BsPinMapFill className="text-danger" />
+                      </span>
+                    </div>
+                    <div className="px-4">
+                      <p className="mb-0 theme-text">
+                        <small>
+                          <em>Destination</em>
+                        </small>
+                      </p>
+                      <p className="mb-0">{endAddress}</p>
+                      <span>
+                        <small>
+                          <strong>{endTime}</strong>
+                        </small>
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <hr />
-                <div className="d-flex my-3">
-                  <div className="text-center">
-                    <span className="h2 text-muted">
-                      <BsPinMapFill className="text-danger" />
-                    </span>
-                  </div>
-                  <div className="px-4">
-                    <p className="mb-0 text-muted">
-                      <small>
-                        <em>Destination</em>
-                      </small>
-                    </p>
-                    <p className="mb-0">{endAddress}</p>
-                    <span>
-                      <small>
-                        <strong>{endTime}</strong>
-                      </small>
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-8">
-                <div className="card">
-                  <div className="card-header">
-                    <strong>Trip Ananlytics</strong>
-                  </div>
-                  <div className="card-body">
-                    <div className="row">
-                      <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Total Distance</strong>
-                        </p>
-                        <p>{distance} KM</p>
+                <div className="col-md-8">
+                  <div className="card border-0 shadow">
+                    <div className="card-header bg-theme text-light text-light">
+                      Trip Ananlytics
+                    </div>
+                    <div className="card-body">
+                      <div className="row">
+                        <div className="col-sm-3 mb-2">
+                          <p className="mb-0">
+                            <strong>Total Distance</strong>
+                          </p>
+                          <p>{distance} KM</p>
+                        </div>
+                        <div className="col-sm-3 mb-2">
+                          <p className="mb-0">
+                            <strong>Travelled Time</strong>
+                          </p>
+                          <p>{duration}</p>
+                        </div>
+                        {/* <div className="col-sm-3 mb-2">
+                          <p className="mb-0">
+                            <strong>Halt</strong>
+                          </p>
+                          <p>3 Min</p>
+                        </div> */}
+                        <div className="col-sm-3 mb-2">
+                          <p className="mb-0">
+                            <strong>Average Speed</strong>
+                          </p>
+                          <p>{avgSpd} m/s</p>
+                        </div>
+                        <div className="col-sm-3 mb-2">
+                          <p className="mb-0">
+                            <strong>Max speed</strong>
+                          </p>
+                          <p>{maxSpd} Kmph</p>
+                        </div>
+                        {/* <div className="col-sm-3 mb-2">
+                          <p className="mb-0">
+                            <strong>Braking Freq</strong>
+                          </p>
+                          <p>3 Min</p>
+                        </div>
+                        <div className="col-sm-3 mb-2">
+                          <p className="mb-0">
+                            <strong>Driver Score</strong>
+                          </p>
+                          <p>40 Kmph</p>
+                        </div>
+                        <div className="col-sm-3 mb-2">
+                          <p className="mb-0">
+                            <strong>Driver Incentive</strong>
+                          </p>
+                          <p>0</p>
+                        </div> */}
                       </div>
-                      <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Travelled Time</strong>
-                        </p>
-                        <p>{duration}</p>
-                      </div>
-                      {/* <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Halt</strong>
-                        </p>
-                        <p>3 Min</p>
-                      </div> */}
-                      <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Average Speed</strong>
-                        </p>
-                        <p>{avgSpd} m/s</p>
-                      </div>
-                      <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Max speed</strong>
-                        </p>
-                        <p>{maxSpd} Kmph</p>
-                      </div>
-                      {/* <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Braking Freq</strong>
-                        </p>
-                        <p>3 Min</p>
-                      </div>
-                      <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Driver Score</strong>
-                        </p>
-                        <p>40 Kmph</p>
-                      </div>
-                      <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Driver Incentive</strong>
-                        </p>
-                        <p>0</p>
-                      </div> */}
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </Tab>
+            </Tab>
 
-          {/* Fault count tab */}
-          <Tab eventKey="fault" title="Fault Counts">
-            <div className="row">
-              <div className="col-md-4 mb-3">
-                <div className="card mb-3">
-                  <div className="card-header">
-                    <strong>CAS</strong>
+            {/* Fault count tab */}
+            <Tab eventKey="fault" title="Fault Counts">
+              <div className="row">
+                <div className="col-md-4">
+                  <div className="card mb-3 border-0 shadow">
+                    <div className="card-header bg-theme text-light">CAS</div>
+                    <div className="card-body">
+                      <ListGroup>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="cas1">
+                              <Form.Check
+                                disabled={autoBrk === 0}
+                                type="checkbox"
+                                label="Automatic Braking"
+                                value="AUTOMATIC_BRAKING"
+                                data-custom-attribute="BRK"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {autoBrk}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="cas2">
+                              <Form.Check
+                                disabled={accident === 0}
+                                type="checkbox"
+                                label="Accident Saved"
+                                value="ACCIDENT_SAVED"
+                                data-custom-attribute="BRK"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {accident}
+                          </Badge>
+                        </ListGroup.Item>
+                      </ListGroup>
+                    </div>
                   </div>
-                  <div className="card-body">
-                    <ListGroup>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="cas1">
-                            <Form.Check
-                              disabled={autoBrk === 0}
-                              type="checkbox"
-                              label="Automatic Braking"
-                              value="AUTOMATIC_BRAKING"
-                              data-custom-attribute="BRK"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {autoBrk}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="cas2">
-                            <Form.Check
-                              disabled={accident === 0}
-                              type="checkbox"
-                              label="Accident Saved"
-                              value="ACCIDENT_SAVED"
-                              data-custom-attribute="BRK"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {accident}
-                        </Badge>
-                      </ListGroup.Item>
-                    </ListGroup>
+
+                  <div className="card mb-3 border-0 shadow">
+                    <div className="card-header bg-theme text-light">
+                      Sleep Alert
+                    </div>
+                    <div className="card-body">
+                      <ListGroup>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="sl1">
+                              <Form.Check
+                                disabled={sleeptAlt === 0}
+                                type="checkbox"
+                                label="Sleep Alert Missed"
+                                value={13}
+                                data-custom-attribute="NTF"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {sleeptAlt}
+                          </Badge>
+                        </ListGroup.Item>
+                      </ListGroup>
+                    </div>
                   </div>
                 </div>
 
-                <div className="card mb-3">
-                  <div className="card-header">
-                    <strong>Sleep Alert</strong>
-                  </div>
-                  <div className="card-body">
-                    <ListGroup>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="sl1">
-                            <Form.Check
-                              disabled={sleeptAlt === 0}
-                              type="checkbox"
-                              label="Sleep Alert Missed"
-                              value={13}
-                              data-custom-attribute="NTF"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {sleeptAlt}
-                        </Badge>
-                      </ListGroup.Item>
-                    </ListGroup>
+                <div className="col-md-4">
+                  <div className="card mb-3 border-0 shadow">
+                    <div className="card-header bg-theme text-light">
+                      Driver Evaluation
+                    </div>
+                    <div className="card-body">
+                      <ListGroup>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="de1">
+                              <Form.Check
+                                disabled={harshacc === 0}
+                                type="checkbox"
+                                label="Harsh Acceleration"
+                                value={2}
+                                data-custom-attribute="NTF"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {harshacc}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="de2">
+                              <Form.Check
+                                disabled={laneChng === 0}
+                                type="checkbox"
+                                label="Lane Change"
+                                value={5}
+                                data-custom-attribute="NTF"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {laneChng}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="de3">
+                              <Form.Check
+                                disabled={spdBump === 0}
+                                type="checkbox"
+                                label="Speed Bump"
+                                value={4}
+                                data-custom-attribute="NTF"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {spdBump}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="de4">
+                              <Form.Check
+                                disabled={suddenBrk === 0}
+                                type="checkbox"
+                                label="Sudden Braking"
+                                value={3}
+                                data-custom-attribute="NTF"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {suddenBrk}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="de5">
+                              <Form.Check
+                                disabled={tailgating === 0}
+                                type="checkbox"
+                                label="Tailgating"
+                                value={6}
+                                data-custom-attribute="NTF"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {tailgating}
+                          </Badge>
+                        </ListGroup.Item>
+                      </ListGroup>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="col-md-4 mb-3">
-                <div className="card">
-                  <div className="card-header">
-                    <strong>Driver Evaluation</strong>
+                <div className="col-md-4">
+                  <div className="card mb-3 border-0 shadow">
+                    <div className="card-header bg-theme text-light">
+                      Speed Governer
+                    </div>
+                    <div className="card-body">
+                      <ListGroup>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="sg1">
+                              <Form.Check
+                                disabled={overspeed === 0}
+                                type="checkbox"
+                                label="Overspeeding"
+                                value={7}
+                                data-custom-attribute="NTF"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          <Badge bg="primary" className="mx-1" pill>
+                            {overspeed}
+                          </Badge>
+                        </ListGroup.Item>
+                      </ListGroup>
+                    </div>
                   </div>
-                  <div className="card-body">
-                    <ListGroup>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="de1">
+                  <div className="card border-0 shadow">
+                    <div className="card-header bg-theme text-light">
+                      Alarm Data
+                    </div>
+                    <div className="card-body">
+                      <ListGroup>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <Form.Group className="" controlId="alr1">
                             <Form.Check
-                              disabled={harshacc === 0}
+                              disabled={alarm1 === 0}
                               type="checkbox"
-                              label="Harsh Acceleration"
-                              value={2}
-                              data-custom-attribute="NTF"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {harshacc}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="de2">
-                            <Form.Check
-                              disabled={laneChng === 0}
-                              type="checkbox"
-                              label="Lane Change"
+                              label="Alarm 2"
                               value={5}
-                              data-custom-attribute="NTF"
+                              data-custom-attribute="ALM2"
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {laneChng}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="de3">
+                          <Badge bg="primary" pill>
+                            {alarm1}
+                          </Badge>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <Form.Group className="" controlId="alr2">
                             <Form.Check
-                              disabled={spdBump === 0}
+                              disabled={alarm2 === 0}
                               type="checkbox"
-                              label="Speed Bump"
-                              value={4}
-                              data-custom-attribute="NTF"
+                              label="Alarm 3"
+                              value={5}
+                              data-custom-attribute="ALM3"
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {spdBump}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="de4">
-                            <Form.Check
-                              disabled={suddenBrk === 0}
-                              type="checkbox"
-                              label="Sudden Braking"
-                              value={3}
-                              data-custom-attribute="NTF"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {suddenBrk}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="de5">
-                            <Form.Check
-                              disabled={tailgating === 0}
-                              type="checkbox"
-                              label="Tailgating"
-                              value={6}
-                              data-custom-attribute="NTF"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {tailgating}
-                        </Badge>
-                      </ListGroup.Item>
-                    </ListGroup>
+                          <Badge bg="primary" pill>
+                            {alarm2}
+                          </Badge>
+                        </ListGroup.Item>
+                      </ListGroup>
+                    </div>
                   </div>
                 </div>
               </div>
+            </Tab>
 
-              <div className="col-md-4 mb-3">
-                <div className="card">
-                  <div className="card-header">
-                    <strong>Speed Governer</strong>
-                  </div>
-                  <div className="card-body">
-                    <ListGroup>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="sg1">
-                            <Form.Check
-                              disabled={overspeed === 0}
-                              type="checkbox"
-                              label="Overspeeding"
-                              value={7}
-                              data-custom-attribute="NTF"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" className="mx-1" pill>
-                          {overspeed}
-                        </Badge>
-                      </ListGroup.Item>
-                    </ListGroup>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-4 mb-3">
-                <div className="card">
-                  <div className="card-header">
-                    <strong>Alarm Data</strong>
-                  </div>
-                  <div className="card-body">
-                    <ListGroup>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <Form.Group className="" controlId="alr1">
-                          <Form.Check
-                            disabled={alarm1 === 0}
-                            type="checkbox"
-                            label="Alarm 2"
-                            value={5}
-                            data-custom-attribute="ALM2"
-                            onChange={handlecheckbox}
-                          />
-                        </Form.Group>
-                        <Badge bg="primary" pill>
-                          {alarm1}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <Form.Group className="" controlId="alr2">
-                          <Form.Check
-                            disabled={alarm2 === 0}
-                            type="checkbox"
-                            label="Alarm 3"
-                            value={5}
-                            data-custom-attribute="ALM3"
-                            onChange={handlecheckbox}
-                          />
-                        </Form.Group>
-                        <Badge bg="primary" pill>
-                          {alarm2}
-                        </Badge>
-                      </ListGroup.Item>
-                    </ListGroup>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Tab>
+            {/* DMS */}
+            <Tab eventKey="dms" title="Trip Media">
+              <div className="row">
+                <div className="col-md-12 mb-3">
+                  <div className="card border-0 shadow">
+                    <div className="card-header bg-theme text-light">DMS</div>
+                    <div className="card-body">
+                      <div className="row">
+                        <div className="col-md-4">
+                          <ListGroup>
+                            <ListGroup.Item
+                              as="li"
+                              className="d-flex justify-content-between align-items-start border-0"
+                            >
+                              <div className="ms-2 me-auto">
+                                <Form.Group className="" controlId="dms11">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="Trip Start"
+                                    value="TRIP_START"
+                                    disabled={tripStartAlert === 0}
+                                    data-custom-attribute="DMS"
+                                    onChange={handlecheckbox}
+                                  />
+                                </Form.Group>
+                              </div>
+                              <Badge bg="primary" pill>
+                                {tripStartAlert}
+                              </Badge>
+                            </ListGroup.Item>
 
-          {/* DMS */}
-          <Tab eventKey="dms" title="Trip Media">
-            <div className="row">
-              <div className="col-md-4 mb-3">
-                <div className="card">
-                  <div className="card-header">
-                    <strong>DMS</strong>
-                  </div>
-                  <div className="card-body">
-                    <ListGroup>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms11">
-                            <Form.Check
-                              type="checkbox"
-                              label="Trip Start"
-                              value="TRIP_START"
-                              disabled={tripStartAlert === 0}
-                              data-custom-attribute="DMS"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {tripStartAlert}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms1">
-                            <Form.Check
-                              type="checkbox"
-                              label="Drowsiness"
-                              disabled={drowsiness === 0}
-                              value="DROWSINESS"
-                              data-custom-attribute="DMS"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {drowsiness}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms2">
-                            <Form.Check
-                              type="checkbox"
-                              label="Distraction"
-                              disabled={distraction === 0}
-                              value="DISTRACTION"
-                              data-custom-attribute="DMS"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {distraction}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms3">
-                            <Form.Check
-                              type="checkbox"
-                              label="Overspeeding"
-                              disabled={dmsoverSpd === 0}
-                              value="OVERSPEEDING"
-                              data-custom-attribute="DMS"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {dmsoverSpd}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms4">
-                            <Form.Check
-                              type="checkbox"
-                              label="No Seatbelt"
-                              disabled={noSeatbelt === 0}
-                              value="NO_SEATBELT"
-                              data-custom-attribute="DMS"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {noSeatbelt}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms5">
-                            <Form.Check
-                              type="checkbox"
-                              label="Using Phone"
-                              disabled={usePhone === 0}
-                              value="USING_PHONE"
-                              data-custom-attribute="DMS"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {usePhone}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms6">
-                            <Form.Check
-                              type="checkbox"
-                              label="Unknown Driver"
-                              disabled={unknownDriver === 0}
-                              value="UNKNOWN_DRIVER"
-                              data-custom-attribute="DMS"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {unknownDriver}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms7">
-                            <Form.Check
-                              type="checkbox"
-                              label="No Driver"
-                              disabled={noDriver === 0}
-                              value="NO_DRIVER"
-                              data-custom-attribute="DMS"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {noDriver}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms8">
-                            <Form.Check
-                              type="checkbox"
-                              label="Smoking"
-                              disabled={smoking === 0}
-                              value="SMOKING"
-                              data-custom-attribute="DMS"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {smoking}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms9">
-                            <Form.Check
-                              type="checkbox"
-                              label="Rash Driving"
-                              disabled={rashDrive === 0}
-                              value="RASH_DRIVING"
-                              data-custom-attribute="DMS"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {rashDrive}
-                        </Badge>
-                      </ListGroup.Item>
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start border-0"
-                      >
-                        <div className="ms-2 me-auto">
-                          <Form.Group className="" controlId="dms10">
-                            <Form.Check
-                              type="checkbox"
-                              label="Accident"
-                              disabled={dmsAccident === 0}
-                              value="ACCIDENT"
-                              data-custom-attribute="DMS"
-                              onChange={handlecheckbox}
-                            />
-                          </Form.Group>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {dmsAccident}
-                        </Badge>
-                      </ListGroup.Item>
-                    </ListGroup>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-8">
-                <h5>DMS Media</h5>
-                <div className="row">{dmsIframes}</div>
-              </div>
-            </div>
-          </Tab>
+                            <ListGroup.Item
+                              as="li"
+                              className="d-flex justify-content-between align-items-start border-0"
+                            >
+                              <div className="ms-2 me-auto">
+                                <Form.Group className="" controlId="dms1">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="Drowsiness"
+                                    disabled={drowsiness === 0}
+                                    value="DROWSINESS"
+                                    data-custom-attribute="DMS"
+                                    onChange={handlecheckbox}
+                                  />
+                                </Form.Group>
+                              </div>
+                              <Badge bg="primary" pill>
+                                {drowsiness}
+                              </Badge>
+                            </ListGroup.Item>
 
-          {/* Trip Details Vehicle and Driver */}
-          <Tab eventKey="details" title="Trip Details">
-            <div className="row">
-              <div className="col-md-6 mb-3">
-                <div className="card">
-                  <div className="card-header">Vehicle Details</div>
-                  <div className="card-body">
-                    <p>
-                      <strong>Vehicle Name:</strong> {vehicle.vehicle_name}
-                    </p>
-                    <p>
-                      <strong>Registration Number: </strong>
-                      {vehicle.vehicle_registration}
-                    </p>
-                    <p>
-                      <strong>ECU:</strong> {vehicle.ecu}
-                    </p>
-                    <p>
-                      <strong>IoT:</strong> {vehicle.iot}
-                    </p>
+                            <ListGroup.Item
+                              as="li"
+                              className="d-flex justify-content-between align-items-start border-0"
+                            >
+                              <div className="ms-2 me-auto">
+                                <Form.Group className="" controlId="dms2">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="Distraction"
+                                    disabled={distraction === 0}
+                                    value="DISTRACTION"
+                                    data-custom-attribute="DMS"
+                                    onChange={handlecheckbox}
+                                  />
+                                </Form.Group>
+                              </div>
+                              <Badge bg="primary" pill>
+                                {distraction}
+                              </Badge>
+                            </ListGroup.Item>
+
+                            <ListGroup.Item
+                              as="li"
+                              className="d-flex justify-content-between align-items-start border-0"
+                            >
+                              <div className="ms-2 me-auto">
+                                <Form.Group className="" controlId="dms3">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="Overspeeding"
+                                    disabled={dmsoverSpd === 0}
+                                    value="OVERSPEEDING"
+                                    data-custom-attribute="DMS"
+                                    onChange={handlecheckbox}
+                                  />
+                                </Form.Group>
+                              </div>
+                              <Badge bg="primary" pill>
+                                {dmsoverSpd}
+                              </Badge>
+                            </ListGroup.Item>
+                          </ListGroup>
+                        </div>
+                        <div className="col-md-4">
+                          <ListGroup>
+                            <ListGroup.Item
+                              as="li"
+                              className="d-flex justify-content-between align-items-start border-0"
+                            >
+                              <div className="ms-2 me-auto">
+                                <Form.Group className="" controlId="dms4">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="No Seatbelt"
+                                    disabled={noSeatbelt === 0}
+                                    value="NO_SEATBELT"
+                                    data-custom-attribute="DMS"
+                                    onChange={handlecheckbox}
+                                  />
+                                </Form.Group>
+                              </div>
+                              <Badge bg="primary" pill>
+                                {noSeatbelt}
+                              </Badge>
+                            </ListGroup.Item>
+
+                            <ListGroup.Item
+                              as="li"
+                              className="d-flex justify-content-between align-items-start border-0"
+                            >
+                              <div className="ms-2 me-auto">
+                                <Form.Group className="" controlId="dms5">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="Using Phone"
+                                    disabled={usePhone === 0}
+                                    value="USING_PHONE"
+                                    data-custom-attribute="DMS"
+                                    onChange={handlecheckbox}
+                                  />
+                                </Form.Group>
+                              </div>
+                              <Badge bg="primary" pill>
+                                {usePhone}
+                              </Badge>
+                            </ListGroup.Item>
+
+                            <ListGroup.Item
+                              as="li"
+                              className="d-flex justify-content-between align-items-start border-0"
+                            >
+                              <div className="ms-2 me-auto">
+                                <Form.Group className="" controlId="dms6">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="Unknown Driver"
+                                    disabled={unknownDriver === 0}
+                                    value="UNKNOWN_DRIVER"
+                                    data-custom-attribute="DMS"
+                                    onChange={handlecheckbox}
+                                  />
+                                </Form.Group>
+                              </div>
+                              <Badge bg="primary" pill>
+                                {unknownDriver}
+                              </Badge>
+                            </ListGroup.Item>
+
+                            <ListGroup.Item
+                              as="li"
+                              className="d-flex justify-content-between align-items-start border-0"
+                            >
+                              <div className="ms-2 me-auto">
+                                <Form.Group className="" controlId="dms7">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="No Driver"
+                                    disabled={noDriver === 0}
+                                    value="NO_DRIVER"
+                                    data-custom-attribute="DMS"
+                                    onChange={handlecheckbox}
+                                  />
+                                </Form.Group>
+                              </div>
+                              <Badge bg="primary" pill>
+                                {noDriver}
+                              </Badge>
+                            </ListGroup.Item>
+                          </ListGroup>
+                        </div>
+                        <div className="col-md-4">
+                          <ListGroup>
+                            <ListGroup.Item
+                              as="li"
+                              className="d-flex justify-content-between align-items-start border-0"
+                            >
+                              <div className="ms-2 me-auto">
+                                <Form.Group className="" controlId="dms8">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="Smoking"
+                                    disabled={smoking === 0}
+                                    value="SMOKING"
+                                    data-custom-attribute="DMS"
+                                    onChange={handlecheckbox}
+                                  />
+                                </Form.Group>
+                              </div>
+                              <Badge bg="primary" pill>
+                                {smoking}
+                              </Badge>
+                            </ListGroup.Item>
+
+                            <ListGroup.Item
+                              as="li"
+                              className="d-flex justify-content-between align-items-start border-0"
+                            >
+                              <div className="ms-2 me-auto">
+                                <Form.Group className="" controlId="dms9">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="Rash Driving"
+                                    disabled={rashDrive === 0}
+                                    value="RASH_DRIVING"
+                                    data-custom-attribute="DMS"
+                                    onChange={handlecheckbox}
+                                  />
+                                </Form.Group>
+                              </div>
+                              <Badge bg="primary" pill>
+                                {rashDrive}
+                              </Badge>
+                            </ListGroup.Item>
+
+                            <ListGroup.Item
+                              as="li"
+                              className="d-flex justify-content-between align-items-start border-0"
+                            >
+                              <div className="ms-2 me-auto">
+                                <Form.Group className="" controlId="dms10">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="Accident"
+                                    disabled={dmsAccident === 0}
+                                    value="ACCIDENT"
+                                    data-custom-attribute="DMS"
+                                    onChange={handlecheckbox}
+                                  />
+                                </Form.Group>
+                              </div>
+                              <Badge bg="primary" pill>
+                                {dmsAccident}
+                              </Badge>
+                            </ListGroup.Item>
+                          </ListGroup>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
+                {/* <div className="col-md-8">
+                  <h6>DMS Media</h6>
+                  <div className="row">{dmsIframes}</div>
+                </div> */}
               </div>
-              {/* <div className="col-md-6 mb-3">
-                <div className="card">
-                  <div className="card-header">Driver Details</div>
-                  <div className="card-body">
-                    <p>
-                      <strong>Driver Name:</strong> Ramu
-                    </p>
-                    <p>
-                      <strong>Licence Number:</strong> KHD9278932
-                    </p>
-                    <p>
-                      <strong>Contact Number:</strong> +91-39833-32983
-                    </p>
-                    <p>
-                      <strong>Email ID:</strong> driver@stk.com
-                    </p>
+            </Tab>
+
+            {/* Trip Details Vehicle and Driver */}
+            <Tab eventKey="details" title="Trip Details">
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <div className="card border-0 shadow">
+                    <div className="card-header bg-theme text-light">
+                      Vehicle Details
+                    </div>
+                    <div className="card-body">
+                      <p>
+                        <strong>Vehicle Name:</strong> {vehicle.vehicle_name}
+                      </p>
+                      <p>
+                        <strong>Registration Number: </strong>
+                        {vehicle.vehicle_registration}
+                      </p>
+                      <p>
+                        <strong>ECU:</strong> {vehicle.ecu}
+                      </p>
+                      <p>
+                        <strong>IoT:</strong> {vehicle.iot}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div> */}
-            </div>
-          </Tab>
-        </Tabs>
-      </div>
-    </Container>
-  );
+                {/* <div className="col-md-6 mb-3">
+                  <div className="card">
+                    <div className="card-header">Driver Details</div>
+                    <div className="card-body">
+                      <p>
+                        <strong>Driver Name:</strong> Ramu
+                      </p>
+                      <p>
+                        <strong>Licence Number:</strong> KHD9278932
+                      </p>
+                      <p>
+                        <strong>Contact Number:</strong> +91-39833-32983
+                      </p>
+                      <p>
+                        <strong>Email ID:</strong> driver@stk.com
+                      </p>
+                    </div>
+                  </div>
+                </div> */}
+              </div>
+            </Tab>
+          </Tabs>
+        </div>
+      </Container>
+    );
+  }
 };
 
 export default CompletedTripView;

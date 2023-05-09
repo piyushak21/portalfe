@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import axios from "axios";
 import DataTable from "react-data-table-component";
+import { BsArrowLeftRight } from "react-icons/bs";
+import { GrPrevious, GrNext } from "react-icons/gr";
 
 const CompletedTripList = () => {
   const [tripData, setTripData] = useState();
@@ -35,10 +37,9 @@ const CompletedTripList = () => {
 
   const columns = [
     {
-      name: "#",
+      name: "Sr No.",
       selector: (row, ind) => (currentPage - 1) * itemsPerPage + ind + 1,
-      sortable: true,
-      width: "70px",
+      width: "100px",
     },
     {
       name: "Trip ID",
@@ -88,12 +89,12 @@ const CompletedTripList = () => {
     },
     headCells: {
       style: {
-        backgroundColor: "#f1f1f1",
-        fontWeight: "bold",
+        backgroundColor: "#112b3c",
+        fontWeight: "light",
         fontSize: "16px",
         border: "none",
         minHeight: "50px",
-        color: "#333",
+        color: "#fff",
       },
     },
     cells: {
@@ -125,42 +126,65 @@ const CompletedTripList = () => {
   const currentItems = filtertripData.slice(indexOfFirstItem, indexOfLastItem);
   const Pagination = () => {
     return (
-      <div>
-        <div>
-          <select value={itemsPerPage} onChange={handleItemsPerPageChange}>
+      <div className="d-flex justify-content-between mt-3 mb-5">
+        {/* <div>
+          <select onChange={handleItemsPerPageChange}>
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="30">30</option>
           </select>
+        </div> */}
+        <div>
+          Showing {currentItems.length} of {filtertripData.length} items
         </div>
         <div>
           <button
+            className="border prev text-dark mx-1 py-1 border-0 bg-light"
+            title="Previous"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
-            Previous
+            <GrPrevious />
           </button>
-
-          {currentPage > 1 && (
-            <button onClick={() => handlePageChange(currentPage - 1)}>
-              {currentPage - 1}
+          {/* {currentPage > 1 && (
+            <button className="pages border text-dark py-1 px-2 border-dark" onClick={() => handlePageChange(currentPage - 2)}>
+              {currentPage - 2}
             </button>
           )}
-          <button disabled>{currentPage}</button>
+          
+          {currentPage > 1 && (
+            <button className=" pages border text-dark py-1 px-2 border-dark" onClick={() => handlePageChange(currentPage - 1)}>
+              {currentPage - 1}
+            </button>
+          )} */}
+
+          <button className="pages border text-dark py-1 px-2 " disabled>
+            {currentPage}
+          </button>
           {currentPage < totalPages && (
-            <button onClick={() => handlePageChange(currentPage + 1)}>
+            <button
+              className="pages border-0 text-dark py-1 px-2"
+              onClick={() => handlePageChange(currentPage + 1)}
+            >
               {currentPage + 1}
             </button>
           )}
+          {currentPage > 1 && (
+            <button
+              className=" pages border-0 text-dark py-1 px-2"
+              onClick={() => handlePageChange(currentPage + 2)}
+            >
+              {currentPage + 2}
+            </button>
+          )}
           <button
+            className="border next text-dark mx-1 py-1"
+            title="Next"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >
-            Next
+            <GrNext />
           </button>
-        </div>
-        <div>
-          Showing {currentItems.length} of {filtertripData.length} items
         </div>
       </div>
     );
@@ -170,8 +194,26 @@ const CompletedTripList = () => {
   const CustomHeader = () => {
     return (
       <div>
-        <h4>Completed Trips</h4>
-        <p className="mb-0">Total: {tripData?.length}</p>
+        <h4>
+          Completed Trips{" "}
+          <span
+            className="rounded-pill text-light bg-danger px-3 py-1"
+            style={{ fontSize: "14px", fontWeight: "400" }}
+          >
+            Total: {tripData?.length}
+          </span>
+        </h4>
+        <div className="mt-4">
+          <span>Show&nbsp;</span>
+          <select onChange={handleItemsPerPageChange} className="px-1">
+            <option style={{ display: "none" }}>{itemsPerPage}</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+          <span>&nbsp;entries</span>
+        </div>
+        {/* <p className="mb-0" >Total: {tripData?.length}</p> */}
       </div>
     );
   };
@@ -216,10 +258,11 @@ const CompletedTripList = () => {
             onClick={() => navigate("/ongoing-trips")}
             className="btn btn-theme"
           >
-            Ongoing Trips
+            Ongoing Trips&nbsp;&nbsp;
+            <BsArrowLeftRight />
           </button>
           {/* Search bar */}
-          <div className="d-flex gap-4 mt-1">
+          <div className="d-flex gap-4 mt-4">
             <div>
               <input
                 type="text"
@@ -232,7 +275,7 @@ const CompletedTripList = () => {
               <input
                 type="text"
                 placeholder="Vehicle Name"
-                className="form-control"
+                className="form-control "
                 onChange={searchTwo}
               />
             </div>
@@ -240,12 +283,14 @@ const CompletedTripList = () => {
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-body">
+      <div className="card border-0 shadow p-0">
+        <div className="card-body p-0">
           <DataTable
+            customStyles={customStyles}
             noHeader
             columns={columns}
             data={currentItems}
+            // pagination
             highlightOnHover
             onRowClicked={handleClick}
             pointerOnHover

@@ -4,9 +4,9 @@ import { AiFillEdit, AiFillEye } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import DataTable from "react-data-table-component";
+import { GrPrevious, GrNext } from "react-icons/gr";
 
 ///Display customer list
-
 const Users = () => {
   const navigate = useNavigate();
   const [customerData, setCustomerData] = useState([]);
@@ -31,9 +31,9 @@ const Users = () => {
 
   const columns = [
     {
-      name: "#",
+      name: "Sr No.",
       selector: (row, ind) => (currentPage - 1) * itemsPerPage + ind + 1,
-      width: "70px",
+      width: "100px",
     },
     {
       name: "First Name",
@@ -67,12 +67,18 @@ const Users = () => {
       cell: (row) => (
         <span>
           <small>
-            <Link to={`/users-edit/${row.user_id}`} className="text-decnone">
-              <AiFillEdit size={18} className="text-dark mx-2 h4" />
+            <Link
+              to={`/users-edit/${row.user_id}`}
+              className="text-decnone btn btn-theme-border btn-sm"
+            >
+              <AiFillEdit size={18} />
             </Link>
 
-            <Link to={`/users-show/${row.user_id}`}>
-              <AiFillEye className="h5 text-dark" />
+            <Link
+              to={`/users-show/${row.user_id}`}
+              className="btn btn-theme-border btn-sm ms-2"
+            >
+              <AiFillEye />
             </Link>
           </small>
         </span>
@@ -103,47 +109,71 @@ const Users = () => {
   const currentItems = filterCustomer.slice(indexOfFirstItem, indexOfLastItem);
   const Pagination = () => {
     return (
-      <div>
-        <div>
-          <select value={itemsPerPage} onChange={handleItemsPerPageChange}>
+      <div className="d-flex justify-content-between mt-3 mb-5">
+        {/* <div>
+          <select onChange={handleItemsPerPageChange}>
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="30">30</option>
           </select>
+        </div> */}
+        <div>
+          Showing {currentItems.length} of {filterCustomer.length} items
         </div>
         <div>
           <button
+            className="border prev text-dark mx-1 py-1 border-0 bg-light"
+            title="Previous"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
-            Previous
+            <GrPrevious />
           </button>
-
-          {currentPage > 1 && (
-            <button onClick={() => handlePageChange(currentPage - 1)}>
-              {currentPage - 1}
+          {/* {currentPage > 1 && (
+            <button className="pages border text-dark py-1 px-2 border-dark" onClick={() => handlePageChange(currentPage - 2)}>
+              {currentPage - 2}
             </button>
           )}
-          <button disabled>{currentPage}</button>
+          
+          {currentPage > 1 && (
+            <button className=" pages border text-dark py-1 px-2 border-dark" onClick={() => handlePageChange(currentPage - 1)}>
+              {currentPage - 1}
+            </button>
+          )} */}
+
+          <button className="pages border text-dark py-1 px-2 " disabled>
+            {currentPage}
+          </button>
           {currentPage < totalPages && (
-            <button onClick={() => handlePageChange(currentPage + 1)}>
+            <button
+              className="pages border-0 text-dark py-1 px-2"
+              onClick={() => handlePageChange(currentPage + 1)}
+            >
               {currentPage + 1}
             </button>
           )}
+          {currentPage > 1 && (
+            <button
+              className=" pages border-0 text-dark py-1 px-2"
+              onClick={() => handlePageChange(currentPage + 2)}
+            >
+              {currentPage + 2}
+            </button>
+          )}
           <button
+            className="border next text-dark mx-1 py-1"
+            title="Next"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >
-            Next
+            <GrNext />
           </button>
-        </div>
-        <div>
-          Showing {currentItems.length} of {filterCustomer.length} items
         </div>
       </div>
     );
   };
 
+  // Table custom styling
   const customStyles = {
     rows: {
       style: {
@@ -152,26 +182,46 @@ const Users = () => {
     },
     headCells: {
       style: {
-        backgroundColor: "#f5f5f5",
-        fontWeight: "bold",
+        backgroundColor: "#112b3c",
+        fontWeight: "light",
         fontSize: "16px",
         border: "none",
         minHeight: "50px",
+        color: "#fff",
       },
     },
     cells: {
       style: {
         border: "none",
-        fontSize: "15px",
+        fontSize: "16px",
       },
     },
   };
 
+  // Set page headings
   const CustomHeader = () => {
     return (
       <div>
-        <h4>Customers</h4>
-        <p className="mb-0">Total:{customerData?.length}</p>
+        <h4>
+          Customers
+          <span
+            className="rounded-pill ms-2 text-light bg-danger px-3 py-1"
+            style={{ fontSize: "14px", fontWeight: "400" }}
+          >
+            Total: {filterCustomer?.length}
+          </span>
+        </h4>
+        <div className="mt-4">
+          <span>Show&nbsp;</span>
+          <select onChange={handleItemsPerPageChange} className="px-1">
+            <option style={{ display: "none" }}>{itemsPerPage}</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+          <span>&nbsp;entries</span>
+        </div>
+        {/* <p className="mb-0" >Total: {tripData?.length}</p> */}
       </div>
     );
   };
@@ -185,6 +235,7 @@ const Users = () => {
   const searchTwo = (e) => {
     setSearch2(e.target.value);
   };
+
   useEffect(() => {
     if (search1) {
       const result = filterCustomer?.filter((el) => {
@@ -210,7 +261,7 @@ const Users = () => {
         <div className="text-end">
           <button
             onClick={() => navigate("/users-add")}
-            className="btn btn-theme"
+            className="btn btn-theme mb-3"
           >
             Add Customer
           </button>
@@ -235,8 +286,8 @@ const Users = () => {
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-body">
+      <div className="card border-0 shadow">
+        <div className="card-body p-0">
           <DataTable
             customStyles={customStyles}
             columns={columns}

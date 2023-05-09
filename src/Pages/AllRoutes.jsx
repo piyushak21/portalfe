@@ -24,6 +24,9 @@ import Vehicle from "./Customer/Vehicle";
 import VehicleShow from "./Customer/VehicleShow";
 import Login from "./Login";
 
+//
+import TripView from "./Customer/TripView";
+
 const AllRoutes = () => {
   return (
     <Routes>
@@ -107,6 +110,14 @@ const AllRoutes = () => {
         element={
           <CustomerProtected>
             <CustomerDevices />
+          </CustomerProtected>
+        }
+      />
+      <Route
+        path="/tripview/:id"
+        element={
+          <CustomerProtected>
+            <TripView />
           </CustomerProtected>
         }
       />

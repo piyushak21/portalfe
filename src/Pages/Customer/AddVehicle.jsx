@@ -20,29 +20,26 @@ const AddVehicle = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (
-      data.vehicle_name &&
-      data.vehicle_registration &&
-      data.ecu &&
-      data.iot &&
-      data.status &&
-      data.featureset
-    ) {
-      axios
-        .post(
-          `${process.env.REACT_APP_BASE_URL}/vehicles/addvehicle/${user_id}`,
-          data,
-          {
-            headers: { authorization: `bearer ${token}` },
-          }
-        )
-        .then((res) => {
-          console.log(res);
-          alert("Vehicle Added Successfully");
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    if (data.vehicle_name && data.vehicle_registration && data.status) {
+      if (data.dms || (data.iot && data.ecu)) {
+        axios
+          .post(
+            `${process.env.REACT_APP_BASE_URL}/vehicles/addvehicle/${user_id}`,
+            data,
+            {
+              headers: { authorization: `bearer ${token}` },
+            }
+          )
+          .then((res) => {
+            console.log(res);
+            alert("Vehicle Added Successfully");
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+        alert("Device Data Required");
+      }
     } else {
       alert("Fill All Details");
     }
@@ -110,13 +107,6 @@ const AddVehicle = () => {
                       name="vehicle_registration"
                       onChange={handleChange}
                     />
-                  </InputGroup>
-                </div>
-
-                <div>
-                  <label htmlFor="">Featureset</label>
-                  <InputGroup className="mb-3">
-                    <Form.Control name="featureset" onChange={handleChange} />
                   </InputGroup>
                 </div>
 

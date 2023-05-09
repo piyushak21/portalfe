@@ -2,10 +2,8 @@ import React from "react";
 
 function Footer() {
   return (
-    <div className="text-center p-2 text-muted fixed-bottom bg-light">
-      <small>
-        <span>Made with ❤️ by Starkenn Technologies</span>
-      </small>
+    <div className="text-center p-1 fixed-bottom bg-dark text-light">
+      <span className="footer-text">Made with ❤️ by <a href="https://starkenn.com/" target="_blank">Starkenn Technologies</a></span>
     </div>
   );
 }
