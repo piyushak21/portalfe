@@ -837,80 +837,82 @@ const CompletedTripView = () => {
           >
             {/* Trip summary tab */}
             <Tab eventKey="summary" title="Trip Summary">
-              <div className="row">
-                <div className="col-md-4">
-                  <div className="d-flex my-3">
-                    <div className="text-center">
-                      <span className="h2 text-muted">
-                        <BsPinMapFill className="text-success" />
-                      </span>
+              <div className="card border-0">
+                <div className="row">
+                  <div className="col-md-4">
+                    <div className="d-flex my-3">
+                      <div className="text-center">
+                        <span className="h2 text-muted">
+                          <BsPinMapFill className="text-success" />
+                        </span>
+                      </div>
+                      <div className="px-4">
+                        <p className="mb-0 theme-text">
+                          <small>
+                            <em>Source</em>
+                          </small>
+                        </p>
+                        <p className="mb-0">{startAddress}</p>
+                        <span>
+                          <small>
+                            <strong>{startTime}</strong>
+                          </small>
+                        </span>
+                      </div>
                     </div>
-                    <div className="px-4">
-                      <p className="mb-0 theme-text">
-                        <small>
-                          <em>Source</em>
-                        </small>
-                      </p>
-                      <p className="mb-0">{startAddress}</p>
-                      <span>
-                        <small>
-                          <strong>{startTime}</strong>
-                        </small>
-                      </span>
+                    <hr />
+                    <div className="d-flex my-3">
+                      <div className="text-center">
+                        <span className="h2 text-muted">
+                          <BsPinMapFill className="text-danger" />
+                        </span>
+                      </div>
+                      <div className="px-4">
+                        <p className="mb-0 theme-text">
+                          <small>
+                            <em>Destination</em>
+                          </small>
+                        </p>
+                        <p className="mb-0">{endAddress}</p>
+                        <span>
+                          <small>
+                            <strong>{endTime}</strong>
+                          </small>
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <hr />
-                  <div className="d-flex my-3">
-                    <div className="text-center">
-                      <span className="h2 text-muted">
-                        <BsPinMapFill className="text-danger" />
-                      </span>
-                    </div>
-                    <div className="px-4">
-                      <p className="mb-0 theme-text">
-                        <small>
-                          <em>Destination</em>
-                        </small>
-                      </p>
-                      <p className="mb-0">{endAddress}</p>
-                      <span>
-                        <small>
-                          <strong>{endTime}</strong>
-                        </small>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-8">
-                  <div className="card border-0 shadow">
-                    <div className="card-header bg-theme text-light text-light">
-                      Trip Ananlytics
-                    </div>
-                    <div className="card-body">
-                      <div className="row">
-                        <div className="col-sm-3 mb-2">
-                          <p className="mb-0">
-                            <strong>Total Distance</strong>
-                          </p>
-                          <p>{distance} KM</p>
-                        </div>
-                        <div className="col-sm-3 mb-2">
-                          <p className="mb-0">
-                            <strong>Travelled Time</strong>
-                          </p>
-                          <p>{duration}</p>
-                        </div>
-                        <div className="col-sm-3 mb-2">
-                          <p className="mb-0">
-                            <strong>Average Speed</strong>
-                          </p>
-                          <p>{avgSpd} Kmph</p>
-                        </div>
-                        <div className="col-sm-3 mb-2">
-                          <p className="mb-0">
-                            <strong>Max speed</strong>
-                          </p>
-                          <p>{maxSpd} Kmph</p>
+                  <div className="col-md-8">
+                    <div className="card border-0 shadow">
+                      <div className="card-header bg-theme text-light text-light">
+                        Trip Ananlytics
+                      </div>
+                      <div className="card-body">
+                        <div className="row">
+                          <div className="col-sm-3 mb-2">
+                            <p className="mb-0">
+                              <strong>Total Distance</strong>
+                            </p>
+                            <p>{distance} KM</p>
+                          </div>
+                          <div className="col-sm-3 mb-2">
+                            <p className="mb-0">
+                              <strong>Travelled Time</strong>
+                            </p>
+                            <p>{duration}</p>
+                          </div>
+                          <div className="col-sm-3 mb-2">
+                            <p className="mb-0">
+                              <strong>Average Speed</strong>
+                            </p>
+                            <p>{avgSpd} Kmph</p>
+                          </div>
+                          <div className="col-sm-3 mb-2">
+                            <p className="mb-0">
+                              <strong>Max speed</strong>
+                            </p>
+                            <p>{maxSpd} Kmph</p>
+                          </div>
                         </div>
                       </div>
                     </div>

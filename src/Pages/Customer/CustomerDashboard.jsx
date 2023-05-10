@@ -88,11 +88,14 @@ const CustomerDashboard = () => {
   return (
     <div className="mt-4">
       <Container className="my-4">
-        <h4 className="mb-0 text-uppercase" >Welcome to Starkenn,</h4>
+        <h4 className="mb-0 text-uppercase">Welcome to Starkenn,</h4>
         <p className="theme-text">Every Life Counts!</p>
         <div className="row mt-5">
-          <div onClick={() => navigate("/vehicle")} className="col-md-3 ">
-            <div className="card border-0 shadow mb-3 cursor">
+          <div className="col-md-3 ">
+            <div
+              onClick={() => navigate("/vehicle")}
+              className="card border-0 shadow mb-3 cursor"
+            >
               <div className="card-body text-center text-muted">
                 <BsTruck className="h1 display-4 my-2 theme-text" />
                 <h1 className="display-4 text-dark">{vehicleData?.length}</h1>
@@ -100,8 +103,11 @@ const CustomerDashboard = () => {
               </div>
             </div>
           </div>
-          <div onClick={() => navigate("/ongoing-trips")} className="col-md-3">
-            <div className="card border-0 shadow mb-3 cursor">
+          <div className="col-md-3">
+            <div
+              onClick={() => navigate("/ongoing-trips")}
+              className="card border-0 shadow mb-3 cursor"
+            >
               <div className="card-body text-center text-muted">
                 <BsRecycle className="h1 display-4 my-2 theme-text" />
                 <h1 className="display-4 text-dark">{tripsOngoing?.length}</h1>
@@ -109,11 +115,11 @@ const CustomerDashboard = () => {
               </div>
             </div>
           </div>
-          <div
-            onClick={() => navigate("/completed-trips/")}
-            className="col-md-3"
-          >
-            <div className="card border-0 shadow mb-3 cursor">
+          <div className="col-md-3">
+            <div
+              onClick={() => navigate("/completed-trips/")}
+              className="card border-0 shadow mb-3 cursor"
+            >
               <div className="card-body text-center text-muted">
                 <BsFillCheckSquareFill className="h1 display-4 my-2 theme-text" />
                 <h1 className="display-4 text-dark">

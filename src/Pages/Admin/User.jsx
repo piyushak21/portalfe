@@ -208,6 +208,10 @@ const Users = () => {
   const CustomHeader = () => {
     return (
       <div>
+        <div>
+          {" "}
+          <Link to="/admin-dashboard">&#8592; Dashboard</Link>
+        </div>
         <h4>
           Customers
           <span
@@ -217,10 +221,6 @@ const Users = () => {
             Total: {filterCustomer?.length}
           </span>
         </h4>
-        <div>
-          {" "}
-          <Link to="/admin-dashboard">&#8592; Dashboard</Link>
-        </div>
         <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">

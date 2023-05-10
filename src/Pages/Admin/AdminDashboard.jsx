@@ -8,17 +8,17 @@ const AdminDashboard = () => {
   const token = localStorage.getItem("token");
   const [customerData, setCustomerData] = useState([]);
   const [devices, setDevices] = useState([]);
-  const [vehcicleData, setVehicleData] = useState([]);
+  // const [vehcicleData, setVehicleData] = useState([]);
   const navigate = useNavigate();
 
-  const getvehicleData = async () => {
-    await axios
-      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/getall`, {
-        headers: { authorization: `bearer ${token}` },
-      })
-      .then((res) => setVehicleData(res.data.getData))
-      .catch((err) => console.log(err));
-  };
+  // const getvehicleData = async () => {
+  //   await axios
+  //     .get(`${process.env.REACT_APP_BASE_URL}/vehicles/getall`, {
+  //       headers: { authorization: `bearer ${token}` },
+  //     })
+  //     .then((res) => setVehicleData(res.data.getData))
+  //     .catch((err) => console.log(err));
+  // };
 
   const getDevicesData = async () => {
     await axios
@@ -41,7 +41,7 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    getvehicleData();
+    // getvehicleData();
     getDevicesData();
     getCustomersData();
   }, []);
@@ -50,8 +50,11 @@ const AdminDashboard = () => {
     <div className="mt-4">
       <Container className="py-5">
         <div className="row">
-          <div onClick={() => navigate("/users")} className="col-md-3">
-            <div className="card border text-center text-muted cursor">
+          <div className="col-md-3">
+            <div
+              onClick={() => navigate("/users")}
+              className="card border text-center text-muted cursor"
+            >
               <div className="card-body">
                 <BsPersonFill className="h1 display-4 my-2 theme-text" />
                 <h1 className="display-4 text-dark">{customerData.length}</h1>
@@ -60,8 +63,11 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div onClick={() => navigate("/devices")} className="col-md-3">
-            <div className="card border text-center text-muted cursor">
+          <div className="col-md-3">
+            <div
+              onClick={() => navigate("/devices")}
+              className="card border text-center text-muted cursor"
+            >
               <div className="card-body">
                 <BsFillCpuFill className="h1 display-4 my-2 theme-text" />
                 <h1 className="display-4 text-dark">{devices.length}</h1>

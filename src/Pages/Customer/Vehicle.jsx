@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Container } from "react-bootstrap";
-import { AiFillEdit } from "react-icons/ai";
+import { AiFillEdit, AiFillEye } from "react-icons/ai";
 import axios from "axios";
 import DataTable from "react-data-table-component";
-import { BsArrowLeftRight } from "react-icons/bs";
 import { GrPrevious, GrNext } from "react-icons/gr";
 
 const Vehicle = () => {
@@ -89,10 +88,16 @@ const Vehicle = () => {
             >
               <AiFillEdit size={18} />
             </Link>
+            <Link
+              to={`/vehicle-show/${row.vehicle_id}`}
+              className="btn btn-theme-border ms-2 btn-sm"
+            >
+              <AiFillEye />
+            </Link>
           </small>
         </span>
       ),
-      width: "100px",
+      width: "130px",
     },
   ];
 
@@ -249,7 +254,7 @@ const Vehicle = () => {
 
   // Search with Vehicle registration
   const searchTwo = (e) => {
-    if (e.target.value) {
+    if (e.target.value === "") {
       setFilterVehicle(vehicleData);
     }
     setSearch2(e.target.value);
@@ -271,10 +276,6 @@ const Vehicle = () => {
       setFilterVehicle(result);
     }
   }, [search1, search2]);
-
-  const handleClick = (row) => {
-    navigate(`/vehicle-show/${row.vehicle_id}`);
-  };
 
   return (
     <Container className="my-4">
@@ -317,8 +318,6 @@ const Vehicle = () => {
             columns={columns}
             data={currentItems}
             highlightOnHover
-            onRowClicked={handleClick}
-            pointerOnHover
           />
         </div>
       </div>

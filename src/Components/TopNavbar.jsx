@@ -80,7 +80,7 @@ const TopNavbar = () => {
                 <span className="align-self-center">
                   {" "}
                   Hi,{" "}
-                  <span className="border-bottom">
+                  <span className="border-bottom text-capitalize">
                     {userData[0]?.first_name} {userData[0]?.last_name}
                   </span>
                 </span>

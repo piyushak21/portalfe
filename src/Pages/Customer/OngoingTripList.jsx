@@ -80,7 +80,7 @@ const OngoingTripList = () => {
       name: "Action",
       cell: (row) => (
         <button
-          onClick={() => navigate(`/ongoing-trips/${row.trip_id}`)}
+          onClick={() => navigate(`/tripview/${row.trip_id}`)}
           className="btn btn-outline-primary btn-sm"
         >
           View

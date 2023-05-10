@@ -41,13 +41,13 @@ const ShowUser = () => {
   }, [token, user_id]);
 
   return (
-    <Container className="my-4">
+    <Container className="mt-4 mb-5">
       <div className="row">
         <div className="col-md-6">
           <div className="card">
             <div className="card-body">
               <div>
-                <Link to="/users">&#8592; Customer</Link>
+                <Link to="/users">&#8592; Customers</Link>
                 <h4>Customer Details</h4>
                 <hr />
               </div>

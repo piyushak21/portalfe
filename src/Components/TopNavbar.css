@@ -13,13 +13,19 @@
   text-align: center;
   padding: 0.5rem;
   border-radius: 0.4rem;
+  color: var(--bg-theme);
+  border: 1px solid #fff;
+  transition: 0.6s;
 }
 .nav-box:hover {
   background-color: #f1f1f1;
   cursor: pointer;
+  border: 1px solid #164dc7;
+  transform: scale(1.05);
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
 }
 .topnav {
-  border-top: 2px solid #164dc7;
+  border-top: 2px solid var(--bg-theme);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 .top-icon {

@@ -62,7 +62,7 @@ const Devices = () => {
       name: "Status",
       sortable: true,
       selector: (row) =>
-        row.status == 1 ? (
+        row.device_status == 1 ? (
           <span className="badge px-3 bg-success">Active</span>
         ) : (
           <span className="badge bg-danger">Deactive</span>
@@ -80,12 +80,12 @@ const Devices = () => {
               <AiFillEdit size={18} />
             </Link>
 
-            <Link
+            {/* <Link
               to={`/devices-show/${row.id}`}
               className="btn btn-theme-border ms-2 btn-sm"
             >
               <AiFillEye />
-            </Link>
+            </Link> */}
           </small>
         </span>
       ),
@@ -206,6 +206,10 @@ const Devices = () => {
   const CustomHeader = () => {
     return (
       <div>
+        <div>
+          {" "}
+          <Link to="/admin-dashboard">&#8592; Dashboard</Link>
+        </div>
         <h4>
           Devices
           <span
@@ -215,10 +219,7 @@ const Devices = () => {
             Total: {filterDevices?.length}
           </span>
         </h4>
-        <div>
-          {" "}
-          <Link to="/admin-dashboard">&#8592; Dashboard</Link>
-        </div>
+
         <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">
@@ -304,7 +305,6 @@ const Devices = () => {
             columns={columns}
             data={currentItems}
             highlightOnHover
-            pointerOnHover
           />
         </div>
       </div>

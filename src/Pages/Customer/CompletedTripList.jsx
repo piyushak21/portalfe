@@ -322,7 +322,6 @@ const CompletedTripList = () => {
             data={currentItems}
             // pagination
             highlightOnHover
-            pointerOnHover
           />
         </div>
       </div>

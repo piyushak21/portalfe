@@ -395,84 +395,84 @@ const TripView = () => {
           >
             {/* Trip summary tab */}
             <Tab eventKey="summary" title="Trip Summary">
-              <div className="row">
-                <div className="col-md-4">
-                  <div className="d-flex my-3">
-                    <div className="text-center">
-                      <span className="h2 text-muted">
-                        <BsPinMapFill className="text-success" />
-                      </span>
-                    </div>
-                    <div className="px-4">
-                      <p className="mb-0 text-muted">
-                        <small>
-                          <em>Source</em>
-                        </small>
-                      </p>
-                      <p className="mb-0">{startAddress}</p>
-                      <span>
-                        <small>
-                          <strong>{startTime}</strong>
-                        </small>
-                      </span>
-                    </div>
-                  </div>
-                  <hr />
-                  <div className="d-flex my-3">
-                    <div className="text-center">
-                      <span className="h2 text-muted">
-                        <BsPinMapFill className="text-warning" />
-                      </span>
-                    </div>
-                    <div className="px-4">
-                      <p className="mb-0 text-muted">
-                        <small>
-                          <em>Current Location</em>
-                        </small>
-                      </p>
-                      <p className="mb-0">{endAddress}</p>
-                      <span>
-                        <small>{/* <strong>{lastTime}</strong> */}</small>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-8">
-                  <div className="card border-0 shadow">
-                    <div className="card-header bg-theme text-light">
-                      <strong>Trip Ananlytics</strong>
-                    </div>
-                    <div className="card-body">
-                      <div className="row">
-                        <div className="col-sm-3 mb-3">
-                          <p className="mb-0">
-                            <strong>Total Distance</strong>
-                          </p>
-                          ...{/* <p>{distance} KM</p> */}
-                        </div>
-                        <div className="col-sm-3 mb-3">
-                          <p className="mb-0">
-                            <strong>Travelled Time</strong>
-                          </p>
-                          ...{/* <p>{duration}</p> */}
-                        </div>
-                        {/* <div className="col-sm-3 mb-3">
-                        <p className="mb-0">
-                          <strong>Halt</strong>
+              <div className="card border-0">
+                <div className="row">
+                  <div className="col-md-4">
+                    <div className="d-flex my-3">
+                      <div className="text-center">
+                        <span className="h2 text-muted">
+                          <BsPinMapFill className="text-success" />
+                        </span>
+                      </div>
+                      <div className="px-4">
+                        <p className="mb-0 text-muted">
+                          <small>
+                            <em>Source</em>
+                          </small>
                         </p>
-                        <p>3 Min</p>
-                      </div> */}
-                        <div className="col-sm-3 mb-3">
-                          <p className="mb-0">
-                            <strong>Average Speed</strong>
-                          </p>
-                          ...{/* <p>{avgSpd} m/s</p> */}
-                        </div>
-                        <div className="col-sm-3 mb-3">
-                          <p className="mb-0">
-                            <strong>Max speed</strong>
-                          </p>
-                          ...{/* <p>{maxSpd} Kmph</p> */}
+                        <p className="mb-0">{startAddress}</p>
+                        <span>
+                          <small>
+                            <strong>{startTime}</strong>
+                          </small>
+                        </span>
+                      </div>
+                    </div>
+                    <hr />
+                    <div className="d-flex my-3">
+                      <div className="text-center">
+                        <span className="h2 text-muted">
+                          <BsPinMapFill className="text-warning" />
+                        </span>
+                      </div>
+                      <div className="px-4">
+                        <p className="mb-0 text-muted">
+                          <small>
+                            <em>Current Location</em>
+                          </small>
+                        </p>
+                        <p className="mb-0">{endAddress}</p>
+                        <span>
+                          <small>{/* <strong>{lastTime}</strong> */}</small>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-8">
+                    <div className="card border-0 shadow">
+                      <div className="card-header bg-theme text-light">
+                        <strong>Trip Ananlytics</strong>
+                      </div>
+                      <div className="card-body">
+                        <div className="row">
+                          <div className="col-sm-3 mb-3">
+                            <p className="mb-0">
+                              <strong>Total Distance</strong>
+                            </p>
+                            <span>...</span>
+                            {/* <p>{distance} KM</p> */}
+                          </div>
+                          <div className="col-sm-3 mb-3">
+                            <p className="mb-0">
+                              <strong>Travelled Time</strong>
+                            </p>
+                            <span>...</span>
+                            {/* <p>{duration}</p> */}
+                          </div>
+                          <div className="col-sm-3 mb-3">
+                            <p className="mb-0">
+                              <strong>Average Speed</strong>
+                            </p>
+                            <span>...</span>
+                            {/* <p>{avgSpd} m/s</p> */}
+                          </div>
+                          <div className="col-sm-3 mb-3">
+                            <p className="mb-0">
+                              <strong>Max speed</strong>
+                            </p>
+                            <span>...</span>
+                            {/* <p>{maxSpd} Kmph</p> */}
+                          </div>
                         </div>
                       </div>
                     </div>
