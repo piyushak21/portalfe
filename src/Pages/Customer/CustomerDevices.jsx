@@ -2,7 +2,9 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
 import DataTable from "react-data-table-component";
+import { BsArrowLeftRight } from "react-icons/bs";
 import { GrPrevious, GrNext } from "react-icons/gr";
+import { Link } from "react-router-dom";
 
 const CustomerDevices = () => {
   const [devicesData, setDevicesData] = useState([]);
@@ -35,18 +37,22 @@ const CustomerDevices = () => {
       name: "Sr No.",
       selector: (row, ind) => (currentPage - 1) * itemsPerPage + ind + 1,
       width: "100px",
+      sortable: true,
     },
     {
       name: "Device ID",
       selector: (row) => (!row.device_id ? "NA" : row.device_id),
+      sortable: true,
     },
     {
       name: "Device Type",
       selector: (row) => (!row.device_type ? "NA" : row.device_type),
+      sortable: true,
     },
     {
       name: "Sim Number",
       selector: (row) => (!row.sim_number ? "NA" : row.sim_number),
+      sortable: true,
     },
 
     {
@@ -58,6 +64,7 @@ const CustomerDevices = () => {
           <span className="badge bg-danger">Deactive</span>
         ),
       width: "100px",
+      sortable: true,
     },
   ];
 
@@ -116,9 +123,15 @@ const CustomerDevices = () => {
             <option value="30">30</option>
           </select>
         </div> */}
-        <div>
-          Showing {currentItems.length} of {filterDevices.length} items
-        </div>
+        {currentItems.length == 0 ? (
+          ""
+        ) : (
+          <div>
+            Showing {indexOfFirstItem + 1} to{" "}
+            {currentItems.length + indexOfFirstItem} of {filterDevices.length}{" "}
+            items
+          </div>
+        )}
         <div>
           <button
             className="border prev text-dark mx-1 py-1 border-0 bg-light"
@@ -151,14 +164,7 @@ const CustomerDevices = () => {
               {currentPage + 1}
             </button>
           )}
-          {currentPage > 1 && (
-            <button
-              className=" pages border-0 text-dark py-1 px-2"
-              onClick={() => handlePageChange(currentPage + 2)}
-            >
-              {currentPage + 2}
-            </button>
-          )}
+
           <button
             className="border next text-dark mx-1 py-1"
             title="Next"
@@ -185,7 +191,11 @@ const CustomerDevices = () => {
             Total: {filterDevices?.length}
           </span>
         </h4>
-        <div className="mt-4">
+        <div>
+          {" "}
+          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
+        </div>
+        <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">
             <option style={{ display: "none" }}>{itemsPerPage}</option>
@@ -202,11 +212,17 @@ const CustomerDevices = () => {
 
   // Search with device_id
   const searchOne = (e) => {
+    if (e.target.value === "") {
+      setFilterDevices(devicesData);
+    }
     setSearch1(e.target.value);
   };
 
   // Search with device_type
   const searchTwo = (e) => {
+    if (e.target.value === "") {
+      setFilterDevices(devicesData);
+    }
     setSearch2(e.target.value);
   };
   useEffect(() => {
@@ -259,7 +275,6 @@ const CustomerDevices = () => {
             columns={columns}
             data={currentItems}
             highlightOnHover
-            pointerOnHover
           />
         </div>
       </div>

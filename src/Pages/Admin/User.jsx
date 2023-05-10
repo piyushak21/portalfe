@@ -34,22 +34,27 @@ const Users = () => {
       name: "Sr No.",
       selector: (row, ind) => (currentPage - 1) * itemsPerPage + ind + 1,
       width: "100px",
+      sortable: true,
     },
     {
       name: "First Name",
       selector: (row) => (!row.first_name ? "NA" : row.first_name),
+      sortable: true,
     },
     {
       name: "Last Name",
       selector: (row) => (!row.last_name ? "NA" : row.last_name),
+      sortable: true,
     },
     {
       name: "UserName",
       selector: (row) => (!row.username ? "NA" : row.username),
+      sortable: true,
     },
     {
       name: "Email",
       selector: (row) => (!row.email ? "NA" : row.email),
+      sortable: true,
     },
 
     {
@@ -61,6 +66,7 @@ const Users = () => {
           <span className="badge bg-danger">Deactive</span>
         ),
       width: "120px",
+      sortable: true,
     },
     {
       name: "Action",
@@ -117,9 +123,16 @@ const Users = () => {
             <option value="30">30</option>
           </select>
         </div> */}
-        <div>
-          Showing {currentItems.length} of {filterCustomer.length} items
-        </div>
+        {currentItems.length == 0 ? (
+          ""
+        ) : (
+          <div>
+            Showing {indexOfFirstItem + 1} to{" "}
+            {currentItems.length + indexOfFirstItem} of {filterCustomer.length}{" "}
+            items
+          </div>
+        )}
+
         <div>
           <button
             className="border prev text-dark mx-1 py-1 border-0 bg-light"
@@ -152,14 +165,7 @@ const Users = () => {
               {currentPage + 1}
             </button>
           )}
-          {currentPage > 1 && (
-            <button
-              className=" pages border-0 text-dark py-1 px-2"
-              onClick={() => handlePageChange(currentPage + 2)}
-            >
-              {currentPage + 2}
-            </button>
-          )}
+
           <button
             className="border next text-dark mx-1 py-1"
             title="Next"
@@ -211,7 +217,11 @@ const Users = () => {
             Total: {filterCustomer?.length}
           </span>
         </h4>
-        <div className="mt-4">
+        <div>
+          {" "}
+          <Link to="/admin-dashboard">&#8592; Dashboard</Link>
+        </div>
+        <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">
             <option style={{ display: "none" }}>{itemsPerPage}</option>
@@ -228,14 +238,20 @@ const Users = () => {
 
   // Search with trip ID
   const searchOne = (e) => {
+    if (e.target.value === "") {
+      setFilterCustomer(customerData);
+    }
+
     setSearch1(e.target.value);
   };
 
   // Search with Vehicle name
   const searchTwo = (e) => {
+    if (e.target.value === "") {
+      setFilterCustomer(customerData);
+    }
     setSearch2(e.target.value);
   };
-
   useEffect(() => {
     if (search1) {
       const result = filterCustomer?.filter((el) => {

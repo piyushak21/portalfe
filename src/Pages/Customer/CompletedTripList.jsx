@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 import { BsArrowLeftRight } from "react-icons/bs";
 import { GrPrevious, GrNext } from "react-icons/gr";
+import { AiFillEye } from "react-icons/ai";
 
 const CompletedTripList = () => {
   const [tripData, setTripData] = useState();
@@ -40,17 +41,20 @@ const CompletedTripList = () => {
       name: "Sr No.",
       selector: (row, ind) => (currentPage - 1) * itemsPerPage + ind + 1,
       width: "100px",
+      sortable: true,
     },
     {
       name: "Trip ID",
       selector: (row) => (!row.trip_id ? "NA" : row.trip_id),
       wrap: true,
       width: "200px",
+      sortable: true,
     },
     {
       name: "Vehicle Name",
       selector: (row) => (!row.vehicle_name ? "NA" : row.vehicle_name),
       wrap: true,
+      sortable: true,
     },
     {
       name: "Trip Start",
@@ -58,6 +62,7 @@ const CompletedTripList = () => {
         return convertTime(row.trip_start_time);
       },
       wrap: true,
+      sortable: true,
     },
     {
       name: "Trip End",
@@ -65,6 +70,7 @@ const CompletedTripList = () => {
         return convertTime(row.trip_end_time);
       },
       wrap: true,
+      sortable: true,
     },
     {
       name: "Distance",
@@ -77,6 +83,20 @@ const CompletedTripList = () => {
       name: "Duration",
       selector: (row) => (!row.duration ? "NA" : row.duration),
       wrap: true,
+      sortable: true,
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <button
+          onClick={() => navigate(`/completed-trips/${row.trip_id}`)}
+          className="btn btn-outline-primary btn-sm"
+        >
+          View
+          <AiFillEye className="h6 mb-0 ms-1" />
+        </button>
+      ),
+      width: "120px",
     },
   ];
 
@@ -134,9 +154,16 @@ const CompletedTripList = () => {
             <option value="30">30</option>
           </select>
         </div> */}
-        <div>
-          Showing {currentItems.length} of {filtertripData.length} items
-        </div>
+        {currentItems.length == 0 ? (
+          ""
+        ) : (
+          <div>
+            Showing {indexOfFirstItem + 1} to{" "}
+            {currentItems.length + indexOfFirstItem} of {filtertripData.length}{" "}
+            items
+          </div>
+        )}
+
         <div>
           <button
             className="border prev text-dark mx-1 py-1 border-0 bg-light"
@@ -169,14 +196,7 @@ const CompletedTripList = () => {
               {currentPage + 1}
             </button>
           )}
-          {currentPage > 1 && (
-            <button
-              className=" pages border-0 text-dark py-1 px-2"
-              onClick={() => handlePageChange(currentPage + 2)}
-            >
-              {currentPage + 2}
-            </button>
-          )}
+
           <button
             className="border next text-dark mx-1 py-1"
             title="Next"
@@ -203,7 +223,11 @@ const CompletedTripList = () => {
             Total: {tripData?.length}
           </span>
         </h4>
-        <div className="mt-4">
+        <div>
+          {" "}
+          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
+        </div>
+        <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">
             <option style={{ display: "none" }}>{itemsPerPage}</option>
@@ -220,11 +244,17 @@ const CompletedTripList = () => {
 
   // Search with trip ID
   const searchOne = (e) => {
+    if (e.target.value === "") {
+      setFiltertripData(tripData);
+    }
     setSearch1(e.target.value);
   };
 
   // Search with Vehicle name
   const searchTwo = (e) => {
+    if (e.target.value === "") {
+      setFiltertripData(tripData);
+    }
     setSearch2(e.target.value);
   };
   useEffect(() => {
@@ -275,7 +305,7 @@ const CompletedTripList = () => {
               <input
                 type="text"
                 placeholder="Vehicle Name"
-                className="form-control "
+                className="form-control"
                 onChange={searchTwo}
               />
             </div>
@@ -292,7 +322,6 @@ const CompletedTripList = () => {
             data={currentItems}
             // pagination
             highlightOnHover
-            onRowClicked={handleClick}
             pointerOnHover
           />
         </div>

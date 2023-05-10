@@ -34,27 +34,33 @@ const Devices = () => {
     {
       name: "SR.NO",
       selector: (row, ind) => (currentPage - 1) * itemsPerPage + ind + 1,
+      sortable: true,
     },
     {
       name: "Device Id",
       selector: (row) => (!row.device_id ? "NA" : row.device_id),
+      sortable: true,
     },
     {
       name: "Device Type",
       selector: (row) => (!row.device_type ? "NA" : row.device_type),
+      sortable: true,
     },
     {
       name: "Customer",
       selector: (row) =>
         !row.first_name ? "NA" : row.first_name + " " + row.last_name,
+      sortable: true,
     },
     {
       name: "Sim Number",
       selector: (row) => (!row.sim_number ? "NA" : row.sim_number),
+      sortable: true,
     },
 
     {
       name: "Status",
+      sortable: true,
       selector: (row) =>
         row.status == 1 ? (
           <span className="badge px-3 bg-success">Active</span>
@@ -141,9 +147,16 @@ const Devices = () => {
             <option value="30">30</option>
           </select>
         </div> */}
-        <div>
-          Showing {currentItems.length} of {filterDevices.length} items
-        </div>
+        {currentItems.length == 0 ? (
+          ""
+        ) : (
+          <div>
+            Showing {indexOfFirstItem + 1} to{" "}
+            {currentItems.length + indexOfFirstItem} of {filterDevices.length}{" "}
+            items
+          </div>
+        )}
+
         <div>
           <button
             className="border prev text-dark mx-1 py-1 border-0 bg-light"
@@ -176,14 +189,7 @@ const Devices = () => {
               {currentPage + 1}
             </button>
           )}
-          {currentPage > 1 && (
-            <button
-              className=" pages border-0 text-dark py-1 px-2"
-              onClick={() => handlePageChange(currentPage + 2)}
-            >
-              {currentPage + 2}
-            </button>
-          )}
+
           <button
             className="border next text-dark mx-1 py-1"
             title="Next"
@@ -209,7 +215,11 @@ const Devices = () => {
             Total: {filterDevices?.length}
           </span>
         </h4>
-        <div className="mt-4">
+        <div>
+          {" "}
+          <Link to="/admin-dashboard">&#8592; Dashboard</Link>
+        </div>
+        <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">
             <option style={{ display: "none" }}>{itemsPerPage}</option>
@@ -225,11 +235,17 @@ const Devices = () => {
   };
   // Search with device_id
   const searchOne = (e) => {
+    if (e.target.value === "") {
+      setFilterDevices(deviceData);
+    }
     setSearch1(e.target.value);
   };
 
   // Search with device_type
   const searchTwo = (e) => {
+    if (e.target.value === "") {
+      setFilterDevices(deviceData);
+    }
     setSearch2(e.target.value);
   };
   useEffect(() => {

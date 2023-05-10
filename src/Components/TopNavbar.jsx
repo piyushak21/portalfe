@@ -9,20 +9,23 @@ import {
   BsTruck,
   BsPinMapFill,
   BsPersonFill,
-  BsArrowLeftCircle,
   BsJoystick,
+  BsPower,
 } from "react-icons/bs";
 import logo from "../Assets/img/logo.png";
+import { useEffect } from "react";
+import axios from "axios";
 
 const TopNavbar = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const user_type = localStorage.getItem("user_type");
+  const user_id = localStorage.getItem("user_id");
   const [open, setOpen] = useState(false);
+  const [userData, setUserData] = useState([]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -36,31 +39,51 @@ const TopNavbar = () => {
     setOpen(!open);
   };
 
+  useEffect(() => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/customers/get-user/${user_id}`, {
+        headers: { authorization: `bearer ${token}` },
+      })
+      .then((res) => {
+        setUserData(res.data.IdData);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [token]);
+
   if (token) {
     return (
       <div className="sticky-top">
         <div className="topnav py-3 px-2 bg-white">
-          <div className="d-flex justify-content-between">
+          <div className="d-flex flex-row-reverse justify-content-between">
             <div>
               <Navbar.Brand>
                 {user_type == "1" ? (
                   <Link to="/admin-dashboard">
-                    <img src={logo} alt="" className="logo" />
+                    <img src={logo} alt="" className="logo mx-5" />
                   </Link>
                 ) : (
                   <Link to="/customer-dashboard">
-                    <img src={logo} alt="" className="logo" />
+                    <img src={logo} alt="" className="logo mx-5" />
                   </Link>
                 )}
               </Navbar.Brand>
             </div>
-            <div>
+            <div className="d-flex align-items-center">
               <Nav className="ms-auto">
                 <Nav.Link onClick={handleShow}>
-                  <span className="h5 top-icon theme-text">
+                  <span className="h5 top-icon">
                     <BsFillGrid3X3GapFill />
                   </span>
                 </Nav.Link>
+                <span className="align-self-center">
+                  {" "}
+                  Hi,{" "}
+                  <span className="border-bottom">
+                    {userData[0]?.first_name} {userData[0]?.last_name}
+                  </span>
+                </span>
               </Nav>
             </div>
           </div>
@@ -100,7 +123,7 @@ const TopNavbar = () => {
             </Navbar.Collapse>
           </Container>
         </Navbar> */}
-        <Offcanvas show={show} onHide={handleClose} placement="end">
+        <Offcanvas show={show} onHide={handleClose} placement="start">
           <Offcanvas.Header closeButton>
             <Offcanvas.Title>Menu</Offcanvas.Title>
           </Offcanvas.Header>
@@ -109,7 +132,7 @@ const TopNavbar = () => {
               {user_type == "1" ? (
                 <>
                   <Link to="/admin-dashboard">
-                    <div className="nav-box">
+                    <div className="nav-box" onClick={handleClose}>
                       <span className="h2">
                         <BsColumnsGap />
                       </span>
@@ -119,7 +142,7 @@ const TopNavbar = () => {
                     </div>
                   </Link>
                   <Link to="/devices">
-                    <div className="nav-box">
+                    <div className="nav-box" onClick={handleClose}>
                       <span className="h2">
                         <BsFillCpuFill />
                       </span>
@@ -129,7 +152,7 @@ const TopNavbar = () => {
                     </div>
                   </Link>
                   <Link to="/users">
-                    <div className="nav-box">
+                    <div className="nav-box" onClick={handleClose}>
                       <span className="h2">
                         <BsPersonFill />
                       </span>
@@ -141,10 +164,10 @@ const TopNavbar = () => {
                   <Link onClick={handleLogout}>
                     <div className="nav-box">
                       <span className="h2">
-                        <BsArrowLeftCircle />
+                        <BsPower className="fw-bolder" />
                       </span>
                       <p className="mt-2">
-                        <small>Logout</small>
+                        <small>Sign Out</small>
                       </p>
                     </div>
                   </Link>
@@ -152,7 +175,7 @@ const TopNavbar = () => {
               ) : (
                 <>
                   <Link to="/customer-dashboard">
-                    <div className="nav-box">
+                    <div className="nav-box" onClick={handleClose}>
                       <span className="h2">
                         <BsColumnsGap />
                       </span>
@@ -162,7 +185,7 @@ const TopNavbar = () => {
                     </div>
                   </Link>
                   <Link to="/vehicle">
-                    <div className="nav-box">
+                    <div className="nav-box" onClick={handleClose}>
                       <span className="h2">
                         <BsTruck />
                       </span>
@@ -172,7 +195,7 @@ const TopNavbar = () => {
                     </div>
                   </Link>
                   <Link to="/ongoing-trips">
-                    <div className="nav-box">
+                    <div className="nav-box" onClick={handleClose}>
                       <span className="h2">
                         <BsJoystick />
                       </span>
@@ -182,7 +205,7 @@ const TopNavbar = () => {
                     </div>
                   </Link>
                   <Link to="/completed-trips">
-                    <div className="nav-box">
+                    <div className="nav-box" onClick={handleClose}>
                       <span className="h2">
                         <BsPinMapFill />
                       </span>
@@ -192,7 +215,7 @@ const TopNavbar = () => {
                     </div>
                   </Link>
                   <Link to="/customer-devices">
-                    <div className="nav-box">
+                    <div className="nav-box" onClick={handleClose}>
                       <span className="h2">
                         <BsFillCpuFill />
                       </span>
@@ -204,10 +227,10 @@ const TopNavbar = () => {
                   <Link onClick={handleLogout}>
                     <div className="nav-box">
                       <span className="h2">
-                        <BsArrowLeftCircle />
+                        <BsPower className="fw-bolder" />
                       </span>
                       <p className="mt-2">
-                        <small>Logout</small>
+                        <small>Sign Out</small>
                       </p>
                     </div>
                   </Link>

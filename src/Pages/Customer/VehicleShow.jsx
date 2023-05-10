@@ -143,7 +143,7 @@ const VehicleShow = () => {
 
   return (
     <>
-      <Container className="my-4" ref={tableRef}>
+      <Container className="mt-4 mb-5" ref={tableRef}>
         <Link to="/vehicle">
           <BsArrowLeft /> <small>Vehicles</small>
         </Link>
@@ -198,7 +198,7 @@ const VehicleShow = () => {
                   id="start-date-picker"
                   selected={startDate}
                   onChange={(date) => handleDateChange(date, "start")}
-                  dateFormat="M/d/yyyy 00:00:00"
+                  dateFormat="M/d/yyyy, H:mm:ss"
                   className="form-control"
                   placeholderText="-Select Date-"
                 />
@@ -209,7 +209,7 @@ const VehicleShow = () => {
                   id="end-date-picker"
                   selected={endDate}
                   onChange={(date) => handleDateChange(date, "end")}
-                  dateFormat="M/d/yyyy 23:59:59"
+                  dateFormat="M/d/yyyy, H:mm:ss"
                   className="form-control"
                   placeholderText="-Select Date-"
                 />

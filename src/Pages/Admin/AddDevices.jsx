@@ -74,7 +74,7 @@ const AddDevice = () => {
                   <div className="mb-3">
                     <label htmlFor="">Device Id</label>
                     <InputGroup onChange={handleChange}>
-                      <Form.Control placeholder="Device Id" name="device_id" />
+                      <Form.Control required name="device_id" />
                     </InputGroup>
                   </div>
                   <div className="mb-3">

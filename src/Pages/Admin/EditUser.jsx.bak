@@ -172,11 +172,15 @@ const EditUser = () => {
                     </InputGroup>
                   </div>
                   <div className="mb-3">
+                    <label htmlFor="">Password</label>
+                    <InputGroup onChange={handleChange}>
+                      <Form.Control name="password" type="password" />
+                    </InputGroup>
+                  </div>
+                  <div className="mb-3">
                     <label htmlFor="">Status</label>
                     <Form.Select onChange={handleChange} name="status">
-                      <option>
-                        {idData[0]?.status == 1 ? "Active" : "Deactive"}
-                      </option>
+                      <option>-Select Status-</option>
                       <option value="0">Deleted</option>
                       <option value="1">Active</option>
                       <option value="2">Deactive</option>
@@ -265,9 +269,7 @@ const EditUser = () => {
                 <div className="mb-3">
                   <label htmlFor="">Status</label>
                   <Form.Select onChange={handlemasterChange} name="status">
-                    <option>
-                      {master_customer[0]?.status == 1 ? "Active" : "Deactive"}
-                    </option>{" "}
+                    <option>-Select Status-</option>
                     <option value="0">Deleted</option>
                     <option value="1">Active</option>
                     <option value="2">Deactive</option>

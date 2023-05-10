@@ -92,7 +92,11 @@ const AddUser = () => {
                   <div className="mb-3">
                     <label htmlFor="">Password</label>
                     <InputGroup onChange={handleChange}>
-                      <Form.Control type="password" name="password" />
+                      <Form.Control
+                        type="password"
+                        minLength={6}
+                        name="password"
+                      />
                     </InputGroup>
                   </div>
                   <div className="mb-3">

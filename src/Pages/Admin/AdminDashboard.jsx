@@ -51,7 +51,7 @@ const AdminDashboard = () => {
       <Container className="py-5">
         <div className="row">
           <div onClick={() => navigate("/users")} className="col-md-3">
-            <div className="card border text-center text-muted">
+            <div className="card border text-center text-muted cursor">
               <div className="card-body">
                 <BsPersonFill className="h1 display-4 my-2 theme-text" />
                 <h1 className="display-4 text-dark">{customerData.length}</h1>
@@ -61,7 +61,7 @@ const AdminDashboard = () => {
           </div>
 
           <div onClick={() => navigate("/devices")} className="col-md-3">
-            <div className="card border text-center text-muted">
+            <div className="card border text-center text-muted cursor">
               <div className="card-body">
                 <BsFillCpuFill className="h1 display-4 my-2 theme-text" />
                 <h1 className="display-4 text-dark">{devices.length}</h1>

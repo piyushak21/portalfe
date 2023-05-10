@@ -4,6 +4,7 @@ import { Container } from "react-bootstrap";
 import { AiFillEdit } from "react-icons/ai";
 import axios from "axios";
 import DataTable from "react-data-table-component";
+import { BsArrowLeftRight } from "react-icons/bs";
 import { GrPrevious, GrNext } from "react-icons/gr";
 
 const Vehicle = () => {
@@ -46,21 +47,25 @@ const Vehicle = () => {
       sortable: true,
     },
     {
-      name: "Vehicle Registration",
+      name: "Registration No.",
       selector: (row) =>
         !row.vehicle_registration ? "NA" : row.vehicle_registration,
+      sortable: true,
     },
     {
       name: "ECU",
       selector: (row) => (!row.ecu ? "NA" : row.ecu),
+      sortable: true,
     },
     {
       name: "IoT",
       selector: (row) => (!row.iot ? "NA" : row.iot),
+      sortable: true,
     },
     {
       name: "DMS",
       selector: (row) => (!row.dms ? "NA" : row.dms),
+      sortable: true,
     },
     {
       name: "Status",
@@ -71,6 +76,7 @@ const Vehicle = () => {
           <span className="badge bg-danger">Deactive</span>
         ),
       width: "100px",
+      sortable: true,
     },
     {
       name: "Action",
@@ -128,7 +134,11 @@ const Vehicle = () => {
             Total: {filterVehicle?.length}
           </span>
         </h4>
-        <div className="mt-4">
+        <div>
+          {" "}
+          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
+        </div>
+        <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">
             <option style={{ display: "none" }}>{itemsPerPage}</option>
@@ -173,9 +183,16 @@ const Vehicle = () => {
             <option value="30">30</option>
           </select>
         </div> */}
-        <div>
-          Showing {currentItems.length} of {filterVehicle.length} items
-        </div>
+        {currentItems.length == 0 ? (
+          ""
+        ) : (
+          <div>
+            Showing {indexOfFirstItem + 1} to{" "}
+            {currentItems.length + indexOfFirstItem} of {filterVehicle.length}{" "}
+            items
+          </div>
+        )}
+
         <div>
           <button
             className="border prev text-dark mx-1 py-1 border-0 bg-light"
@@ -203,24 +220,17 @@ const Vehicle = () => {
           {currentPage < totalPages && (
             <button
               className="pages border-0 text-dark py-1 px-2"
-              onClick={() => handlePageChange(currentPage + 1)}
+              // onClick={() => handlePageChange(currentPage + 1)}
             >
               {currentPage + 1}
             </button>
           )}
-          {currentPage > 1 && (
-            <button
-              className=" pages border-0 text-dark py-1 px-2"
-              onClick={() => handlePageChange(currentPage + 2)}
-            >
-              {currentPage + 2}
-            </button>
-          )}
+
           <button
             className="border next text-dark mx-1 py-1"
             title="Next"
             onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages || totalPages === 0}
           >
             <GrNext />
           </button>
@@ -231,11 +241,17 @@ const Vehicle = () => {
 
   // Search with vehicle name
   const searchOne = (e) => {
+    if (e.target.value === "") {
+      setFilterVehicle(vehicleData);
+    }
     setSearch1(e.target.value);
   };
 
   // Search with Vehicle registration
   const searchTwo = (e) => {
+    if (e.target.value) {
+      setFilterVehicle(vehicleData);
+    }
     setSearch2(e.target.value);
   };
   useEffect(() => {

@@ -82,11 +82,7 @@ const AddUser = () => {
                   <div className="mb-3">
                     <label htmlFor="">Email ID</label>
                     <InputGroup onChange={handleChange}>
-                      <Form.Control
-                        type="email"
-                        placeholder="Email"
-                        name="email"
-                      />
+                      <Form.Control type="email" name="email" />
                     </InputGroup>
                   </div>
                   <div className="mb-3">

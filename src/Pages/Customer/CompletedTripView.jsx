@@ -23,6 +23,7 @@ import {
   BsPinMapFill,
   BsArrowLeft,
   BsFillPlayCircleFill,
+  BsXLg,
 } from "react-icons/bs";
 import Iframe from "react-iframe";
 import markerImage from "../../Assets/icons/marker.svg";
@@ -451,10 +452,10 @@ const CompletedTripView = () => {
   }, [faultData]);
 
   // Set Iframe for DMS
-  const dmsIframes = media.map((data) => {
+  const dmsIframes = media.map((data, index) => {
     return (
-      <div className="col-md-6 mb-2">
-        <Iframe src={data} width="100%" height="300px" key=""></Iframe>
+      <div className="col-md-6 mb-2" key={index}>
+        <Iframe src={data} width="100%" height="300px"></Iframe>
       </div>
     );
   });
@@ -510,10 +511,34 @@ const CompletedTripView = () => {
     },
   };
 
-  const [show, setShow] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [videoTitle, setVideoTitle] = useState("");
+  const [videoContent, setVideoContent] = useState("");
+  const [videoSpeed, setVideoSpeed] = useState("");
+  const [videoAlert, setVideoAlert] = useState("");
+  const [videoSeverity, setVideoSeverity] = useState("");
 
-  const handleClose = () => setShow(false);
-  const handleDMSVideoShow = () => setShow(true);
+  function handleDMSVideoShow(
+    url,
+    title,
+    content,
+    speed,
+    alert_type,
+    severity
+  ) {
+    setVideoUrl(url);
+    setVideoTitle(title);
+    setVideoContent(content);
+    setVideoSpeed(speed);
+    setVideoAlert(alert_type);
+    setVideoSeverity(severity);
+    setShowVideoModal(true);
+  }
+
+  function handleClose() {
+    setShowVideoModal(false);
+  }
 
   if (isLoading) {
     return (
@@ -546,11 +571,19 @@ const CompletedTripView = () => {
         <Link to="/completed-trips">
           <BsArrowLeft /> <small>Completed Trip list</small>
         </Link>
-        <div className="mb-3">
+        <div className="my-3">
           <p className="mb-0">
-            Trip ID: <strong>{id}</strong>
+            <span className="text-muted">Trip ID:</span> <strong>{id}</strong>
           </p>
-          <h5>{vehicle.vehicle_name} Completed Trip</h5>
+          <h4>
+            <span className="text-muted">Completed Trip:</span>{" "}
+            {vehicle?.vehicle_name} |
+            <span className="h6">
+              {" "}
+              <span className="text-muted">Registration Number:</span>{" "}
+              {vehicle?.vehicle_registration}
+            </span>
+          </h4>
         </div>
 
         {/* Google Map */}
@@ -621,12 +654,21 @@ const CompletedTripView = () => {
                           <p className="mb-0">TimeStamp: {marker.content}</p>
                           <p className="mb-0">Speed: {marker.speed}Kmph</p>
                           <p className="mb-0">
-                            Alert_type: {marker.alert_type}Kmph
+                            Alert_type: {marker.alert_type}
                           </p>
                           <p className="mb-0">Severity:{marker.severity}</p>
                           <button
                             className="btn btn-danger btn-sm rounded-pill mt-2"
-                            onClick={handleDMSVideoShow}
+                            onClick={() =>
+                              handleDMSVideoShow(
+                                marker.media,
+                                marker.title,
+                                marker.content,
+                                marker.speed,
+                                marker.alert_type,
+                                marker.severity
+                              )
+                            }
                           >
                             Play <BsFillPlayCircleFill />
                           </button>
@@ -754,19 +796,35 @@ const CompletedTripView = () => {
         </LoadScript>
 
         {/* DMS videos pop-ups */}
-        <Modal show={show} onHide={handleClose}>
-          <Modal.Header closeButton>
-            <Modal.Title>Modal heading</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
-              Close
-            </Button>
-            <Button variant="primary" onClick={handleClose}>
-              Save Changes
-            </Button>
-          </Modal.Footer>
+        <Modal show={showVideoModal} onHide={handleClose}>
+          <Modal.Body>
+            <div className="d-flex justify-content-between">
+              <h6 className="mb-0 align-self-center">{videoTitle}</h6>
+              <button onClick={handleClose} className="btn">
+                <BsXLg />
+              </button>
+            </div>
+            <p className="mb-0">
+              <b>Timestamp:</b> {videoContent}
+            </p>
+            <p className="mb-0">
+              <b>Speed:</b> {videoSpeed} KMPH
+            </p>
+            <p className="mb-0">
+              <b>Alert Type:</b> {videoAlert}
+            </p>
+            <p className="mb-0">
+              <b>Severity:</b> {videoSeverity}
+            </p>
+            <Iframe
+              src={videoUrl}
+              width="100%"
+              height="315"
+              frameborder="0"
+              allowfullscreen
+              muted
+            ></Iframe>
+          </Modal.Body>
         </Modal>
 
         {/* Content Tabs */}
@@ -842,17 +900,11 @@ const CompletedTripView = () => {
                           </p>
                           <p>{duration}</p>
                         </div>
-                        {/* <div className="col-sm-3 mb-2">
-                          <p className="mb-0">
-                            <strong>Halt</strong>
-                          </p>
-                          <p>3 Min</p>
-                        </div> */}
                         <div className="col-sm-3 mb-2">
                           <p className="mb-0">
                             <strong>Average Speed</strong>
                           </p>
-                          <p>{avgSpd} m/s</p>
+                          <p>{avgSpd} Kmph</p>
                         </div>
                         <div className="col-sm-3 mb-2">
                           <p className="mb-0">
@@ -860,24 +912,6 @@ const CompletedTripView = () => {
                           </p>
                           <p>{maxSpd} Kmph</p>
                         </div>
-                        {/* <div className="col-sm-3 mb-2">
-                          <p className="mb-0">
-                            <strong>Braking Freq</strong>
-                          </p>
-                          <p>3 Min</p>
-                        </div>
-                        <div className="col-sm-3 mb-2">
-                          <p className="mb-0">
-                            <strong>Driver Score</strong>
-                          </p>
-                          <p>40 Kmph</p>
-                        </div>
-                        <div className="col-sm-3 mb-2">
-                          <p className="mb-0">
-                            <strong>Driver Incentive</strong>
-                          </p>
-                          <p>0</p>
-                        </div> */}
                       </div>
                     </div>
                   </div>
@@ -1414,53 +1448,6 @@ const CompletedTripView = () => {
                 {/* <div className="col-md-8">
                   <h6>DMS Media</h6>
                   <div className="row">{dmsIframes}</div>
-                </div> */}
-              </div>
-            </Tab>
-
-            {/* Trip Details Vehicle and Driver */}
-            <Tab eventKey="details" title="Trip Details">
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <div className="card border-0 shadow">
-                    <div className="card-header bg-theme text-light">
-                      Vehicle Details
-                    </div>
-                    <div className="card-body">
-                      <p>
-                        <strong>Vehicle Name:</strong> {vehicle.vehicle_name}
-                      </p>
-                      <p>
-                        <strong>Registration Number: </strong>
-                        {vehicle.vehicle_registration}
-                      </p>
-                      <p>
-                        <strong>ECU:</strong> {vehicle.ecu}
-                      </p>
-                      <p>
-                        <strong>IoT:</strong> {vehicle.iot}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                {/* <div className="col-md-6 mb-3">
-                  <div className="card">
-                    <div className="card-header">Driver Details</div>
-                    <div className="card-body">
-                      <p>
-                        <strong>Driver Name:</strong> Ramu
-                      </p>
-                      <p>
-                        <strong>Licence Number:</strong> KHD9278932
-                      </p>
-                      <p>
-                        <strong>Contact Number:</strong> +91-39833-32983
-                      </p>
-                      <p>
-                        <strong>Email ID:</strong> driver@stk.com
-                      </p>
-                    </div>
-                  </div>
                 </div> */}
               </div>
             </Tab>

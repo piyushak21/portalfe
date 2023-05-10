@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
 import DataTable from "react-data-table-component";
-import { useNavigate } from "react-router-dom";
+import { GrPrevious, GrNext } from "react-icons/gr";
 
 const CustomerDevices = () => {
   const [devicesData, setDevicesData] = useState([]);
@@ -32,12 +32,12 @@ const CustomerDevices = () => {
 
   const columns = [
     {
-      name: "#",
+      name: "Sr No.",
       selector: (row, ind) => (currentPage - 1) * itemsPerPage + ind + 1,
-      width: "70px",
+      width: "100px",
     },
     {
-      name: "Device Id",
+      name: "Device ID",
       selector: (row) => (!row.device_id ? "NA" : row.device_id),
     },
     {
@@ -45,7 +45,7 @@ const CustomerDevices = () => {
       selector: (row) => (!row.device_type ? "NA" : row.device_type),
     },
     {
-      name: "Sim Numbver",
+      name: "Sim Number",
       selector: (row) => (!row.sim_number ? "NA" : row.sim_number),
     },
 
@@ -61,25 +61,27 @@ const CustomerDevices = () => {
     },
   ];
 
+  // Table custom styling
   const customStyles = {
     rows: {
       style: {
-        minHeight: "50px",
+        minHeight: "70px",
       },
     },
     headCells: {
       style: {
-        backgroundColor: "#f5f5f5",
-        fontWeight: "bold",
+        backgroundColor: "#112b3c",
+        fontWeight: "light",
         fontSize: "16px",
         border: "none",
         minHeight: "50px",
+        color: "#fff",
       },
     },
     cells: {
       style: {
         border: "none",
-        fontSize: "15px",
+        fontSize: "16px",
       },
     },
   };
@@ -103,53 +105,97 @@ const CustomerDevices = () => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filterDevices.slice(indexOfFirstItem, indexOfLastItem);
+
   const Pagination = () => {
     return (
-      <div>
-        <div>
+      <div className="d-flex justify-content-between mt-3 mb-5">
+        {/* <div>
           <select onChange={handleItemsPerPageChange}>
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="30">30</option>
           </select>
+        </div> */}
+        <div>
+          Showing {currentItems.length} of {filterDevices.length} items
         </div>
         <div>
           <button
+            className="border prev text-dark mx-1 py-1 border-0 bg-light"
+            title="Previous"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
-            Previous
+            <GrPrevious />
           </button>
-          {currentPage > 1 && (
-            <button onClick={() => handlePageChange(currentPage - 1)}>
-              {currentPage - 1}
+          {/* {currentPage > 1 && (
+            <button className="pages border text-dark py-1 px-2 border-dark" onClick={() => handlePageChange(currentPage - 2)}>
+              {currentPage - 2}
             </button>
           )}
-          <button disabled>{currentPage}</button>
+          
+          {currentPage > 1 && (
+            <button className=" pages border text-dark py-1 px-2 border-dark" onClick={() => handlePageChange(currentPage - 1)}>
+              {currentPage - 1}
+            </button>
+          )} */}
+
+          <button className="pages border text-dark py-1 px-2 " disabled>
+            {currentPage}
+          </button>
           {currentPage < totalPages && (
-            <button onClick={() => handlePageChange(currentPage + 1)}>
+            <button
+              className="pages border-0 text-dark py-1 px-2"
+              onClick={() => handlePageChange(currentPage + 1)}
+            >
               {currentPage + 1}
             </button>
           )}
+          {currentPage > 1 && (
+            <button
+              className=" pages border-0 text-dark py-1 px-2"
+              onClick={() => handlePageChange(currentPage + 2)}
+            >
+              {currentPage + 2}
+            </button>
+          )}
           <button
+            className="border next text-dark mx-1 py-1"
+            title="Next"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >
-            Next
+            <GrNext />
           </button>
-        </div>
-        <div>
-          Showing {currentItems.length} of {filterDevices.length} items
         </div>
       </div>
     );
   };
 
+  // Set page headings
   const CustomHeader = () => {
     return (
       <div>
-        <h4>Devices</h4>
-        <p className="mb-0">Total:{devicesData?.length}</p>
+        <h4>
+          Devices
+          <span
+            className="rounded-pill text-light bg-danger ms-2 px-3 py-1"
+            style={{ fontSize: "14px", fontWeight: "400" }}
+          >
+            Total: {filterDevices?.length}
+          </span>
+        </h4>
+        <div className="mt-4">
+          <span>Show&nbsp;</span>
+          <select onChange={handleItemsPerPageChange} className="px-1">
+            <option style={{ display: "none" }}>{itemsPerPage}</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+          <span>&nbsp;entries</span>
+        </div>
+        {/* <p className="mb-0" >Total: {tripData?.length}</p> */}
       </div>
     );
   };
@@ -206,14 +252,13 @@ const CustomerDevices = () => {
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-body">
+      <div className="card border-0 shadow">
+        <div className="card-body p-0">
           <DataTable
             customStyles={customStyles}
             columns={columns}
             data={currentItems}
             highlightOnHover
-            pointerOnHover
           />
         </div>
       </div>

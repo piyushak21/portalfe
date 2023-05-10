@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import axios from "axios";
 import DataTable from "react-data-table-component";
@@ -38,7 +38,7 @@ const OngoingTripList = () => {
 
   const convertTime = (time) => {
     let updateStTime = new Date(time * 1000);
-    return updateStTime.toString();
+    return updateStTime.toLocaleString();
   };
   let counter = 1;
 
@@ -49,33 +49,24 @@ const OngoingTripList = () => {
       sortable: true,
       width: "70px",
     },
-    {
-      name: "Action",
-      cell: (row) => (
-        <button
-          onClick={() => navigate(`/tripview/${row.trip_id}`)}
-          className="btn btn-outline-primary btn-sm"
-        >
-          View
-          <AiFillEye className="h6 mb-0 ms-1" />
-        </button>
-      ),
-      width: "120px",
-    },
+
     {
       name: "Trip ID",
       selector: (row) => row.trip_id,
       wrap: true,
+      sortable: true,
     },
     {
       name: "Vehicle Name",
       selector: (row) => row.vehicle_name,
       wrap: true,
+      sortable: true,
     },
     {
       name: "Reg Number",
       selector: (row) => row.vehicle_registration,
       wrap: true,
+      sortable: true,
     },
     {
       name: "Trip Start",
@@ -83,6 +74,20 @@ const OngoingTripList = () => {
         return convertTime(row.trip_start_time);
       },
       wrap: true,
+      sortable: true,
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <button
+          onClick={() => navigate(`/ongoing-trips/${row.trip_id}`)}
+          className="btn btn-outline-primary btn-sm"
+        >
+          View
+          <AiFillEye className="h6 mb-0 ms-1" />
+        </button>
+      ),
+      width: "120px",
     },
   ];
 
@@ -140,9 +145,17 @@ const OngoingTripList = () => {
             <option value="30">30</option>
           </select>
         </div> */}
-        <div>
-          Showing {currentItems.length} of {filtertripData.length} items
-        </div>
+
+        {currentItems.length == 0 ? (
+          ""
+        ) : (
+          <div>
+            Showing {indexOfFirstItem + 1} to{" "}
+            {currentItems.length + indexOfFirstItem} of {filtertripData.length}{" "}
+            items
+          </div>
+        )}
+
         <div>
           <button
             className="border prev text-dark mx-1 py-1 border-0 bg-light"
@@ -175,19 +188,12 @@ const OngoingTripList = () => {
               {currentPage + 1}
             </button>
           )}
-          {currentPage > 1 && (
-            <button
-              className=" pages border-0 text-dark py-1 px-2"
-              onClick={() => handlePageChange(currentPage + 2)}
-            >
-              {currentPage + 2}
-            </button>
-          )}
+
           <button
             className="border next text-dark mx-1 py-1"
             title="Next"
             onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages || totalPages === 0}
           >
             <GrNext />
           </button>
@@ -209,7 +215,11 @@ const OngoingTripList = () => {
             Total: {tripData?.length}
           </span>
         </h4>
-        <div className="mt-4">
+        <div>
+          {" "}
+          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
+        </div>
+        <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">
             <option style={{ display: "none" }}>{itemsPerPage}</option>

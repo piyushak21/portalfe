@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Container, Table, Modal, Button } from "react-bootstrap";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { BsTruck, BsArrowLeft, BsGearFill } from "react-icons/bs";
+import { BsTruck, BsArrowLeft } from "react-icons/bs";
 import JSONInput from "react-json-editor-ajrm";
 import locale from "react-json-editor-ajrm/locale/en";
 import DatePicker from "react-datepicker";
 import axios from "axios";
-import logo from "../../Assets/img/logo.png";
+// import logo from "../../Assets/img/logo.png";
 import { DownloadTableExcel } from "react-export-table-to-excel";
 import { useReactToPrint } from "react-to-print";
 
@@ -19,10 +19,10 @@ const VehicleShow = () => {
   const [faultCount, setCount] = useState(0);
   // const [filteredData, setFilteredData] = useState();
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  const [isDownloadDisabled, setIsDownloadDisabled] = useState(true);
+  // const [isDownloadDisabled, setIsDownloadDisabled] = useState(true);
 
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  // const handleShow = () => setShow(true);
 
   const { vehicle_id } = useParams();
   const [idData, setIdData] = useState(["starkenn"]);
@@ -88,7 +88,6 @@ const VehicleShow = () => {
       });
     }
     return filteredData;
-    // console.log("Start:", startDate, "End:", endDate);
   };
 
   const convertTime = (time) => {
@@ -126,7 +125,7 @@ const VehicleShow = () => {
         .then((response) => {
           // console.log(response.data);
           setCount(response.data.count);
-          setIsDownloadDisabled(false);
+          // setIsDownloadDisabled(false);
         })
         .catch((error) => {
           console.log(error);
@@ -139,7 +138,7 @@ const VehicleShow = () => {
   const generatePDF = useReactToPrint({
     content: () => tableRef.current,
     documentTitle: "tripData",
-    onAfterPrint: () => alert("Data saved in PDF"),
+    // onAfterPrint: () => alert("Data saved in PDF"),
   });
 
   return (
@@ -160,19 +159,31 @@ const VehicleShow = () => {
                   </div>
                   <div className="px-4 w-100">
                     <div className="d-flex justify-content-between">
-                      <h5>{idData[0].vehicle_name}</h5>
-                      <span onClick={handleShow} className="cursor">
+                      <h5>Vehicle Name: {idData[0].vehicle_name}</h5>
+                      {/* <span onClick={handleShow} className="cursor">
                         <BsGearFill />
-                      </span>
+                      </span> */}
                     </div>
                     <p className="mb-0">
                       <strong>Registration Number:</strong>{" "}
                       {idData[0].vehicle_registration}
                     </p>
                     <p className="mb-0">
-                      <strong>ECU:</strong> {idData[0].ecu} |{" "}
-                      <strong>IoT:</strong> {idData[0].iot} |{" "}
-                      <strong>DMS:</strong> {idData[0].dms}
+                      {idData[0].ecu && (
+                        <>
+                          <strong>ECU:</strong> {idData[0].ecu} |
+                        </>
+                      )}
+                      {idData[0].iot && (
+                        <>
+                          <strong>IoT:</strong> {idData[0].iot} |{" "}
+                        </>
+                      )}
+                      {idData[0].dms && (
+                        <>
+                          <strong>DMS:</strong> {idData[0].dms}
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -187,7 +198,7 @@ const VehicleShow = () => {
                   id="start-date-picker"
                   selected={startDate}
                   onChange={(date) => handleDateChange(date, "start")}
-                  dateFormat="M/d/yyyy, H:mm:ss"
+                  dateFormat="M/d/yyyy 00:00:00"
                   className="form-control"
                   placeholderText="-Select Date-"
                 />
@@ -198,7 +209,7 @@ const VehicleShow = () => {
                   id="end-date-picker"
                   selected={endDate}
                   onChange={(date) => handleDateChange(date, "end")}
-                  dateFormat="M/d/yyyy, H:mm:ss"
+                  dateFormat="M/d/yyyy 23:59:59"
                   className="form-control"
                   placeholderText="-Select Date-"
                 />
@@ -238,10 +249,10 @@ const VehicleShow = () => {
               </p>
             </div>
 
-            <div className="justify-content-end d-flex gap-3">
+            <div className="text-end d-flex gap-3 justify-content-end">
               <button
                 onClick={generatePDF}
-                className="btn btn-light btn-sm border-dark"
+                className="btn btn-theme-border btn-sm border-dark"
                 // disabled={isDownloadDisabled}
               >
                 PDF
@@ -252,7 +263,7 @@ const VehicleShow = () => {
                 currentTableRef={tableRef.current}
               >
                 <button
-                  className="btn btn-light btn-sm border-dark"
+                  className="btn btn-theme-border btn-sm border-dark"
                   // disabled={isDownloadDisabled}
                 >
                   Excel{" "}
