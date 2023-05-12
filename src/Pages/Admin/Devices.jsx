@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Container from "react-bootstrap/Container";
 import { Link, useNavigate } from "react-router-dom";
-import { AiFillEdit, AiFillEye } from "react-icons/ai";
+import { AiFillEdit } from "react-icons/ai";
 import axios from "axios";
 import DataTable from "react-data-table-component";
-import { BsArrowLeftRight } from "react-icons/bs";
 import { GrPrevious, GrNext } from "react-icons/gr";
+import { MdOutlineDevicesOther } from "react-icons/md";
 
 const Devices = () => {
   const navigate = useNavigate();
@@ -275,7 +275,7 @@ const Devices = () => {
             onClick={() => navigate("/devices-add")}
             className="btn btn-theme mb-3"
           >
-            Add Devices
+            Add Devices <MdOutlineDevicesOther />
           </button>
           <div className="d-flex gap-4 mt-1">
             <div>

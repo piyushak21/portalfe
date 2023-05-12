@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from "react";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
-import { Container } from "react-bootstrap";
+import { Button, Container } from "react-bootstrap";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import Row from "react-bootstrap/Row";
+import FloatingLabel from "react-bootstrap/FloatingLabel";
+import { Col } from "react-bootstrap";
+import Alert from "react-bootstrap/Alert";
+import { BiSave } from "react-icons/bi";
+import { TbArrowBackUp } from "react-icons/tb";
+import { MdEdit } from "react-icons/md";
 
 const EditVehicle = () => {
   const { vehicle_id } = useParams();
@@ -14,6 +21,8 @@ const EditVehicle = () => {
   const [dmsData, setDmsData] = useState([]);
   const user_id = localStorage.getItem("user_id");
   const token = localStorage.getItem("token");
+  const [validated, setValidated] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     /////////Getting Data of vehicle
@@ -71,24 +80,29 @@ const EditVehicle = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(data);
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.stopPropagation();
+    }
 
-    axios
-      .put(
-        `${process.env.REACT_APP_BASE_URL}/vehicles/editvehicle/${user_id}/${vehicle_id}`,
-        data,
-        {
-          headers: { authorization: `bearer ${token}` },
-        }
-      )
-      .then((res) => {
-        console.log(res);
-        alert("Data Updated Successfully");
-      })
-      .catch((err) => {
-        console.log(err);
-        alert("Error in Updating Data");
-      });
+    setValidated(true);
+
+    if (form.checkValidity()) {
+      axios
+        .put(
+          `${process.env.REACT_APP_BASE_URL}/vehicles/editvehicle/${user_id}/${vehicle_id}`,
+          data,
+          {
+            headers: { authorization: `bearer ${token}` },
+          }
+        )
+        .then((res) => {
+          setError(false);
+        })
+        .catch((err) => {
+          setError(true);
+        });
+    }
   };
 
   const handleChange = (e) => {
@@ -97,113 +111,226 @@ const EditVehicle = () => {
   };
   return (
     <Container className="my-4">
+      <div className="d-flex justify-content-between">
+        <div className="align-self-center">
+          <h5>
+            Edit Vehicle <MdEdit />
+          </h5>
+        </div>
+        <div className="d-flex justify-content-end p-3">
+          <Link
+            to="/vehicle"
+            className="h5"
+            style={{ color: "#1B65A9", cursor: "pointer" }}
+          >
+            <TbArrowBackUp /> Vehicles
+          </Link>
+        </div>
+      </div>
       <div className="row justify-content-center">
-        <div className="col-md-6">
-          <form onSubmit={handleSubmit}>
-            <div>
-              <Link to="/vehicle">&#8592; Vehicle</Link>
-              <h4>Edit Vehicle</h4>
+        <div className="col-md-12">
+          <div>
+            {error == null ? (
+              ""
+            ) : error == false ? (
+              <Alert variant={"success"}>Vehicle updated Successfully</Alert>
+            ) : (
+              <Alert variant={"danger"}>Failed to update vehicle</Alert>
+            )}
+          </div>
+          <div className="card">
+            <div className="card-body">
+              <Form noValidate validated={validated} onSubmit={handleSubmit}>
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <InputGroup as={Col}>
+                      <FloatingLabel
+                        controlId="vehicle_name"
+                        label="Vehicle Name"
+                        className="mb-3"
+                      >
+                        <Form.Control
+                          name="vehicle_name"
+                          onChange={handleChange}
+                          type="text"
+                          defaultValue={idData[0].vehicle_name}
+                          required
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          Please provide a Vehicle Name.
+                        </Form.Control.Feedback>
+                      </FloatingLabel>
+                    </InputGroup>
+                  </Col>
+
+                  <Col md={6}>
+                    <Form.Group as={Col} controlId="lastName">
+                      <FloatingLabel
+                        controlId="floatingInput2"
+                        label="Registration No."
+                        className="mb-3"
+                      >
+                        <Form.Control
+                          type="text"
+                          onChange={handleChange}
+                          name="vehicle_registration"
+                          defaultValue={idData[0].vehicle_registration}
+                          required
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          Please provide a Vehicle Registration.
+                        </Form.Control.Feedback>
+                      </FloatingLabel>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row className="mb-3">
+                  <Col md={4}>
+                    <Form.Group as={Col}>
+                      <FloatingLabel
+                        controlId="floatingInput2"
+                        label="ECU"
+                        className="mb-3"
+                      >
+                        <select
+                          name="ecu"
+                          style={{
+                            paddingTop: "1.55rem",
+                            paddingBottom: "1rem",
+                          }}
+                          className={`form-control `}
+                          aria-label="Default select example"
+                          onChange={handleChange}
+                        >
+                          <option>{idData[0]?.ecu}</option>
+                          <option value={null}>Unassign</option>{" "}
+                          {ecuData?.map((el) => {
+                            return (
+                              <option key={el.id} value={`${el.device_id}`}>
+                                {el.device_id}
+                              </option>
+                            );
+                          })}
+                        </select>
+                        <Form.Control.Feedback type="invalid">
+                          Please select any option.
+                        </Form.Control.Feedback>
+                      </FloatingLabel>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group as={Col}>
+                      <FloatingLabel
+                        controlId="floatingInput2"
+                        label="IoT"
+                        className="mb-3"
+                      >
+                        <select
+                          name="iot"
+                          style={{
+                            paddingTop: "1.55rem",
+                            paddingBottom: "1rem",
+                          }}
+                          className={`form-control `}
+                          aria-label="Default select example"
+                          onChange={handleChange}
+                        >
+                          <option>{idData[0]?.iot}</option>
+                          <option value={null}>Unassign</option>{" "}
+                          {iotData?.map((el) => {
+                            return (
+                              <option key={el.id} value={`${el.device_id}`}>
+                                {el.device_id}
+                              </option>
+                            );
+                          })}
+                        </select>
+                        <Form.Control.Feedback type="invalid">
+                          Please select any option.
+                        </Form.Control.Feedback>
+                      </FloatingLabel>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group as={Col}>
+                      <FloatingLabel
+                        controlId="floatingInput2"
+                        label="DMS"
+                        className="mb-3"
+                      >
+                        <select
+                          name="dms"
+                          style={{
+                            paddingTop: "1.55rem",
+                            paddingBottom: "1rem",
+                          }}
+                          className={`form-control `}
+                          aria-label="Default select example"
+                          onChange={handleChange}
+                        >
+                          <option>
+                            {idData[0].dms == null
+                              ? "Not Assign"
+                              : idData[0].dms}
+                          </option>
+                          <option value={null}>Unassign</option>
+                          {dmsData?.map((el) => {
+                            return (
+                              <option key={el.id} value={`${el.device_id}`}>
+                                {el.device_id}
+                              </option>
+                            );
+                          })}
+                        </select>
+                        <Form.Control.Feedback type="invalid">
+                          Please select any option.
+                        </Form.Control.Feedback>
+                      </FloatingLabel>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row className="mb-3">
+                  <Col md={4}>
+                    <Form.Group as={Col}>
+                      <FloatingLabel
+                        controlId="floatingInput2"
+                        label="status"
+                        className="mb-3"
+                      >
+                        <select
+                          name="status"
+                          style={{
+                            paddingTop: "1.55rem",
+                            paddingBottom: "1rem",
+                          }}
+                          className={`form-control `}
+                          aria-label="Default select example"
+                          onChange={handleChange}
+                        >
+                          <option>
+                            {idData[0].status == 1 ? "Active" : "Deactive"}
+                          </option>{" "}
+                          <option value="1">Active</option>
+                          <option value="2">Deactive</option>
+                        </select>
+                        <Form.Control.Feedback type="invalid">
+                          Please select any option.
+                        </Form.Control.Feedback>
+                      </FloatingLabel>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={12}>
+                    <Button className="btn-theme" type="submit">
+                      Save Changes <BiSave />
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
             </div>
-            <div className="card">
-              <div className="card-body">
-                <div>
-                  <label htmlFor="">Vehicle Name</label>
-                  <InputGroup className="mb-3">
-                    <Form.Control
-                      defaultValue={idData[0].vehicle_name}
-                      name="vehicle_name"
-                      onChange={handleChange}
-                    />
-                  </InputGroup>
-                </div>
-                <div>
-                  <label htmlFor="">Registration Number</label>
-                  <InputGroup className="mb-3">
-                    <Form.Control
-                      defaultValue={idData[0].vehicle_registration}
-                      name="vehicle_registration"
-                      onChange={handleChange}
-                    />
-                  </InputGroup>
-                </div>
-
-                <div>
-                  <label htmlFor="">Status</label>
-                  <Form.Select
-                    onChange={handleChange}
-                    name="status"
-                    className="mb-3"
-                  >
-                    <option>
-                      {idData[0].status == 1 ? "Active" : "Deactive"}
-                    </option>
-                    <option value="0">Deleted</option>
-                    <option value="1">Active</option>
-                    <option value="2">Deactive</option>
-                  </Form.Select>
-                </div>
-
-                <div>
-                  <label htmlFor="">Select ECU</label>
-                  <Form.Select
-                    name="ecu"
-                    onChange={handleChange}
-                    className="mb-3"
-                  >
-                    <option>{idData[0].ecu}</option>
-                    <option value={null}>Unassign</option>
-                    {ecuData?.map((el) => {
-                      return (
-                        <option key={el.id} value={`${el.device_id}`}>
-                          {el.device_id}
-                        </option>
-                      );
-                    })}
-                  </Form.Select>
-                </div>
-                <div>
-                  <label htmlFor="">Select IoT</label>
-                  <Form.Select
-                    name="iot"
-                    onChange={handleChange}
-                    className="mb-3"
-                  >
-                    <option>{idData[0].iot}</option>
-                    <option value={null}>Unassign</option>
-                    {iotData?.map((el) => {
-                      return (
-                        <option key={el.id} value={`${el.device_id}`}>
-                          {el.device_id}
-                        </option>
-                      );
-                    })}
-                  </Form.Select>
-                </div>
-                <div>
-                  <label htmlFor="">Select DMS</label>
-                  <Form.Select name="dms" onChange={handleChange}>
-                    <option>
-                      {idData[0].dms == null ? "Not Assign" : idData[0].dms}
-                    </option>
-                    <option value={null}>Unassign</option>
-                    {dmsData?.map((el) => {
-                      return (
-                        <option key={el.id} value={`${el.device_id}`}>
-                          {el.device_id}
-                        </option>
-                      );
-                    })}
-                  </Form.Select>
-                </div>
-
-                <div className="text-center mt-3">
-                  <button className="btn btn-theme w-100 btn-lg" type="submit">
-                    SUBMIT
-                  </button>
-                </div>
-              </div>
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </Container>

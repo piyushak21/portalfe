@@ -300,7 +300,7 @@ const VehicleShow = () => {
           <p className="mb-0 align-self-center">
             Total Trips: {filterData()?.length}
           </p>
-          <Table striped hover>
+          <Table striped hover variant="light">
             <thead>
               <tr>
                 <th>#</th>

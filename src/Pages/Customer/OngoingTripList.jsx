@@ -206,6 +206,10 @@ const OngoingTripList = () => {
   const CustomHeader = () => {
     return (
       <div>
+        <div>
+          {" "}
+          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
+        </div>
         <h4>
           Ongoing Trips{" "}
           <span
@@ -215,10 +219,7 @@ const OngoingTripList = () => {
             Total: {tripData?.length}
           </span>
         </h4>
-        <div>
-          {" "}
-          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
-        </div>
+
         <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">

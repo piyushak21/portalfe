@@ -17,7 +17,6 @@ import {
   Badge,
   Form,
   Modal,
-  Button,
 } from "react-bootstrap";
 import {
   BsPinMapFill,
@@ -97,6 +96,10 @@ const CompletedTripView = () => {
         setDistance(res.data[0].total_distance);
         setMaxSpd(res.data[0].max_spd);
         setDuration(res.data[0].duration);
+        const tripStartTime = new Date(res.data[0].trip_start_time * 1000);
+        const tripEndTime = new Date(res.data[0].trip_end_time * 1000);
+        setStartTime(tripStartTime.toLocaleString());
+        setEndTime(tripEndTime.toLocaleString());
       })
       .catch((err) => {
         console.log(err);
@@ -142,37 +145,6 @@ const CompletedTripView = () => {
           lat: parseFloat(res.data[dataLength].lat),
           lng: parseFloat(res.data[dataLength].lng),
         });
-
-        // Set Start time
-        let sttime = res.data[0].timestamp;
-        let updateStTime = new Date(sttime * 1000);
-        setStartTime(updateStTime.toString());
-
-        // Set End time
-        let edtime = res.data[dataLength].timestamp;
-        let updateEdTime = new Date(edtime * 1000);
-        setEndTime(updateEdTime.toString());
-
-        // Set the duration
-        // let difference = edtime - sttime;
-        // setDurationInSec(difference); // this is use for calculate the avg speed
-
-        // let hours = Math.floor(difference / 3600);
-        // difference = difference % 3600;
-
-        // let minutes = Math.floor(difference / 60);
-        // difference = difference % 60;
-        // let seconds = difference;
-        // if (hours > 0) {
-        //   setDuration(
-        //     hours + " hours " + minutes + " Mins " + seconds + " Sec"
-        //   );
-        // } else {
-        //   setDuration(minutes + " Mins " + seconds + " Sec");
-        // }
-
-        // Calculate average speed
-        // setSpdData(res.data.map((speed) => speed.spd));
       })
       .catch((err) => {
         console.log(err);
@@ -388,7 +360,7 @@ const CompletedTripView = () => {
               lng: parseFloat(response.data[l].lng),
               reason: response.data[l].message,
               title: response.data[l].message,
-              speed: response.data[l].spd,
+              speed: Math.round(response.data[l].spd),
               content: contentTime,
               event: parseJson.data.alarm == 2 ? "ALM2" : "ALM3",
               alarm_no: parseJson.data.alarm,
@@ -405,6 +377,7 @@ const CompletedTripView = () => {
 
   // Set DMS media
   useEffect(() => {
+    console.log("six");
     if (faultData.length > 0) {
       let mediaData = [];
       faultData.forEach((item) => {
@@ -452,13 +425,13 @@ const CompletedTripView = () => {
   }, [faultData]);
 
   // Set Iframe for DMS
-  const dmsIframes = media.map((data, index) => {
-    return (
-      <div className="col-md-6 mb-2" key={index}>
-        <Iframe src={data} width="100%" height="300px"></Iframe>
-      </div>
-    );
-  });
+  // const dmsIframes = media.map((data, index) => {
+  //   return (
+  //     <div className="col-md-6 mb-2" key={index}>
+  //       <Iframe src={data} width="100%" height="300px"></Iframe>
+  //     </div>
+  //   );
+  // });
 
   const handleMarkerClick = (marker) => {
     setSelectedMarker(marker);
@@ -552,16 +525,6 @@ const CompletedTripView = () => {
               width: "7rem",
             }}
           />
-          {/* <div
-            className="spinner-container"
-            style={{
-              height: "5rem",
-              width: "5rem",
-            }}
-            role="status"
-          >
-            <span className="visually-hidden">Loading...</span>
-          </div> */}
         </div>
       </div>
     );

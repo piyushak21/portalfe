@@ -109,3 +109,6 @@ a {
   background-color: #787a7c;
   color: #fff !important;
 }
+.form-control:valid {
+  background-image: none !important;
+}

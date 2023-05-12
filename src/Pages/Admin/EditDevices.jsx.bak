@@ -100,7 +100,7 @@ const EditDevices = () => {
                       onChange={handleChange}
                       defaultValue={idData[0].device_type || ""}
                     >
-                      <option>- Select Device type -</option>
+                      <option>{idData[0].device_type}</option>
                       <option value="ECU">ECU</option>
                       <option value="IoT">IoT</option>
                       <option value="DMS">DMS</option>
@@ -115,7 +115,9 @@ const EditDevices = () => {
                       defaultValue={idData[0].user_id || ""}
                       onChange={handleChange}
                     >
-                      <option value="">- Select Customer -</option>
+                      <option value="">
+                        {idData[0].first_name + " " + idData[0].last_name}{" "}
+                      </option>
                       {customerData?.map((item) => {
                         return (
                           <option value={item.user_id} key={item.user_id}>
@@ -145,7 +147,9 @@ const EditDevices = () => {
                       onChange={handleChange}
                       defaultValue={idData[0].status || ""}
                     >
-                      <option>- Select -</option>
+                      <option>
+                        {idData[0].status == 1 ? "Active" : "Deactive"}
+                      </option>
                       <option value="1">Active</option>
                       <option value="2">Deactive</option>
                     </Form.Select>

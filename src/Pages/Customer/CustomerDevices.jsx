@@ -2,7 +2,6 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
 import DataTable from "react-data-table-component";
-import { BsArrowLeftRight } from "react-icons/bs";
 import { GrPrevious, GrNext } from "react-icons/gr";
 import { Link } from "react-router-dom";
 
@@ -182,6 +181,10 @@ const CustomerDevices = () => {
   const CustomHeader = () => {
     return (
       <div>
+        <div>
+          {" "}
+          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
+        </div>
         <h4>
           Devices
           <span
@@ -191,10 +194,7 @@ const CustomerDevices = () => {
             Total: {filterDevices?.length}
           </span>
         </h4>
-        <div>
-          {" "}
-          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
-        </div>
+
         <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">

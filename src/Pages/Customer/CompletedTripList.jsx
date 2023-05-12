@@ -51,7 +51,7 @@ const CompletedTripList = () => {
       sortable: true,
     },
     {
-      name: "Vehicle Name",
+      name: "Vehicle",
       selector: (row) => (!row.vehicle_name ? "NA" : row.vehicle_name),
       wrap: true,
       sortable: true,
@@ -214,6 +214,10 @@ const CompletedTripList = () => {
   const CustomHeader = () => {
     return (
       <div>
+        <div>
+          {" "}
+          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
+        </div>
         <h4>
           Completed Trips{" "}
           <span
@@ -223,10 +227,7 @@ const CompletedTripList = () => {
             Total: {tripData?.length}
           </span>
         </h4>
-        <div>
-          {" "}
-          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
-        </div>
+
         <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">

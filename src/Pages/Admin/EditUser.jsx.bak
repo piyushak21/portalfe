@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Container from "react-bootstrap/Container";
+import { Container, Tabs, Tab, Form, InputGroup } from "react-bootstrap";
 import { Link, useParams } from "react-router-dom";
-import Form from "react-bootstrap/Form";
-import InputGroup from "react-bootstrap/InputGroup";
 import axios from "axios";
 
 const EditUser = () => {
@@ -27,10 +25,7 @@ const EditUser = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (data.password && data.status) {
-      if (data.password.length > 6) {
-        alert("Password should be of length 6");
-      }
+    if (data.status) {
       axios
         .put(
           `${process.env.REACT_APP_BASE_URL}/customers/edit-user/${user_id}`,
@@ -51,8 +46,7 @@ const EditUser = () => {
     }
   };
 
-  ///get Data
-
+  // get Data
   useEffect(() => {
     axios
       .get(`${process.env.REACT_APP_BASE_URL}/customers/get-user/${user_id}`, {
@@ -122,168 +116,187 @@ const EditUser = () => {
   };
 
   return (
-    <Container className="my-4">
+    <Container className="mt-4 mb-5">
       <div>
         <Link to="/users">&#8592; Customers</Link>
         <h4>Edit Customer</h4>
-        <hr />
       </div>
-      <div className="row">
-        <div className="col-md-6">
-          <div className="card h-100">
-            <div className="card-body">
-              <div className="">
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-3">
-                    <label htmlFor="">First Name</label>
-                    <InputGroup onChange={handleChange}>
-                      <Form.Control
-                        defaultValue={idData[0].first_name}
-                        name="first_name"
-                      />
-                    </InputGroup>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="">Last Name</label>
-                    <InputGroup onChange={handleChange}>
-                      <Form.Control
-                        defaultValue={idData[0].last_name}
-                        name="last_name"
-                      />
-                    </InputGroup>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="">Username</label>
-                    <InputGroup onChange={handleChange}>
-                      <Form.Control
-                        defaultValue={idData[0].username}
-                        name="username"
-                      />
-                    </InputGroup>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="">Email ID</label>
-                    <InputGroup onChange={handleChange}>
-                      <Form.Control
-                        defaultValue={idData[0].email}
-                        name="email"
-                        type="email"
-                      />
-                    </InputGroup>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="">Password</label>
-                    <InputGroup onChange={handleChange}>
-                      <Form.Control name="password" type="password" />
-                    </InputGroup>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="">Status</label>
-                    <Form.Select onChange={handleChange} name="status">
-                      <option>-Select Status-</option>
-                      <option value="0">Deleted</option>
-                      <option value="1">Active</option>
-                      <option value="2">Deactive</option>
-                    </Form.Select>
-                  </div>
 
-                  <div className="text-center">
-                    <button
-                      className="btn btn-theme w-100 btn-lg"
-                      type="submit"
-                    >
-                      SUBMIT
-                    </button>
+      <div className="my-4">
+        <Tabs
+          defaultActiveKey="auth"
+          id="uncontrolled-tab-example"
+          className="mb-3"
+        >
+          <Tab eventKey="auth" title="Customer Details">
+            <div className="row">
+              <div className="col-md-6">
+                <div className="card h-100">
+                  <div className="card-body">
+                    <div className="">
+                      <form onSubmit={handleSubmit}>
+                        <div className="mb-3">
+                          <label htmlFor="">First Name</label>
+                          <InputGroup onChange={handleChange}>
+                            <Form.Control
+                              defaultValue={idData[0].first_name}
+                              name="first_name"
+                            />
+                          </InputGroup>
+                        </div>
+                        <div className="mb-3">
+                          <label htmlFor="">Last Name</label>
+                          <InputGroup onChange={handleChange}>
+                            <Form.Control
+                              defaultValue={idData[0].last_name}
+                              name="last_name"
+                            />
+                          </InputGroup>
+                        </div>
+                        <div className="mb-3">
+                          <label htmlFor="">Username</label>
+                          <InputGroup onChange={handleChange}>
+                            <Form.Control
+                              defaultValue={idData[0].username}
+                              name="username"
+                            />
+                          </InputGroup>
+                        </div>
+                        <div className="mb-3">
+                          <label htmlFor="">Email ID</label>
+                          <InputGroup onChange={handleChange}>
+                            <Form.Control
+                              defaultValue={idData[0].email}
+                              name="email"
+                              type="email"
+                            />
+                          </InputGroup>
+                        </div>
+                        <div className="mb-3">
+                          <label htmlFor="">Status</label>
+                          <Form.Select onChange={handleChange} name="status">
+                            <option>
+                              {idData[0]?.status == 1 ? "Active" : "Deactive"}
+                            </option>
+                            <option value="0">Deleted</option>
+                            <option value="1">Active</option>
+                            <option value="2">Deactive</option>
+                          </Form.Select>
+                        </div>
+
+                        <div className="text-center">
+                          <button
+                            className="btn btn-theme w-100 btn-lg"
+                            type="submit"
+                          >
+                            SUBMIT
+                          </button>
+                        </div>
+                      </form>
+                    </div>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </Tab>
 
-        {/* Master Customer */}
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <form onSubmit={handleMasterSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="">Company Name</label>
-                  <InputGroup onChange={handlemasterChange}>
-                    <Form.Control
-                      type="text"
-                      defaultValue={master_customer[0]?.company_name}
-                      name="company_name"
-                    />
-                  </InputGroup>
+          <Tab eventKey="other" title="Other Details">
+            <div className="row">
+              <div className="col-md-6">
+                <div className="card">
+                  <div className="card-body">
+                    <form onSubmit={handleMasterSubmit}>
+                      <div className="mb-3">
+                        <label htmlFor="">Company Name</label>
+                        <InputGroup onChange={handlemasterChange}>
+                          <Form.Control
+                            type="text"
+                            defaultValue={master_customer[0]?.company_name}
+                            name="company_name"
+                          />
+                        </InputGroup>
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="">Address</label>
+                        <InputGroup onChange={handlemasterChange}>
+                          <Form.Control
+                            type="text"
+                            defaultValue={master_customer[0]?.address}
+                            name="address"
+                          />
+                        </InputGroup>
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="">State</label>
+                        <InputGroup onChange={handlemasterChange}>
+                          <Form.Control
+                            type="text"
+                            defaultValue={master_customer[0]?.state}
+                            name="state"
+                          />
+                        </InputGroup>
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="">City</label>
+                        <InputGroup onChange={handlemasterChange}>
+                          <Form.Control
+                            defaultValue={master_customer[0]?.city}
+                            name="city"
+                            type="text"
+                          />
+                        </InputGroup>
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="">Pincode</label>
+                        <InputGroup onChange={handlemasterChange}>
+                          <Form.Control
+                            defaultValue={master_customer[0]?.pincode}
+                            name="pincode"
+                            maxLength={6}
+                          />
+                        </InputGroup>
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="">Contact Number</label>
+                        <InputGroup onChange={handlemasterChange}>
+                          <Form.Control
+                            defaultValue={master_customer[0]?.phone}
+                            name="phone"
+                            maxLength={10}
+                          />
+                        </InputGroup>
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="">Status</label>
+                        <Form.Select
+                          onChange={handlemasterChange}
+                          name="status"
+                        >
+                          <option>
+                            {master_customer[0]?.status == 1
+                              ? "Active"
+                              : "Deactive"}
+                          </option>{" "}
+                          <option value="0">Deleted</option>
+                          <option value="1">Active</option>
+                          <option value="2">Deactive</option>
+                        </Form.Select>
+                      </div>
+                      <div className="text-center">
+                        <button
+                          className="btn btn-theme w-100 btn-lg"
+                          type="submit"
+                        >
+                          SUBMIT
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
-                <div className="mb-3">
-                  <label htmlFor="">Address</label>
-                  <InputGroup onChange={handlemasterChange}>
-                    <Form.Control
-                      type="text"
-                      defaultValue={master_customer[0]?.address}
-                      name="address"
-                    />
-                  </InputGroup>
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="">State</label>
-                  <InputGroup onChange={handlemasterChange}>
-                    <Form.Control
-                      type="text"
-                      defaultValue={master_customer[0]?.state}
-                      name="state"
-                    />
-                  </InputGroup>
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="">City</label>
-                  <InputGroup onChange={handlemasterChange}>
-                    <Form.Control
-                      defaultValue={master_customer[0]?.city}
-                      name="city"
-                      type="text"
-                    />
-                  </InputGroup>
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="">Pincode</label>
-                  <InputGroup onChange={handlemasterChange}>
-                    <Form.Control
-                      defaultValue={master_customer[0]?.pincode}
-                      name="pincode"
-                      maxLength={6}
-                    />
-                  </InputGroup>
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="">Contact Number</label>
-                  <InputGroup onChange={handlemasterChange}>
-                    <Form.Control
-                      defaultValue={master_customer[0]?.phone}
-                      name="phone"
-                      maxLength={10}
-                    />
-                  </InputGroup>
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="">Status</label>
-                  <Form.Select onChange={handlemasterChange} name="status">
-                    <option>-Select Status-</option>
-                    <option value="0">Deleted</option>
-                    <option value="1">Active</option>
-                    <option value="2">Deactive</option>
-                  </Form.Select>
-                </div>
-                <div className="text-center">
-                  <button className="btn btn-theme w-100 btn-lg" type="submit">
-                    SUBMIT
-                  </button>
-                </div>
-              </form>
+              </div>
             </div>
-          </div>
-        </div>
+          </Tab>
+        </Tabs>
       </div>
     </Container>
   );

@@ -25,6 +25,7 @@ const EditVehicle = () => {
         }
       )
       .then((res) => {
+        console.log(idData);
         setIdData(res.data.IdData);
       })
       .catch((err) => {
@@ -95,7 +96,7 @@ const EditVehicle = () => {
     setData({ ...data, [name]: value });
   };
   return (
-    <Container className="my-4">
+    <Container className="mt-4 mb-5">
       <div className="row justify-content-center">
         <div className="col-md-6">
           <form onSubmit={handleSubmit}>
@@ -127,23 +128,15 @@ const EditVehicle = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="">Featureset</label>
-                  <InputGroup className="mb-3">
-                    <Form.Control
-                      placeholder={`${idData[0].featureset}`}
-                      name="featureset"
-                      onChange={handleChange}
-                    />
-                  </InputGroup>
-                </div>
-                <div>
                   <label htmlFor="">Status</label>
                   <Form.Select
                     onChange={handleChange}
                     name="status"
                     className="mb-3"
                   >
-                    <option>-Select Status-</option>
+                    <option>
+                      {idData[0].status == 1 ? "Active" : "Deactive"}
+                    </option>
                     <option value="0">Deleted</option>
                     <option value="1">Active</option>
                     <option value="2">Deactive</option>
@@ -157,7 +150,7 @@ const EditVehicle = () => {
                     onChange={handleChange}
                     className="mb-3"
                   >
-                    <option>-Select ECU-</option>
+                    <option>{idData[0].ecu}</option>
                     <option value={null}>Unassign</option>
                     {ecuData?.map((el) => {
                       return (
@@ -175,7 +168,7 @@ const EditVehicle = () => {
                     onChange={handleChange}
                     className="mb-3"
                   >
-                    <option>-Select IoT-</option>
+                    <option>{idData[0].iot}</option>
                     <option value={null}>Unassign</option>
                     {iotData?.map((el) => {
                       return (
@@ -189,7 +182,9 @@ const EditVehicle = () => {
                 <div>
                   <label htmlFor="">Select DMS</label>
                   <Form.Select name="dms" onChange={handleChange}>
-                    <option>-Select DMS-</option>
+                    <option>
+                      {idData[0].dms == null ? "Not Assign" : idData[0].dms}
+                    </option>
                     <option value={null}>Unassign</option>
                     {dmsData?.map((el) => {
                       return (

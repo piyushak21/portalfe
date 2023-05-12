@@ -53,7 +53,7 @@ const AdminDashboard = () => {
           <div className="col-md-3">
             <div
               onClick={() => navigate("/users")}
-              className="card border text-center text-muted cursor"
+              className="card border-0 shadow text-center text-muted cursor"
             >
               <div className="card-body">
                 <BsPersonFill className="h1 display-4 my-2 theme-text" />
@@ -66,7 +66,7 @@ const AdminDashboard = () => {
           <div className="col-md-3">
             <div
               onClick={() => navigate("/devices")}
-              className="card border text-center text-muted cursor"
+              className="card border-0 shadow text-center text-muted cursor"
             >
               <div className="card-body">
                 <BsFillCpuFill className="h1 display-4 my-2 theme-text" />

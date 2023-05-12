@@ -5,6 +5,7 @@ import { AiFillEdit, AiFillEye } from "react-icons/ai";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 import { GrPrevious, GrNext } from "react-icons/gr";
+import { BsTruck } from "react-icons/bs";
 
 const Vehicle = () => {
   const [vehicleData, setVehicleData] = useState([]);
@@ -44,12 +45,16 @@ const Vehicle = () => {
       name: "Vehicle Name",
       selector: (row) => (!row.vehicle_name ? "NA" : row.vehicle_name),
       sortable: true,
+      wrap: true,
+      width: "170px",
     },
     {
       name: "Registration No.",
       selector: (row) =>
         !row.vehicle_registration ? "NA" : row.vehicle_registration,
       sortable: true,
+      wrap: true,
+      width: "200px",
     },
     {
       name: "ECU",
@@ -130,6 +135,10 @@ const Vehicle = () => {
   const CustomHeader = () => {
     return (
       <div>
+        <div>
+          {" "}
+          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
+        </div>
         <h4>
           Vehicles
           <span
@@ -139,10 +148,7 @@ const Vehicle = () => {
             Total: {filterVehicle?.length}
           </span>
         </h4>
-        <div>
-          {" "}
-          <Link to="/customer-dashboard">&#8592; Dashboard</Link>
-        </div>
+
         <div className="mt-2">
           <span>Show&nbsp;</span>
           <select onChange={handleItemsPerPageChange} className="px-1">
@@ -288,7 +294,7 @@ const Vehicle = () => {
             onClick={() => navigate("/add-vehicle")}
             className="btn btn-theme mb-3"
           >
-            Add Vehicle
+            Add Vehicle <BsTruck />
           </button>
           <div className="d-flex gap-4 mt-1">
             <div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
@@ -8,33 +8,42 @@ import mainImg2 from "../Assets/img/mainImg2.png";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import { AiOutlineLogin } from "react-icons/ai";
 import Typed from "react-typed";
+import { Alert } from "react-bootstrap";
 
 const Login = () => {
   const [data, setData] = useState({});
-
+  const [validated, setValidated] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.stopPropagation();
+    }
+    setValidated(true);
 
-    axios
-      .post(`${process.env.REACT_APP_BASE_URL}/login/login-user`, data)
-      .then((res) => {
-        console.log(res.data);
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user_type", res.data.user_type);
-        localStorage.setItem("user_id", res.data.user_id);
-        if (res.data.user_type === 1) {
-          navigate("/admin-dashboard");
-          // alert("You have logged in successfully");
-        } else {
-          navigate("/customer-dashboard");
-          // alert("You have logged in successfully");
-        }
-      })
-      .catch((err) => {
-        alert(err.response.data.Error);
-      });
+    if (form.checkValidity()) {
+      axios
+        .post(`${process.env.REACT_APP_BASE_URL}/login/login-user`, data)
+        .then((res) => {
+          console.log(res.data);
+          localStorage.setItem("token", res.data.token);
+          localStorage.setItem("user_type", res.data.user_type);
+          localStorage.setItem("user_id", res.data.user_id);
+          if (res.data.user_type === 1) {
+            navigate("/admin-dashboard");
+            setError(false);
+          } else {
+            navigate("/customer-dashboard");
+            setError(true);
+          }
+        })
+        .catch((err) => {
+          setError(true);
+        });
+    }
   };
 
   const handleChange = (e) => {
@@ -44,6 +53,17 @@ const Login = () => {
   return (
     <>
       <div className="container">
+        <div className="pt-2">
+          {error == null ? (
+            ""
+          ) : error == false ? (
+            <Alert variant={"success"}>successfully Signin </Alert>
+          ) : (
+            <Alert variant={"danger"}>
+              Failed to signin, please provide valid credentials.{" "}
+            </Alert>
+          )}
+        </div>
         <div className="row justify-content-center mt-4">
           <div className="col-md-7">
             <img src={mainImg2} alt="Logo" className="img-fluid w-100" />
@@ -54,7 +74,7 @@ const Login = () => {
             </div> */}
             <div className="card py-4 mt-5 shadow-sm rounded bg-light border-0">
               <div className="card-body mb-4">
-                <form onSubmit={handleSubmit}>
+                <Form noValidate validated={validated} onSubmit={handleSubmit}>
                   <div>
                     <div className="text-center py-1">
                       <Typed
@@ -75,7 +95,7 @@ const Login = () => {
                       {/* <InputGroup className="mb-5"> */}
                       <FloatingLabel
                         controlId="floatingInput"
-                        label="Username"
+                        label="Email"
                         className="mb-5 text-muted"
                       >
                         <Form.Control
@@ -83,10 +103,16 @@ const Login = () => {
                           onChange={handleChange}
                           name="email"
                           type="email"
+                          maxLength={30}
+                          pattern="/^[^\s@]+@[^\s@]+\.[^\s@]+$/\"
                           placeholder="username"
                           aria-label="Username"
                           aria-describedby="basic-addon1"
+                          required
                         />
+                        <Form.Control.Feedback type="invalid">
+                          Please provide a valid Email
+                        </Form.Control.Feedback>
                       </FloatingLabel>
                       {/* </InputGroup> */}
                     </div>
@@ -106,7 +132,11 @@ const Login = () => {
                           placeholder="Password"
                           aria-label="Password"
                           aria-describedby="basic-addon1"
+                          required
                         />
+                        <Form.Control.Feedback type="invalid">
+                          Please provide a valid password.
+                        </Form.Control.Feedback>
                       </FloatingLabel>
                       {/* </InputGroup> */}
                     </div>
@@ -122,7 +152,7 @@ const Login = () => {
                       <a href="">Forgot Password?</a>
                     </div> */}
                   </div>
-                </form>
+                </Form>
               </div>
             </div>
           </div>
