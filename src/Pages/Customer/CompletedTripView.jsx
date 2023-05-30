@@ -106,7 +106,7 @@ const CompletedTripView = () => {
       });
   }, [id, token]);
 
-  //   Set all trip analytics
+  // Set all trip analytics
   useEffect(() => {
     console.log("2");
     axios
@@ -154,7 +154,7 @@ const CompletedTripView = () => {
   // Set Address
   useEffect(() => {
     console.log("3");
-    if (tripData.length > 0 && startPoint !== "" && endPoint !== "") {
+    if (tripData?.length > 0 && startPoint !== "" && endPoint !== "") {
       const getAddress = async (lat, lng, setAddress) => {
         const response = await fetch(
           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
@@ -164,10 +164,10 @@ const CompletedTripView = () => {
         }
 
         const data = await response.json();
-        setAddress(data.results[0].formatted_address);
+        setAddress(data.results[0]?.formatted_address);
       };
-      getAddress(startPoint.lat, startPoint.lng, setStartAddress);
-      getAddress(endPoint.lat, endPoint.lng, setEndAddress);
+      getAddress(startPoint?.lat, startPoint?.lng, setStartAddress);
+      getAddress(endPoint?.lat, endPoint?.lng, setEndAddress);
     }
   }, [tripData]);
 
@@ -189,11 +189,12 @@ const CompletedTripView = () => {
     console.log(isLoading);
   }, [tripData, isLoading]);
 
-  //   Set faultcount locations and data
+  // Set faultcount locations and data
   const [markers, setMarkers] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [filterMarker, setFilterMarker] = useState([]);
 
+  // Get faults
   useEffect(() => {
     console.log("5");
     axios
@@ -313,6 +314,7 @@ const CompletedTripView = () => {
               reason: parseJson.data.alert_type,
               alert_type: parseJson.data.alert_type,
               media: parseJson.data.media,
+              dashcam: parseJson.data.dashcam,
               severity: parseJson.data.severity,
             };
             parameters.push(params);
@@ -486,6 +488,7 @@ const CompletedTripView = () => {
 
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
+  const [dashCamVideo, setDashCamVideo] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
   const [videoContent, setVideoContent] = useState("");
   const [videoSpeed, setVideoSpeed] = useState("");
@@ -494,6 +497,7 @@ const CompletedTripView = () => {
 
   function handleDMSVideoShow(
     url,
+    dashcamVid,
     title,
     content,
     speed,
@@ -501,6 +505,7 @@ const CompletedTripView = () => {
     severity
   ) {
     setVideoUrl(url);
+    setDashCamVideo(dashcamVid);
     setVideoTitle(title);
     setVideoContent(content);
     setVideoSpeed(speed);
@@ -625,6 +630,7 @@ const CompletedTripView = () => {
                             onClick={() =>
                               handleDMSVideoShow(
                                 marker.media,
+                                marker.dashcam,
                                 marker.title,
                                 marker.content,
                                 marker.speed,
@@ -759,7 +765,13 @@ const CompletedTripView = () => {
         </LoadScript>
 
         {/* DMS videos pop-ups */}
-        <Modal show={showVideoModal} onHide={handleClose}>
+        <Modal
+          show={showVideoModal}
+          onHide={handleClose}
+          size="lg"
+          aria-labelledby="contained-modal-title-vcenter"
+          centered
+        >
           <Modal.Body>
             <div className="d-flex justify-content-between">
               <h6 className="mb-0 align-self-center">{videoTitle}</h6>
@@ -779,14 +791,34 @@ const CompletedTripView = () => {
             <p className="mb-0">
               <b>Severity:</b> {videoSeverity}
             </p>
-            <Iframe
-              src={videoUrl}
-              width="100%"
-              height="315"
-              frameborder="0"
-              allowfullscreen
-              muted
-            ></Iframe>
+            <div className="row justify-content-center">
+              <div className="col-md-6">
+                <Iframe
+                  src={videoUrl}
+                  width="100%"
+                  height="300"
+                  frameborder="0"
+                  allowfullscreen
+                  muted
+                ></Iframe>
+                <h5 className="text-danger text-center">DMS Video</h5>
+              </div>
+              {dashCamVideo && (
+                <>
+                  <div className="col-md-6">
+                    <Iframe
+                      src={dashCamVideo}
+                      width="100%"
+                      height="300"
+                      frameborder="0"
+                      allowfullscreen
+                      muted
+                    ></Iframe>
+                    <h5 className="text-danger text-center">Dashcam Video</h5>
+                  </div>
+                </>
+              )}
+            </div>
           </Modal.Body>
         </Modal>
 
@@ -795,11 +827,11 @@ const CompletedTripView = () => {
           <Tabs
             defaultActiveKey="summary"
             id="justify-tab-example"
-            className="mb-3"
+            className="mb-3 h6"
             justify
           >
             {/* Trip summary tab */}
-            <Tab eventKey="summary" title="Trip Summary">
+            <Tab eventKey="summary" title="Summary">
               <div className="card border-0">
                 <div className="row">
                   <div className="col-md-4">
@@ -885,7 +917,7 @@ const CompletedTripView = () => {
             </Tab>
 
             {/* Fault count tab */}
-            <Tab eventKey="fault" title="Fault Counts">
+            <Tab eventKey="fault" title="CAS & CWS">
               <div className="row">
                 <div className="col-md-4">
                   <div className="card mb-3 border-0 shadow">
@@ -908,9 +940,15 @@ const CompletedTripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
-                            {autoBrk}
-                          </Badge>
+                          {autoBrk === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {autoBrk}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {autoBrk}
+                            </Badge>
+                          )}
                         </ListGroup.Item>
                         <ListGroup.Item
                           as="li"
@@ -928,9 +966,15 @@ const CompletedTripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
-                            {accident}
-                          </Badge>
+                          {accident === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {accident}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {accident}
+                            </Badge>
+                          )}
                         </ListGroup.Item>
                       </ListGroup>
                     </div>
@@ -958,9 +1002,15 @@ const CompletedTripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
-                            {sleeptAlt}
-                          </Badge>
+                          {sleeptAlt === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {sleeptAlt}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {sleeptAlt}
+                            </Badge>
+                          )}
                         </ListGroup.Item>
                       </ListGroup>
                     </div>
@@ -990,9 +1040,15 @@ const CompletedTripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
-                            {harshacc}
-                          </Badge>
+                          {harshacc === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {harshacc}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {harshacc}
+                            </Badge>
+                          )}
                         </ListGroup.Item>
                         <ListGroup.Item
                           as="li"
@@ -1010,9 +1066,15 @@ const CompletedTripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
-                            {laneChng}
-                          </Badge>
+                          {harshacc === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {laneChng}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {laneChng}
+                            </Badge>
+                          )}
                         </ListGroup.Item>
                         <ListGroup.Item
                           as="li"
@@ -1030,9 +1092,15 @@ const CompletedTripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
-                            {spdBump}
-                          </Badge>
+                          {spdBump === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {spdBump}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {spdBump}
+                            </Badge>
+                          )}
                         </ListGroup.Item>
                         <ListGroup.Item
                           as="li"
@@ -1050,9 +1118,15 @@ const CompletedTripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
-                            {suddenBrk}
-                          </Badge>
+                          {suddenBrk === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {suddenBrk}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {suddenBrk}
+                            </Badge>
+                          )}
                         </ListGroup.Item>
                         <ListGroup.Item
                           as="li"
@@ -1070,9 +1144,15 @@ const CompletedTripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
-                            {tailgating}
-                          </Badge>
+                          {tailgating === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {tailgating}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {tailgating}
+                            </Badge>
+                          )}
                         </ListGroup.Item>
                       </ListGroup>
                     </div>
@@ -1102,9 +1182,15 @@ const CompletedTripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" className="mx-1" pill>
-                            {overspeed}
-                          </Badge>
+                          {overspeed === 0 ? (
+                            <Badge bg="secondary" className="mx-1" pill>
+                              {overspeed}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" className="mx-1" pill>
+                              {overspeed}
+                            </Badge>
+                          )}
                         </ListGroup.Item>
                       </ListGroup>
                     </div>
@@ -1129,9 +1215,15 @@ const CompletedTripView = () => {
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
-                          <Badge bg="primary" pill>
-                            {alarm1}
-                          </Badge>
+                          {alarm1 === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {alarm1}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {alarm1}
+                            </Badge>
+                          )}
                         </ListGroup.Item>
                         <ListGroup.Item
                           as="li"
@@ -1147,9 +1239,15 @@ const CompletedTripView = () => {
                               onChange={handlecheckbox}
                             />
                           </Form.Group>
-                          <Badge bg="primary" pill>
-                            {alarm2}
-                          </Badge>
+                          {alarm2 === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {alarm2}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {alarm2}
+                            </Badge>
+                          )}
                         </ListGroup.Item>
                       </ListGroup>
                     </div>
@@ -1159,7 +1257,7 @@ const CompletedTripView = () => {
             </Tab>
 
             {/* DMS */}
-            <Tab eventKey="dms" title="Trip Media">
+            <Tab eventKey="dms" title="DMS">
               <div className="row">
                 <div className="col-md-12 mb-3">
                   <div className="card border-0 shadow">
@@ -1184,9 +1282,15 @@ const CompletedTripView = () => {
                                   />
                                 </Form.Group>
                               </div>
-                              <Badge bg="primary" pill>
-                                {tripStartAlert}
-                              </Badge>
+                              {tripStartAlert === 0 ? (
+                                <Badge bg="secondary" pill>
+                                  {tripStartAlert}
+                                </Badge>
+                              ) : (
+                                <Badge bg="primary" pill>
+                                  {tripStartAlert}
+                                </Badge>
+                              )}
                             </ListGroup.Item>
 
                             <ListGroup.Item
@@ -1205,9 +1309,15 @@ const CompletedTripView = () => {
                                   />
                                 </Form.Group>
                               </div>
-                              <Badge bg="primary" pill>
-                                {drowsiness}
-                              </Badge>
+                              {drowsiness === 0 ? (
+                                <Badge bg="secondary" pill>
+                                  {drowsiness}
+                                </Badge>
+                              ) : (
+                                <Badge bg="primary" pill>
+                                  {drowsiness}
+                                </Badge>
+                              )}
                             </ListGroup.Item>
 
                             <ListGroup.Item
@@ -1226,9 +1336,15 @@ const CompletedTripView = () => {
                                   />
                                 </Form.Group>
                               </div>
-                              <Badge bg="primary" pill>
-                                {distraction}
-                              </Badge>
+                              {distraction === 0 ? (
+                                <Badge bg="secondary" pill>
+                                  {distraction}
+                                </Badge>
+                              ) : (
+                                <Badge bg="primary" pill>
+                                  {distraction}
+                                </Badge>
+                              )}
                             </ListGroup.Item>
 
                             <ListGroup.Item
@@ -1247,9 +1363,15 @@ const CompletedTripView = () => {
                                   />
                                 </Form.Group>
                               </div>
-                              <Badge bg="primary" pill>
-                                {dmsoverSpd}
-                              </Badge>
+                              {dmsoverSpd === 0 ? (
+                                <Badge bg="secondary" pill>
+                                  {dmsoverSpd}
+                                </Badge>
+                              ) : (
+                                <Badge bg="primary" pill>
+                                  {dmsoverSpd}
+                                </Badge>
+                              )}
                             </ListGroup.Item>
                           </ListGroup>
                         </div>
@@ -1271,9 +1393,15 @@ const CompletedTripView = () => {
                                   />
                                 </Form.Group>
                               </div>
-                              <Badge bg="primary" pill>
-                                {noSeatbelt}
-                              </Badge>
+                              {noSeatbelt === 0 ? (
+                                <Badge bg="secondary" pill>
+                                  {noSeatbelt}
+                                </Badge>
+                              ) : (
+                                <Badge bg="primary" pill>
+                                  {noSeatbelt}
+                                </Badge>
+                              )}
                             </ListGroup.Item>
 
                             <ListGroup.Item
@@ -1292,9 +1420,15 @@ const CompletedTripView = () => {
                                   />
                                 </Form.Group>
                               </div>
-                              <Badge bg="primary" pill>
-                                {usePhone}
-                              </Badge>
+                              {usePhone === 0 ? (
+                                <Badge bg="secondary" pill>
+                                  {usePhone}
+                                </Badge>
+                              ) : (
+                                <Badge bg="primary" pill>
+                                  {usePhone}
+                                </Badge>
+                              )}
                             </ListGroup.Item>
 
                             <ListGroup.Item
@@ -1313,9 +1447,15 @@ const CompletedTripView = () => {
                                   />
                                 </Form.Group>
                               </div>
-                              <Badge bg="primary" pill>
-                                {unknownDriver}
-                              </Badge>
+                              {unknownDriver === 0 ? (
+                                <Badge bg="secondary" pill>
+                                  {unknownDriver}
+                                </Badge>
+                              ) : (
+                                <Badge bg="primary" pill>
+                                  {unknownDriver}
+                                </Badge>
+                              )}
                             </ListGroup.Item>
 
                             <ListGroup.Item
@@ -1334,9 +1474,15 @@ const CompletedTripView = () => {
                                   />
                                 </Form.Group>
                               </div>
-                              <Badge bg="primary" pill>
-                                {noDriver}
-                              </Badge>
+                              {noDriver === 0 ? (
+                                <Badge bg="secondary" pill>
+                                  {noDriver}
+                                </Badge>
+                              ) : (
+                                <Badge bg="primary" pill>
+                                  {noDriver}
+                                </Badge>
+                              )}
                             </ListGroup.Item>
                           </ListGroup>
                         </div>
@@ -1358,9 +1504,15 @@ const CompletedTripView = () => {
                                   />
                                 </Form.Group>
                               </div>
-                              <Badge bg="primary" pill>
-                                {smoking}
-                              </Badge>
+                              {smoking === 0 ? (
+                                <Badge bg="secondary" pill>
+                                  {smoking}
+                                </Badge>
+                              ) : (
+                                <Badge bg="primary" pill>
+                                  {smoking}
+                                </Badge>
+                              )}
                             </ListGroup.Item>
 
                             <ListGroup.Item
@@ -1379,9 +1531,15 @@ const CompletedTripView = () => {
                                   />
                                 </Form.Group>
                               </div>
-                              <Badge bg="primary" pill>
-                                {rashDrive}
-                              </Badge>
+                              {rashDrive === 0 ? (
+                                <Badge bg="secondary" pill>
+                                  {rashDrive}
+                                </Badge>
+                              ) : (
+                                <Badge bg="primary" pill>
+                                  {rashDrive}
+                                </Badge>
+                              )}
                             </ListGroup.Item>
 
                             <ListGroup.Item
@@ -1400,9 +1558,15 @@ const CompletedTripView = () => {
                                   />
                                 </Form.Group>
                               </div>
-                              <Badge bg="primary" pill>
-                                {dmsAccident}
-                              </Badge>
+                              {dmsAccident === 0 ? (
+                                <Badge bg="secondary" pill>
+                                  {dmsAccident}
+                                </Badge>
+                              ) : (
+                                <Badge bg="primary" pill>
+                                  {dmsAccident}
+                                </Badge>
+                              )}
                             </ListGroup.Item>
                           </ListGroup>
                         </div>

@@ -36,10 +36,7 @@ const AddDevice = () => {
   }, [token]);
 
   useEffect(() => {
-    if (
-      (data?.device_type && data?.device_id && data?.user_id && data?.status) ||
-      data?.sim_number
-    ) {
+    if (data?.device_type && data?.device_id && data?.user_id && data?.status) {
       setDisableButton(false);
     } else {
       setDisableButton(true);

@@ -179,15 +179,7 @@ const AddVehicle = () => {
                       <select
                         name="ecu"
                         style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
-                        className={`form-control ${
-                          validated
-                            ? data.ecu
-                              ? data.ecu !== null
-                                ? ""
-                                : "is-invalid"
-                              : "is-invalid"
-                            : ""
-                        }`}
+                        className={`form-control `}
                         required
                         aria-label="Default select example"
                         onChange={handleChange}
@@ -211,15 +203,7 @@ const AddVehicle = () => {
                       <select
                         name="iot"
                         style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
-                        className={`form-control ${
-                          validated
-                            ? data.iot
-                              ? data.iot !== null
-                                ? ""
-                                : "is-invalid"
-                              : "is-invalid"
-                            : ""
-                        }`}
+                        className={`form-control`}
                         required
                         aria-label="Default select example"
                         onChange={handleChange}
@@ -243,21 +227,12 @@ const AddVehicle = () => {
                       <select
                         name="dms"
                         style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
-                        className={`form-control ${
-                          validated
-                            ? data.dms
-                              ? data.dms !== null
-                                ? ""
-                                : "is-invalid"
-                              : "is-invalid"
-                            : ""
-                        }`}
+                        className={`form-control `}
                         required
                         aria-label="Default select example"
                         onChange={handleChange}
                       >
                         <option>-Select DMS-</option>
-                        <option value={null}>Unassign</option>
                         {dmsData?.map((el) => {
                           return (
                             <option key={el.id} value={`${el.device_id}`}>

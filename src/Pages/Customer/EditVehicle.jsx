@@ -15,7 +15,7 @@ import { MdEdit } from "react-icons/md";
 const EditVehicle = () => {
   const { vehicle_id } = useParams();
   const [idData, setIdData] = useState(["starkenn"]);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState(null);
   const [iotData, setIotData] = useState([]);
   const [ecuData, setEcuData] = useState([]);
   const [dmsData, setDmsData] = useState([]);
@@ -43,7 +43,7 @@ const EditVehicle = () => {
 
     ///getting data of iot remaining
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-iot`, {
+      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-iot/${user_id}`, {
         headers: { authorization: `bearer ${token}` },
       })
       .then((res) => {
@@ -55,7 +55,7 @@ const EditVehicle = () => {
 
     ///getting ecu remaining
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-ecu`, {
+      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-ecu/${user_id}`, {
         headers: { authorization: `bearer ${token}` },
       })
       .then((res) => {
@@ -67,7 +67,7 @@ const EditVehicle = () => {
 
     ///dms data
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-dms`, {
+      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-dms/${user_id}`, {
         headers: { authorization: `bearer ${token}` },
       })
       .then((res) => {
@@ -88,20 +88,22 @@ const EditVehicle = () => {
     setValidated(true);
 
     if (form.checkValidity()) {
-      axios
-        .put(
-          `${process.env.REACT_APP_BASE_URL}/vehicles/editvehicle/${user_id}/${vehicle_id}`,
-          data,
-          {
-            headers: { authorization: `bearer ${token}` },
-          }
-        )
-        .then((res) => {
-          setError(false);
-        })
-        .catch((err) => {
-          setError(true);
-        });
+      if (data) {
+        axios
+          .put(
+            `${process.env.REACT_APP_BASE_URL}/vehicles/editvehicle/${user_id}/${vehicle_id}`,
+            data,
+            {
+              headers: { authorization: `bearer ${token}` },
+            }
+          )
+          .then((res) => {
+            setError(false);
+          })
+          .catch((err) => {
+            setError(true);
+          });
+      }
     }
   };
 

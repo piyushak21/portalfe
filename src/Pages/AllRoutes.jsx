@@ -26,11 +26,19 @@ import Login from "./Login";
 
 //
 import TripView from "./Customer/TripView";
+import LoginProtected from "../Authorization/LoginProtected";
 
 const AllRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
+      <Route
+        path="/"
+        element={
+          <LoginProtected>
+            <Login />
+          </LoginProtected>
+        }
+      />
       <Route path="/not-found" element={<NotFound />} />
       {/* //////////////Customer Routes/////////////// */}
       <Route

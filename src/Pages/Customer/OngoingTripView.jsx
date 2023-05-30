@@ -116,7 +116,7 @@ const OngoingTripView = () => {
         .catch((error) => {
           console.log(error);
         });
-    }, 30000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [id, token]);
 

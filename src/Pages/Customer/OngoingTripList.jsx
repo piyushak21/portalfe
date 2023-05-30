@@ -34,18 +34,17 @@ const OngoingTripList = () => {
         });
     };
     fetchData();
-  }, []);
+  }, [token]);
 
   const convertTime = (time) => {
     let updateStTime = new Date(time * 1000);
     return updateStTime.toLocaleString();
   };
-  let counter = 1;
 
   const columns = [
     {
-      name: "#",
-      selector: (row) => counter++,
+      name: "Sr No.",
+      selector: (row) => filtertripData.indexOf(row) + 1,
       sortable: true,
       width: "70px",
     },
@@ -115,92 +114,6 @@ const OngoingTripList = () => {
       },
     },
   };
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const totalPages = Math.ceil(filtertripData.length / itemsPerPage);
-  const pageNumbers = [];
-
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-  const handleItemsPerPageChange = (e) => {
-    setCurrentPage(1);
-    setItemsPerPage(e.target.value);
-  };
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filtertripData.slice(indexOfFirstItem, indexOfLastItem);
-  const Pagination = () => {
-    return (
-      <div className="d-flex justify-content-between mt-3 mb-5">
-        {/* <div>
-          <select onChange={handleItemsPerPageChange}>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="30">30</option>
-          </select>
-        </div> */}
-
-        {currentItems.length == 0 ? (
-          ""
-        ) : (
-          <div>
-            Showing {indexOfFirstItem + 1} to{" "}
-            {currentItems.length + indexOfFirstItem} of {filtertripData.length}{" "}
-            items
-          </div>
-        )}
-
-        <div>
-          <button
-            className="border prev text-dark mx-1 py-1 border-0 bg-light"
-            title="Previous"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            <GrPrevious />
-          </button>
-          {/* {currentPage > 1 && (
-            <button className="pages border text-dark py-1 px-2 border-dark" onClick={() => handlePageChange(currentPage - 2)}>
-              {currentPage - 2}
-            </button>
-          )}
-          
-          {currentPage > 1 && (
-            <button className=" pages border text-dark py-1 px-2 border-dark" onClick={() => handlePageChange(currentPage - 1)}>
-              {currentPage - 1}
-            </button>
-          )} */}
-
-          <button className="pages border text-dark py-1 px-2 " disabled>
-            {currentPage}
-          </button>
-          {currentPage < totalPages && (
-            <button
-              className="pages border-0 text-dark py-1 px-2"
-              onClick={() => handlePageChange(currentPage + 1)}
-            >
-              {currentPage + 1}
-            </button>
-          )}
-
-          <button
-            className="border next text-dark mx-1 py-1"
-            title="Next"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages || totalPages === 0}
-          >
-            <GrNext />
-          </button>
-        </div>
-      </div>
-    );
-  };
 
   // Set page headings
   const CustomHeader = () => {
@@ -220,27 +133,23 @@ const OngoingTripList = () => {
           </span>
         </h4>
 
-        <div className="mt-2">
-          <span>Show&nbsp;</span>
-          <select onChange={handleItemsPerPageChange} className="px-1">
-            <option style={{ display: "none" }}>{itemsPerPage}</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="30">30</option>
-          </select>
-          <span>&nbsp;entries</span>
-        </div>
         {/* <p className="mb-0" >Total: {tripData?.length}</p> */}
       </div>
     );
   };
   // Search with trip ID
   const searchOne = (e) => {
+    if (e.target.value === "") {
+      setFiltertripData(tripData);
+    }
     setSearch1(e.target.value);
   };
 
   // Search with Vehicle name
   const searchTwo = (e) => {
+    if (e.target.value === "") {
+      setFiltertripData(tripData);
+    }
     setSearch2(e.target.value);
   };
   useEffect(() => {
@@ -260,7 +169,7 @@ const OngoingTripList = () => {
   }, [search1, search2]);
 
   return (
-    <Container className="my-4">
+    <Container className="mt-4 mb-5">
       <div className="d-flex justify-content-between mb-3">
         <div className="align-self-center">
           <CustomHeader />
@@ -299,12 +208,12 @@ const OngoingTripList = () => {
           <DataTable
             customStyles={customStyles}
             columns={columns}
-            data={currentItems}
+            data={filtertripData}
             highlightOnHover
+            pagination
           />
         </div>
       </div>
-      <Pagination />
     </Container>
   );
 };

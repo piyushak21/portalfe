@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Container from "react-bootstrap/Container";
-import { AiFillEdit, AiFillEye } from "react-icons/ai";
+import { AiFillEdit, AiFillEye, AiOutlineUserAdd } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 import { GrPrevious, GrNext } from "react-icons/gr";
-
+import { BsPersonAdd } from "react-icons/bs";
 ///Display customer list
 const Users = () => {
   const navigate = useNavigate();
@@ -37,24 +37,16 @@ const Users = () => {
       sortable: true,
     },
     {
-      name: "First Name",
-      selector: (row) => (!row.first_name ? "NA" : row.first_name),
-      sortable: true,
-    },
-    {
-      name: "Last Name",
-      selector: (row) => (!row.last_name ? "NA" : row.last_name),
-      sortable: true,
-    },
-    {
-      name: "UserName",
-      selector: (row) => (!row.username ? "NA" : row.username),
+      name: "Customer Name",
+      selector: (row) =>
+        !row.first_name ? "NA" : row.first_name + " " + row?.last_name,
       sortable: true,
     },
     {
       name: "Email",
       selector: (row) => (!row.email ? "NA" : row.email),
       sortable: true,
+      wrap: true,
     },
 
     {
@@ -279,7 +271,7 @@ const Users = () => {
             onClick={() => navigate("/users-add")}
             className="btn btn-theme mb-3"
           >
-            Add Customer
+            Add Customer <AiOutlineUserAdd />
           </button>
           <div className="d-flex gap-4 mt-1">
             <div>

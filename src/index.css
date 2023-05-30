@@ -87,9 +87,9 @@ a {
 .footer-text {
   font-size: 15px;
 }
-.cOhUY {
+/* .cOhUY {
   display: none !important;
-}
+} */
 .pages:disabled {
   background-color: var(--bg-theme) !important;
   color: #ffffff !important;

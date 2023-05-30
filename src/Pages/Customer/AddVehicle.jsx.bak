@@ -4,6 +4,12 @@ import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import Row from "react-bootstrap/Row";
+import FloatingLabel from "react-bootstrap/FloatingLabel";
+import { Alert, Col, Button } from "react-bootstrap";
+import { TbArrowBackUp } from "react-icons/tb";
+import { GrFormAdd } from "react-icons/gr";
+import { BsTruck } from "react-icons/bs";
 
 const AddVehicle = () => {
   const [data, setData] = useState([]);
@@ -12,6 +18,9 @@ const AddVehicle = () => {
   const [dmsData, setDmsData] = useState([]);
   const token = localStorage.getItem("token");
   const user_id = localStorage.getItem("user_id");
+  const [validated, setValidated] = useState(false);
+  const [error, setError] = useState(null);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setData({ ...data, [name]: value });
@@ -20,7 +29,15 @@ const AddVehicle = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (data.vehicle_name && data.vehicle_registration && data.status) {
+    const form = e.currentTarget;
+
+    if (form.checkValidity() === false) {
+      e.stopPropagation();
+    }
+
+    setValidated(true);
+
+    if (form.checkValidity()) {
       if (data.dms || (data.iot && data.ecu)) {
         axios
           .post(
@@ -31,24 +48,21 @@ const AddVehicle = () => {
             }
           )
           .then((res) => {
-            console.log(res);
-            alert("Vehicle Added Successfully");
+            setError(false);
           })
           .catch((err) => {
-            console.log(err);
+            setError(true);
           });
       } else {
-        alert("Device Data Required");
+        setError(true);
       }
-    } else {
-      alert("Fill All Details");
     }
   };
 
   useEffect(() => {
     ///getting data of iot remaining
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-iot`, {
+      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-iot/${user_id}`, {
         headers: { authorization: `bearer ${token}` },
       })
       .then((res) => {
@@ -60,7 +74,7 @@ const AddVehicle = () => {
 
     ///getting ecu remaining
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-ecu`, {
+      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-ecu/${user_id}`, {
         headers: { authorization: `bearer ${token}` },
       })
       .then((res) => {
@@ -72,7 +86,7 @@ const AddVehicle = () => {
 
     ///getting DMS data
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-dms`, {
+      .get(`${process.env.REACT_APP_BASE_URL}/vehicles/get-dms/${user_id}`, {
         headers: { authorization: `bearer ${token}` },
       })
       .then((res) => {
@@ -84,103 +98,194 @@ const AddVehicle = () => {
   }, [token]);
 
   return (
-    <Container className="mt-4 mb-5">
+    <Container className="my-4">
+      <div className="d-flex justify-content-between">
+        <div>
+          <h5>
+            Add Vehicle
+            <GrFormAdd />{" "}
+          </h5>
+        </div>
+        <div className="text-end">
+          <Link
+            to="/vehicle"
+            className="h5"
+            style={{ color: "#1B65A9", cursor: "pointer" }}
+          >
+            <TbArrowBackUp /> Vehicles
+          </Link>{" "}
+        </div>
+      </div>
       <div className="row justify-content-center">
-        <div className="col-md-6">
+        <div className="col-md-12">
+          <div>
+            {error == null ? (
+              ""
+            ) : error == false ? (
+              <Alert variant={"success"}>Vehicle Added Successfully</Alert>
+            ) : (
+              <Alert variant={"danger"}>Failed to add vehicle</Alert>
+            )}
+          </div>
           <div className="card">
             <div className="card-body">
-              <form onSubmit={handleSubmit}>
-                <div className="">
-                  <Link to="/vehicle">&#8592; Vehicles</Link>
-                  <h4>Add Vehicle</h4>
-                </div>
-                <div>
-                  <label htmlFor="">Vehicle Name</label>
-                  <InputGroup className="mb-3">
-                    <Form.Control name="vehicle_name" onChange={handleChange} />
-                  </InputGroup>
-                </div>
-                <div>
-                  <label htmlFor="">Registration Number</label>
-                  <InputGroup className="mb-3">
-                    <Form.Control
-                      name="vehicle_registration"
-                      onChange={handleChange}
-                    />
-                  </InputGroup>
-                </div>
+              <Form noValidate validated={validated} onSubmit={handleSubmit}>
+                <div></div>
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <InputGroup as={Col}>
+                      <FloatingLabel
+                        controlId="vehicle_name"
+                        label="Vehicle Name"
+                        className="mb-3"
+                      >
+                        <Form.Control
+                          name="vehicle_name"
+                          onChange={handleChange}
+                          type="text"
+                          placeholder="Vehicle Name"
+                          required
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          Please provide a Vehicle Name.
+                        </Form.Control.Feedback>
+                      </FloatingLabel>
+                    </InputGroup>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group controlId="lastName">
+                      <FloatingLabel
+                        controlId="floatingInput2"
+                        label="Registration No."
+                        className="mb-3"
+                      >
+                        <Form.Control
+                          type="text"
+                          onChange={handleChange}
+                          name="vehicle_registration"
+                          placeholder="Vehicle Registration"
+                          required
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          Please provide a Vehicle Registration.
+                        </Form.Control.Feedback>
+                      </FloatingLabel>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row className="mb-3">
+                  <Col md={4}>
+                    <Form.Group>
+                      <select
+                        name="ecu"
+                        style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
+                        className={`form-control `}
+                        required
+                        aria-label="Default select example"
+                        onChange={handleChange}
+                      >
+                        <option>-Select ECU-</option>
+                        {ecuData?.map((el) => {
+                          return (
+                            <option key={el.id} value={`${el.device_id}`}>
+                              {el.device_id}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <Form.Control.Feedback type="invalid">
+                        Please select any ECU.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group as={Col}>
+                      <select
+                        name="iot"
+                        style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
+                        className={`form-control`}
+                        required
+                        aria-label="Default select example"
+                        onChange={handleChange}
+                      >
+                        <option>-Select IoT-</option>
+                        {iotData?.map((el) => {
+                          return (
+                            <option key={el.id} value={`${el.device_id}`}>
+                              {el.device_id}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <Form.Control.Feedback type="invalid">
+                        Please select any IoT.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group as={Col}>
+                      <select
+                        name="dms"
+                        style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
+                        className={`form-control `}
+                        required
+                        aria-label="Default select example"
+                        onChange={handleChange}
+                      >
+                        <option>-Select DMS-</option>
+                        <option value={null}>Unassign</option>
+                        {dmsData?.map((el) => {
+                          return (
+                            <option key={el.id} value={`${el.device_id}`}>
+                              {el.device_id}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <Form.Control.Feedback type="invalid">
+                        Please select any DMS.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row className="mb-3">
+                  <Col md={4}>
+                    <Form.Group as={Col}>
+                      <select
+                        name="status"
+                        style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
+                        className={`form-control ${
+                          validated
+                            ? data.status
+                              ? data.status !== null
+                                ? ""
+                                : "is-invalid"
+                              : "is-invalid"
+                            : ""
+                        }`}
+                        required
+                        aria-label="Default select example"
+                        onChange={handleChange}
+                      >
+                        <option>-Select Status-</option>
+                        <option value="1">Active</option>
+                        <option value="2">Deactive</option>
+                      </select>
+                      <Form.Control.Feedback type="invalid">
+                        Please select any status.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-                <div>
-                  <label htmlFor="">Select ECU</label>
-                  <Form.Select
-                    name="ecu"
-                    onChange={handleChange}
-                    className="mb-3"
-                  >
-                    <option>-Select ECU-</option>
-                    {ecuData?.map((el) => {
-                      return (
-                        <option key={el.id} value={`${el.device_id}`}>
-                          {el.device_id}
-                        </option>
-                      );
-                    })}
-                  </Form.Select>
-                </div>
-                <div>
-                  <label htmlFor="">Select IoT</label>
-                  <Form.Select
-                    name="iot"
-                    onChange={handleChange}
-                    className="mb-3"
-                  >
-                    <option>-Select IoT-</option>
-                    {iotData?.map((el) => {
-                      return (
-                        <option key={el.id} value={`${el.device_id}`}>
-                          {el.device_id}
-                        </option>
-                      );
-                    })}
-                  </Form.Select>
-                </div>
-                <div>
-                  <label htmlFor="">Select DMS</label>
-                  <Form.Select
-                    name="dms"
-                    onChange={handleChange}
-                    className="mb-3"
-                  >
-                    <option>-Select DMS-</option>
-                    <option value={null}>Unassign</option>
-                    {dmsData?.map((el) => {
-                      return (
-                        <option key={el.id} value={`${el.device_id}`}>
-                          {el.device_id}
-                        </option>
-                      );
-                    })}
-                  </Form.Select>
-                </div>
-                <div>
-                  <label htmlFor="">Status</label>
-                  <Form.Select
-                    onChange={handleChange}
-                    name="status"
-                    className="mb-3"
-                  >
-                    <option>-Select Status-</option>
-                    <option value="0">Deleted</option>
-                    <option value="1">Active</option>
-                    <option value="2">Deactive</option>
-                  </Form.Select>
-                </div>
-                <div className="text-center">
-                  <button className="btn btn-theme w-100 btn-lg" type="submit">
-                    SUBMIT
-                  </button>
-                </div>
-              </form>
+                <Row>
+                  <Col md={12}>
+                    <Button className="btn-theme" type="submit">
+                      Add Vehicle <BsTruck />
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
             </div>
           </div>
         </div>

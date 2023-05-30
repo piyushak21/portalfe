@@ -18,12 +18,13 @@ const TripView = () => {
 
   const [path, setPath] = useState([]);
   const [tripData, setTripData] = useState([]);
-  const [center, setCenter] = useState({});
-  const [startPoint, setStartPoint] = useState({});
+  const [center, setCenter] = useState({ lat: 0, lng: 0 });
+  const [startPoint, setStartPoint] = useState({ lat: 0, lng: 0 });
   const [startAddress, setStartAddress] = useState("");
   const [endAddress, setEndAddress] = useState("");
-  const [endPoint, setEndPoint] = useState({});
+  const [endPoint, setEndPoint] = useState({ lat: 0, lng: 0 });
   const [startTime, setStartTime] = useState();
+  const [currentTime, setCurrentTime] = useState();
   const [vehicle, setVehicle] = useState([]);
 
   // CAS faults
@@ -55,54 +56,68 @@ const TripView = () => {
 
   useEffect(() => {
     console.log("One");
-    axios
-      .get(
-        `${process.env.REACT_APP_BASE_URL}/ongoingTrip/getOngoingTripdataById/${id}`,
-        {
-          headers: { authorization: `bearer ${token}` },
-        }
-      )
-      .then((res) => {
-        // console.log(res.data);
-        // Set trip data
-        setTripData(res.data);
+    const fetchData = async () => {
+      try {
+        axios
+          .get(
+            `${process.env.REACT_APP_BASE_URL}/ongoingTrip/getOngoingTripdataById/${id}`,
+            {
+              headers: { authorization: `bearer ${token}` },
+            }
+          )
+          .then((res) => {
+            // console.log(res.data);
+            // Set trip data
+            setTripData(res.data);
 
-        const dataLength = res.data.length - 1;
+            const dataLength = res.data.length - 1;
 
-        // Set Map center
-        setCenter({
-          lat: parseFloat(res.data[dataLength].lat),
-          lng: parseFloat(res.data[dataLength].lng),
-        });
+            // Set Map center
+            setCenter({
+              lat: parseFloat(res.data[dataLength].lat),
+              lng: parseFloat(res.data[dataLength].lng),
+            });
 
-        // Set start point
-        setStartPoint({
-          lat: parseFloat(res.data[0].lat),
-          lng: parseFloat(res.data[0].lng),
-        });
+            // Set start point
+            setStartPoint({
+              lat: parseFloat(res.data[0].lat),
+              lng: parseFloat(res.data[0].lng),
+            });
 
-        // Set path
-        setPath(
-          res.data.map((location) => ({
-            lat: parseFloat(location.lat),
-            lng: parseFloat(location.lng),
-          }))
-        );
+            // Set path
+            setPath(
+              res.data.map((location) => ({
+                lat: parseFloat(location.lat),
+                lng: parseFloat(location.lng),
+              }))
+            );
 
-        // Set end point
-        setEndPoint({
-          lat: parseFloat(res.data[dataLength].lat),
-          lng: parseFloat(res.data[dataLength].lng),
-        });
+            // Set end point
+            setEndPoint({
+              lat: parseFloat(res.data[dataLength].lat),
+              lng: parseFloat(res.data[dataLength].lng),
+            });
 
-        // Set Start time
-        let sttime = res.data[0].timestamp;
-        let updateStTime = new Date(sttime * 1000);
-        setStartTime(updateStTime.toLocaleString());
-      })
-      .catch((error) => {
+            // Set Start time
+            let sttime = res.data[0].timestamp;
+            let updateStTime = new Date(sttime * 1000);
+            setStartTime(updateStTime.toLocaleString());
+
+            // Set Current time
+            let currtime = res.data[dataLength].timestamp;
+            let updateCurrTime = new Date(currtime * 1000);
+            setCurrentTime(updateCurrTime.toLocaleString());
+          });
+      } catch (error) {
         console.log(error);
-      });
+      }
+    };
+
+    // Fetch the initial data immediately
+    fetchData();
+    // Fetch subsequent data at the specified interval
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
   }, [id, token]);
 
   // Set Address
@@ -115,14 +130,13 @@ const TripView = () => {
         );
         if (response) {
           //   setIsLoading(false);
+          const data = await response.json();
+          setAddress(data.results[0]?.formatted_address);
         }
-        const data = await response.json();
-        // console.log(data);
-        setAddress(data.results[0].formatted_address);
       };
 
-      getAddress(startPoint.lat, startPoint.lng, setStartAddress);
-      getAddress(endPoint.lat, endPoint.lng, setEndAddress);
+      getAddress(startPoint?.lat, startPoint?.lng, setStartAddress);
+      getAddress(endPoint?.lat, endPoint?.lng, setEndAddress);
     }
   }, [tripData]);
 
@@ -216,7 +230,14 @@ const TripView = () => {
 
           // DMS data
           if (item.event === "DMS") {
-            mediaData.push(jsonDataa.data.media);
+            let dmsTimeStamp = item.timestamp;
+            let updatedmsTimeStamp = new Date(dmsTimeStamp * 1000);
+            mediaData.push({
+              dms: jsonDataa.data.media,
+              dashcam: jsonDataa.data.dashcam,
+              alert: jsonDataa.data.alert_type,
+              timestamp: updatedmsTimeStamp.toLocaleString(),
+            });
           }
           if (
             item.event === "DMS" &&
@@ -319,8 +340,39 @@ const TripView = () => {
   const dmsIframes = media.map((data, index) => {
     console.log(data);
     return (
-      <div className="col-md-3 mb-2" key={index}>
-        <Iframe src={data} width="100%" height="150px"></Iframe>
+      <div className="col-md-6 d-flex" key={index}>
+        <div className="card mb-3 shadow border-0">
+          <div className="card-body">
+            <p className="mb-0">
+              <small>
+                Alert: <b>{data.alert}</b>
+              </small>
+            </p>
+            <p className="mb-0">
+              <small>Timestamp: {data.timestamp}</small>
+            </p>
+            <div className="row justify-content-center">
+              <div className="col-md-6 text-center">
+                <Iframe src={data.dms} width="100%" height="130px"></Iframe>
+                <p className="mb-0 text-danger">
+                  <b>DMS</b>
+                </p>
+              </div>
+              {data.dashcam && (
+                <div className="col-md-6">
+                  <Iframe
+                    src={data.dashcam}
+                    width="100%"
+                    height="130px"
+                  ></Iframe>
+                  <p className="mb-0 text-danger">
+                    <b>Dash CAM</b>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     );
   });
@@ -390,11 +442,11 @@ const TripView = () => {
           <Tabs
             defaultActiveKey="summary"
             id="justify-tab-example"
-            className="mb-3"
+            className="mb-3 h6"
             justify
           >
             {/* Trip summary tab */}
-            <Tab eventKey="summary" title="Trip Summary">
+            <Tab eventKey="summary" title="Summary">
               <div className="card border-0">
                 <div className="row">
                   <div className="col-md-4">
@@ -433,7 +485,9 @@ const TripView = () => {
                         </p>
                         <p className="mb-0">{endAddress}</p>
                         <span>
-                          <small>{/* <strong>{lastTime}</strong> */}</small>
+                          <small>
+                            <strong>{currentTime}</strong>
+                          </small>
                         </span>
                       </div>
                     </div>
@@ -482,7 +536,7 @@ const TripView = () => {
             </Tab>
 
             {/* Fault count tab */}
-            <Tab eventKey="fault" title="Fault Counts">
+            <Tab eventKey="fault" title="CAS & CWS">
               <div className="row">
                 <div className="col-md-4 mb-3">
                   <div className="card mb-3 border-0 shadoq">
@@ -730,7 +784,7 @@ const TripView = () => {
             </Tab>
 
             {/* DMS */}
-            <Tab eventKey="dms" title="Trip Media">
+            <Tab eventKey="dms" title="DMS">
               <div className="row">
                 <div className="col-md-4 mb-3">
                   <div className="card border-0 shadow">

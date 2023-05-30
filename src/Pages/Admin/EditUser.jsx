@@ -11,11 +11,11 @@ import { MdEdit } from "react-icons/md";
 
 const EditUser = () => {
   const { user_id } = useParams();
-  const [data, setData] = useState([]);
+  const [data, setData] = useState(null);
   const [idData, setIdData] = useState(["Starkenn"]);
   const [master_customer, setMaster_customer] = useState(["Master_customer"]);
   const [isData, setIsData] = useState(false);
-  const [putData, setPutData] = useState([]);
+  const [putData, setPutData] = useState(null);
   const token = localStorage.getItem("token");
   const [validated, setValidated] = useState(false);
   const [error, setError] = useState(null);
@@ -41,20 +41,22 @@ const EditUser = () => {
     setValidated(true);
 
     if (form.checkValidity()) {
-      axios
-        .put(
-          `${process.env.REACT_APP_BASE_URL}/customers/edit-user/${user_id}`,
-          data,
-          {
-            headers: { authorization: `bearer ${token}` },
-          }
-        )
-        .then((res) => {
-          setError(false);
-        })
-        .catch((err) => {
-          setError(true);
-        });
+      if (data) {
+        axios
+          .put(
+            `${process.env.REACT_APP_BASE_URL}/customers/edit-user/${user_id}`,
+            data,
+            {
+              headers: { authorization: `bearer ${token}` },
+            }
+          )
+          .then((res) => {
+            setError(false);
+          })
+          .catch((err) => {
+            setError(true);
+          });
+      }
     }
   };
 
@@ -101,36 +103,38 @@ const EditUser = () => {
     setValidated(true);
 
     if (form.checkValidity()) {
-      if (master_customer.length > 0) {
-        axios
-          .put(
-            `${process.env.REACT_APP_BASE_URL}/customers/edit-customer/${master_customer[0].customer_id}`,
-            putData,
-            {
-              headers: { authorization: `bearer ${token}` },
-            }
-          )
-          .then((res) => {
-            setError(false);
-          })
-          .catch((err) => {
-            setError(true);
-          });
-      } else {
-        axios
-          .post(
-            `${process.env.REACT_APP_BASE_URL}/customers/add-customer/${user_id}`,
-            putData,
-            {
-              headers: { authorization: `bearer ${token}` },
-            }
-          )
-          .then((res) => {
-            setError(false);
-          })
-          .catch((err) => {
-            setError(true);
-          });
+      if (putData) {
+        if (master_customer.length > 0) {
+          axios
+            .put(
+              `${process.env.REACT_APP_BASE_URL}/customers/edit-customer/${master_customer[0].customer_id}`,
+              putData,
+              {
+                headers: { authorization: `bearer ${token}` },
+              }
+            )
+            .then((res) => {
+              setError(false);
+            })
+            .catch((err) => {
+              setError(true);
+            });
+        } else {
+          axios
+            .post(
+              `${process.env.REACT_APP_BASE_URL}/customers/add-customer/${user_id}`,
+              putData,
+              {
+                headers: { authorization: `bearer ${token}` },
+              }
+            )
+            .then((res) => {
+              setError(false);
+            })
+            .catch((err) => {
+              setError(true);
+            });
+        }
       }
     }
   };
@@ -235,8 +239,8 @@ const EditUser = () => {
                         required
                         className={
                           validated
-                            ? data.email
-                              ? data.email.match(/^\S+@\S+\.\S+$/)
+                            ? data?.email
+                              ? data?.email.match(/^\S+@\S+\.\S+$/)
                                 ? "is-valid"
                                 : "is-invalid"
                               : ""
@@ -262,8 +266,8 @@ const EditUser = () => {
                         style={{ paddingTop: "1.55rem", paddingBottom: "1rem" }}
                         className={`form-control ${
                           validated
-                            ? data.status
-                              ? data.status !== null
+                            ? data?.status
+                              ? data?.status !== null
                                 ? ""
                                 : "is-invalid"
                               : "is-invalid"
