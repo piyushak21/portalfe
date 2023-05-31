@@ -25,7 +25,7 @@ const EditVehicle = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    /////////Getting Data of vehicle
+    // Getting Data of vehicle
     axios
       .get(
         `${process.env.REACT_APP_BASE_URL}/vehicles/vehicle-card/${vehicle_id}`,

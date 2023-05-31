@@ -45,6 +45,8 @@ const CompletedTripView = () => {
   const [duration, setDuration] = useState("");
   const [alarm1, setAlarm1] = useState(0);
   const [alarm2, setAlarm2] = useState(0);
+  const [epochStart, setEpochStart] = useState();
+  const [epochEnd, setEpochEnd] = useState();
   // const [spdData, setSpdData] = useState([]);
 
   // CAS faults
@@ -100,6 +102,8 @@ const CompletedTripView = () => {
         const tripEndTime = new Date(res.data[0].trip_end_time * 1000);
         setStartTime(tripStartTime.toLocaleString());
         setEndTime(tripEndTime.toLocaleString());
+        setEpochStart(res.data[0].trip_start_time);
+        setEpochEnd(res.data[0].trip_end_time);
       })
       .catch((err) => {
         console.log(err);
@@ -199,7 +203,7 @@ const CompletedTripView = () => {
     console.log("5");
     axios
       .get(
-        `${process.env.REACT_APP_BASE_URL}/completedTrip/getFaultsByTripId/${id}`,
+        `${process.env.REACT_APP_BASE_URL}/completedTrip/getFaultsByTripId/${id}/${epochStart}/${epochEnd}`,
         {
           headers: { authorization: `bearer ${token}` },
         }
@@ -375,7 +379,7 @@ const CompletedTripView = () => {
       .catch((error) => {
         console.error(error);
       });
-  }, [id]);
+  }, [id, epochStart]);
 
   // Set DMS media
   useEffect(() => {

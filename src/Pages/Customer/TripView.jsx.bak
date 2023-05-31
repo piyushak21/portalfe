@@ -110,8 +110,8 @@ const TripView = () => {
     // Fetch the initial data immediately
     fetchData();
     // Fetch subsequent data at the specified interval
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchData, 5000);
+    // return () => clearInterval(interval);
   }, [id, token]);
 
   // Set Address
@@ -418,7 +418,7 @@ const TripView = () => {
           <Tabs
             defaultActiveKey="summary"
             id="justify-tab-example"
-            className="mb-3 h6"
+            className="mb-3"
             justify
           >
             {/* Trip summary tab */}

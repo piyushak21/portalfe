@@ -26,6 +26,8 @@ const TripView = () => {
   const [startTime, setStartTime] = useState();
   const [currentTime, setCurrentTime] = useState();
   const [vehicle, setVehicle] = useState([]);
+  const [epochStart, setEpochStart] = useState();
+  const [epochEnd, setEpochEnd] = useState();
 
   // CAS faults
   const [autoBrk, setAutoBrk] = useState(0);
@@ -107,6 +109,9 @@ const TripView = () => {
             let currtime = res.data[dataLength].timestamp;
             let updateCurrTime = new Date(currtime * 1000);
             setCurrentTime(updateCurrTime.toLocaleString());
+
+            setEpochStart(res.data[0].timestamp);
+            setEpochEnd(res.data[dataLength].timestamp);
           });
       } catch (error) {
         console.log(error);
@@ -116,7 +121,7 @@ const TripView = () => {
     // Fetch the initial data immediately
     fetchData();
     // Fetch subsequent data at the specified interval
-    const interval = setInterval(fetchData, 30000);
+    const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
   }, [id, token]);
 
@@ -172,7 +177,7 @@ const TripView = () => {
 
     axios
       .get(
-        `${process.env.REACT_APP_BASE_URL}/ongoingTrip/getOngoingFaultByTripId/${id}`,
+        `${process.env.REACT_APP_BASE_URL}/ongoingTrip/getOngoingFaultByTripId/${id}/${epochStart}/${epochEnd}`,
         {
           headers: { authorization: `bearer ${token}` },
         }
@@ -334,7 +339,7 @@ const TripView = () => {
       .catch((error) => {
         console.log(error);
       });
-  }, [tripData]);
+  }, [tripData, epochStart]);
 
   // Set Iframe for DMS
   const dmsIframes = media.map((data, index) => {
