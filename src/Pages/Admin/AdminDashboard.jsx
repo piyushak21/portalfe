@@ -26,7 +26,7 @@ const AdminDashboard = () => {
         headers: { authorization: `bearer ${token}` },
       })
       .then((res) => setDevices(res.data.AllData))
-      .catch((err) => console.lohg(err));
+      .catch((err) => console.log(err));
   };
 
   const getCustomersData = async () => {

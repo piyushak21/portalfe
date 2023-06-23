@@ -66,7 +66,9 @@ const CompletedTripList = () => {
     {
       name: "Trip End",
       selector: (row) => {
-        return convertTime(row.trip_end_time);
+        return row.trip_end_time == 0
+          ? convertTime(row.trip_start_time)
+          : convertTime(row?.trip_end_time);
       },
       wrap: true,
       sortable: true,

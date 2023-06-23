@@ -11,12 +11,14 @@ import axios from "axios";
 import { BsPinMapFill, BsArrowLeft } from "react-icons/bs";
 import car from "../../Assets/icons/liveIcon.svg";
 import Iframe from "react-iframe";
+import simplify from "simplify-js";
 
 const TripView = () => {
   let { id } = useParams();
   const token = localStorage.getItem("token");
 
   const [path, setPath] = useState([]);
+  const [coordinates, setCoordinates] = useState([]);
   const [tripData, setTripData] = useState([]);
   const [center, setCenter] = useState({ lat: 0, lng: 0 });
   const [startPoint, setStartPoint] = useState({ lat: 0, lng: 0 });
@@ -41,6 +43,7 @@ const TripView = () => {
   const [accidentSaved, setAccidentSaved] = useState(0);
   const [alarm1, setAlarm1] = useState(0);
   const [alarm2, setAlarm2] = useState(0);
+  const [engineOff, setEngineOff] = useState(0);
 
   // SET DMS data & Alerts
   const [media, setMedia] = useState([]);
@@ -87,7 +90,14 @@ const TripView = () => {
             });
 
             // Set path
-            setPath(
+            // setPath(
+            //   res.data.map((location) => ({
+            //     lat: parseFloat(location.lat),
+            //     lng: parseFloat(location.lng),
+            //   }))
+            // );
+
+            setCoordinates(
               res.data.map((location) => ({
                 lat: parseFloat(location.lat),
                 lng: parseFloat(location.lng),
@@ -125,6 +135,63 @@ const TripView = () => {
     return () => clearInterval(interval);
   }, [id, token]);
 
+  // Calculate distance between two coordinates using Haversine formula
+  function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) *
+        Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
+  }
+
+  // Convert degrees to radians
+  function deg2rad(deg) {
+    return deg * (Math.PI / 180);
+  }
+
+  useEffect(() => {
+    // Specify the maximum distance threshold in kilometers
+    const maxDistanceThreshold = 1; // Adjust as needed
+
+    // Specify the tolerance level to control the amount of simplification
+    const tolerance = 0.00005;
+
+    // Convert the fetched coordinates to a format that simplify-js accepts
+    const simplifiedPath = coordinates.map((coord) => ({
+      x: coord.lat,
+      y: coord.lng,
+    }));
+    // Simplify the path using the simplify function
+    const simplifiedCoordinates = simplify(simplifiedPath, tolerance).map(
+      (coord) => ({ lat: coord.x, lng: coord.y })
+    );
+
+    // Filter coordinates based on distance threshold
+    const filteredCoordinates = [simplifiedCoordinates[0]];
+    for (let i = 1; i < simplifiedCoordinates.length; i++) {
+      const prevCoord = simplifiedCoordinates[i - 1];
+      const currCoord = simplifiedCoordinates[i];
+      const distance = getDistance(
+        prevCoord.lat,
+        prevCoord.lng,
+        currCoord.lat,
+        currCoord.lng
+      );
+      if (distance <= maxDistanceThreshold) {
+        filteredCoordinates.push(currCoord);
+      }
+    }
+
+    setPath(filteredCoordinates);
+  }, [tripData]);
+
   // Set Address
   useEffect(() => {
     console.log("two");
@@ -161,6 +228,7 @@ const TripView = () => {
     let accSavedCount = 0;
     let alarm1Count = 0;
     let alarm2Count = 0;
+    let engineOffCount = 0;
 
     // DMS data
     let drowsinessCount = 0;
@@ -223,6 +291,9 @@ const TripView = () => {
           }
           if (item.event === "NTF" && jsonDataa.notification === 7) {
             overspeedCount++;
+          }
+          if (item.event === "NTF" && jsonDataa.notification === 16) {
+            engineOffCount++;
           }
 
           // Set Alarm data
@@ -321,6 +392,7 @@ const TripView = () => {
         setAccidentSaved(accSavedCount);
         setAlarm1(alarm1Count);
         setAlarm2(alarm2Count);
+        setEngineOff(engineOffCount);
 
         // Set DMS count
         setMedia(mediaData);
@@ -343,7 +415,7 @@ const TripView = () => {
 
   // Set Iframe for DMS
   const dmsIframes = media.map((data, index) => {
-    console.log(data);
+    // console.log(data);
     return (
       <div className="col-md-6 d-flex" key={index}>
         <div className="card mb-3 shadow border-0">
@@ -540,7 +612,7 @@ const TripView = () => {
               </div>
             </Tab>
 
-            {/* Fault count tab */}
+            {/* CAS & CWS */}
             <Tab eventKey="fault" title="CAS & CWS">
               <div className="row">
                 <div className="col-md-4 mb-3">
@@ -563,7 +635,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {autoBrk}
                           </Badge>
                         </ListGroup.Item>
@@ -580,7 +652,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {accidentSaved}
                           </Badge>
                         </ListGroup.Item>
@@ -590,7 +662,7 @@ const TripView = () => {
 
                   <div className="card mb-3 border-0 shadow">
                     <div className="card-header bg-theme text-light">
-                      <strong>Sleep Alert</strong>
+                      <strong>Notifications</strong>
                     </div>
                     <div className="card-body">
                       <ListGroup>
@@ -602,13 +674,13 @@ const TripView = () => {
                             <Form.Group className="" controlId="sl1">
                               <Form.Check
                                 type="checkbox"
-                                label="Sleep Alert Missed"
+                                label="Engine Off"
                                 disabled
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
-                            {sleeptAlt}
+                          <Badge bg="secondary" pill>
+                            {engineOff}
                           </Badge>
                         </ListGroup.Item>
                       </ListGroup>
@@ -636,7 +708,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {harshacc}
                           </Badge>
                         </ListGroup.Item>
@@ -653,7 +725,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {laneChng}
                           </Badge>
                         </ListGroup.Item>
@@ -670,7 +742,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {spdBump}
                           </Badge>
                         </ListGroup.Item>
@@ -687,7 +759,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {suddenBrk}
                           </Badge>
                         </ListGroup.Item>
@@ -704,7 +776,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {tailgating}
                           </Badge>
                         </ListGroup.Item>
@@ -733,7 +805,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {overspeed}
                           </Badge>
                         </ListGroup.Item>
@@ -760,7 +832,7 @@ const TripView = () => {
                               data-custom-attribute="ALM2"
                             />
                           </Form.Group>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {alarm1}
                           </Badge>
                         </ListGroup.Item>
@@ -777,7 +849,7 @@ const TripView = () => {
                               data-custom-attribute="ALM3"
                             />
                           </Form.Group>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {alarm2}
                           </Badge>
                         </ListGroup.Item>
@@ -811,7 +883,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {tripStartAlert}
                           </Badge>
                         </ListGroup.Item>
@@ -828,7 +900,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {drowsiness}
                           </Badge>
                         </ListGroup.Item>
@@ -845,7 +917,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {distraction}
                           </Badge>
                         </ListGroup.Item>
@@ -862,11 +934,11 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {dmsoverSpd}
                           </Badge>
                         </ListGroup.Item>
-                        <ListGroup.Item
+                        {/* <ListGroup.Item
                           as="li"
                           className="d-flex justify-content-between align-items-start border-0"
                         >
@@ -879,11 +951,11 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {noSeatbelt}
                           </Badge>
-                        </ListGroup.Item>
-                        <ListGroup.Item
+                        </ListGroup.Item> */}
+                        {/* <ListGroup.Item
                           as="li"
                           className="d-flex justify-content-between align-items-start border-0"
                         >
@@ -896,11 +968,11 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {usePhone}
                           </Badge>
-                        </ListGroup.Item>
-                        <ListGroup.Item
+                        </ListGroup.Item> */}
+                        {/* <ListGroup.Item
                           as="li"
                           className="d-flex justify-content-between align-items-start border-0"
                         >
@@ -913,10 +985,10 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {unknownDriver}
                           </Badge>
-                        </ListGroup.Item>
+                        </ListGroup.Item> */}
                         <ListGroup.Item
                           as="li"
                           className="d-flex justify-content-between align-items-start border-0"
@@ -930,11 +1002,11 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {noDriver}
                           </Badge>
                         </ListGroup.Item>
-                        <ListGroup.Item
+                        {/* <ListGroup.Item
                           as="li"
                           className="d-flex justify-content-between align-items-start border-0"
                         >
@@ -947,11 +1019,11 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {smoking}
                           </Badge>
-                        </ListGroup.Item>
-                        <ListGroup.Item
+                        </ListGroup.Item> */}
+                        {/* <ListGroup.Item
                           as="li"
                           className="d-flex justify-content-between align-items-start border-0"
                         >
@@ -964,10 +1036,10 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {rashDrive}
                           </Badge>
-                        </ListGroup.Item>
+                        </ListGroup.Item> */}
                         <ListGroup.Item
                           as="li"
                           className="d-flex justify-content-between align-items-start border-0"
@@ -981,7 +1053,7 @@ const TripView = () => {
                               />
                             </Form.Group>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg="secondary" pill>
                             {dmsAccident}
                           </Badge>
                         </ListGroup.Item>

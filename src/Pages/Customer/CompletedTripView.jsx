@@ -27,6 +27,7 @@ import {
 import Iframe from "react-iframe";
 import markerImage from "../../Assets/icons/marker.svg";
 import { Spinner } from "react-bootstrap";
+import simplify from "simplify-js";
 
 const CompletedTripView = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +35,7 @@ const CompletedTripView = () => {
   // Get completed trip data
   let { id } = useParams();
   const [path, setPath] = useState([]);
+  const [coordinates, setCoordinates] = useState([]);
   const [tripData, setTripData] = useState([]);
   const [center, setCenter] = useState({});
   const [startPoint, setStartPoint] = useState({});
@@ -58,6 +60,7 @@ const CompletedTripView = () => {
   const [suddenBrk, setSuddenBrk] = useState(0);
   const [tailgating, setTailgating] = useState(0);
   const [overspeed, setOverspeed] = useState(0);
+  const [engineOff, setEngineOff] = useState(0);
 
   // SET DMS data & Alerts
   const [media, setMedia] = useState([]);
@@ -110,6 +113,27 @@ const CompletedTripView = () => {
       });
   }, [id, token]);
 
+  // Calculate distance between two coordinates using Haversine formula
+  function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) *
+        Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
+  }
+
+  // Convert degrees to radians
+  function deg2rad(deg) {
+    return deg * (Math.PI / 180);
+  }
+
   // Set all trip analytics
   useEffect(() => {
     console.log("2");
@@ -136,7 +160,13 @@ const CompletedTripView = () => {
         });
 
         // Set path
-        setPath(
+        // setPath(
+        //   res.data.map((location) => ({
+        //     lat: parseFloat(location.lat),
+        //     lng: parseFloat(location.lng),
+        //   }))
+        // );
+        setCoordinates(
           res.data.map((location) => ({
             lat: parseFloat(location.lat),
             lng: parseFloat(location.lng),
@@ -154,6 +184,42 @@ const CompletedTripView = () => {
         console.log(err);
       });
   }, []);
+
+  useEffect(() => {
+    // Specify the maximum distance threshold in kilometers
+    const maxDistanceThreshold = 1; // Adjust as needed
+
+    // Specify the tolerance level to control the amount of simplification
+    const tolerance = 0.00005;
+
+    // Convert the fetched coordinates to a format that simplify-js accepts
+    const simplifiedPath = coordinates.map((coord) => ({
+      x: coord.lat,
+      y: coord.lng,
+    }));
+    // Simplify the path using the simplify function
+    const simplifiedCoordinates = simplify(simplifiedPath, tolerance).map(
+      (coord) => ({ lat: coord.x, lng: coord.y })
+    );
+
+    // Filter coordinates based on distance threshold
+    const filteredCoordinates = [simplifiedCoordinates[0]];
+    for (let i = 1; i < simplifiedCoordinates.length; i++) {
+      const prevCoord = simplifiedCoordinates[i - 1];
+      const currCoord = simplifiedCoordinates[i];
+      const distance = getDistance(
+        prevCoord.lat,
+        prevCoord.lng,
+        currCoord.lat,
+        currCoord.lng
+      );
+      if (distance <= maxDistanceThreshold) {
+        filteredCoordinates.push(currCoord);
+      }
+    }
+
+    setPath(filteredCoordinates);
+  }, [tripData]);
 
   // Set Address
   useEffect(() => {
@@ -173,7 +239,7 @@ const CompletedTripView = () => {
       getAddress(startPoint?.lat, startPoint?.lng, setStartAddress);
       getAddress(endPoint?.lat, endPoint?.lng, setEndAddress);
     }
-  }, [tripData]);
+  }, [tripData, startPoint]);
 
   // Set vehicle data
   useEffect(() => {
@@ -201,83 +267,103 @@ const CompletedTripView = () => {
   // Get faults
   useEffect(() => {
     console.log("5");
-    axios
-      .get(
-        `${process.env.REACT_APP_BASE_URL}/completedTrip/getFaultsByTripId/${id}/${epochStart}/${epochEnd}`,
-        {
-          headers: { authorization: `bearer ${token}` },
-        }
-      )
-      .then((response) => {
-        setFaultData(response.data);
+    if (epochStart && epochEnd) {
+      axios
+        .get(
+          `${process.env.REACT_APP_BASE_URL}/completedTrip/getFaultsByTripId/${id}/${epochStart}/${epochEnd}`,
+          {
+            headers: { authorization: `bearer ${token}` },
+          }
+        )
+        .then((response) => {
+          setFaultData(response.data);
 
-        let parameters = [];
-        let params = {};
+          let parameters = [];
+          let params = {};
 
-        // Set all notifications data
-        for (let i = 0; i < response.data.length; i++) {
-          // Set Alarm data
-          if (response.data[i].event === "ALM") {
-            let almData = response.data[i].jsondata;
-            let almparse = JSON.parse(almData);
-            if (almparse.data.alarm === 2) {
-              setAlarm1((prev) => prev + 1);
+          // Set all notifications data
+          for (let i = 0; i < response.data.length; i++) {
+            // Set Alarm data
+            if (response.data[i].event === "ALM") {
+              let almData = response.data[i].jsondata;
+              let almparse = JSON.parse(almData);
+              if (almparse.data.alarm === 2) {
+                setAlarm1((prev) => prev + 1);
+              }
+              if (almparse.data.alarm === 3) {
+                setAlarm2((prev) => prev + 1);
+              }
             }
-            if (almparse.data.alarm === 3) {
-              setAlarm2((prev) => prev + 1);
+
+            // Set Notification data
+            if (response.data[i].event === "NTF") {
+              let ntfData = response.data[i].jsondata;
+              let ntfparse = JSON.parse(ntfData);
+
+              if (ntfparse.notification === 2) {
+                setHarshacc((prev) => prev + 1);
+              }
+              if (ntfparse.notification === 13) {
+                setSleepAlt((prev) => prev + 1);
+              }
+              if (ntfparse.notification === 5) {
+                setLaneChng((prev) => prev + 1);
+              }
+              if (ntfparse.notification === 4) {
+                setSpdBump((prev) => prev + 1);
+              }
+              if (ntfparse.notification === 3) {
+                setSuddenBrk((prev) => prev + 1);
+              }
+              if (ntfparse.notification === 6) {
+                setTailgating((prev) => prev + 1);
+              }
+              if (ntfparse.notification === 7) {
+                setOverspeed((prev) => prev + 1);
+              }
+              if (ntfparse.notification === 16) {
+                setEngineOff((prev) => prev + 1);
+              }
             }
           }
 
-          // Set Notification data
-          if (response.data[i].event === "NTF") {
-            let ntfData = response.data[i].jsondata;
-            let ntfparse = JSON.parse(ntfData);
+          // loop to set markers
+          for (let l = 0; l < response.data.length; l++) {
+            // parsing break json
+            let parseJson = JSON.parse(response.data[l].jsondata);
 
-            if (ntfparse.notification === 2) {
-              setHarshacc((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 13) {
-              setSleepAlt((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 5) {
-              setLaneChng((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 4) {
-              setSpdBump((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 3) {
-              setSuddenBrk((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 6) {
-              setTailgating((prev) => prev + 1);
-            }
-            if (ntfparse.notification === 7) {
-              setOverspeed((prev) => prev + 1);
-            }
-          }
-        }
+            if (response.data[l].event === "BRK") {
+              let ttcdiff = parseJson.data.on_ttc - parseJson.data.off_ttc;
+              let acd = ttcdiff / parseJson.data.off_ttc;
+              let accSvd = acd * 100;
+              let updatedTime = new Date(response.data[l].timestamp * 1000);
+              let contentTime = updatedTime.toLocaleString();
 
-        // loop to set markers
-        for (let l = 0; l < response.data.length; l++) {
-          // parsing break json
-          let parseJson = JSON.parse(response.data[l].jsondata);
-
-          if (response.data[l].event === "BRK") {
-            let ttcdiff = parseJson.data.on_ttc - parseJson.data.off_ttc;
-            let acd = ttcdiff / parseJson.data.off_ttc;
-            let accSvd = acd * 100;
-            let updatedTime = new Date(response.data[l].timestamp * 1000);
-            let contentTime = updatedTime.toLocaleString();
-
-            // Set Accident save
-            if (accSvd > 50 && accSvd < 100) {
-              setAccident((prevCount) => prevCount + 1);
+              // Set Accident save
+              if (accSvd > 50 && accSvd < 100) {
+                setAccident((prevCount) => prevCount + 1);
+                params = {
+                  id: response.data[l].id,
+                  lat: parseFloat(response.data[l].lat),
+                  lng: parseFloat(response.data[l].lng),
+                  title: "ACCIDENT_SAVED",
+                  content: contentTime,
+                  speed: parseFloat(response.data[l].spd),
+                  event: response.data[l].event,
+                  reason: parseJson.data.reason,
+                  brake_duration:
+                    parseJson.data.off_timestamp - parseJson.data.on_timestamp,
+                };
+                parameters.push(params);
+              }
+              setAutoBrk((prevCount) => prevCount + 1);
               params = {
                 id: response.data[l].id,
                 lat: parseFloat(response.data[l].lat),
                 lng: parseFloat(response.data[l].lng),
-                title: "ACCIDENT_SAVED",
+                title: "AUTOMATIC_BRAKING",
                 content: contentTime,
+                bypass: parseJson.data.bypass,
                 speed: parseFloat(response.data[l].spd),
                 event: response.data[l].event,
                 reason: parseJson.data.reason,
@@ -286,99 +372,84 @@ const CompletedTripView = () => {
               };
               parameters.push(params);
             }
-            setAutoBrk((prevCount) => prevCount + 1);
-            params = {
-              id: response.data[l].id,
-              lat: parseFloat(response.data[l].lat),
-              lng: parseFloat(response.data[l].lng),
-              title: "AUTOMATIC_BRAKING",
-              content: contentTime,
-              bypass: parseJson.data.bypass,
-              speed: parseFloat(response.data[l].spd),
-              event: response.data[l].event,
-              reason: parseJson.data.reason,
-              brake_duration:
-                parseJson.data.off_timestamp - parseJson.data.on_timestamp,
-            };
-            parameters.push(params);
-          }
 
-          // DMS markers
-          if (response.data[l].event === "DMS") {
-            let updatedTime = new Date(response.data[l].timestamp * 1000);
-            let contentTime = updatedTime.toLocaleString();
-            params = {
-              id: response.data[l].id,
-              lat: parseFloat(response.data[l].lat),
-              lng: parseFloat(response.data[l].lng),
-              title: parseJson.data.alert_type,
-              content: contentTime,
-              speed: parseJson.data.speed,
-              event: response.data[l].event,
-              reason: parseJson.data.alert_type,
-              alert_type: parseJson.data.alert_type,
-              media: parseJson.data.media,
-              dashcam: parseJson.data.dashcam,
-              severity: parseJson.data.severity,
-            };
-            parameters.push(params);
-          }
+            // DMS markers
+            if (response.data[l].event === "DMS") {
+              let updatedTime = new Date(response.data[l].timestamp * 1000);
+              let contentTime = updatedTime.toLocaleString();
+              params = {
+                id: response.data[l].id,
+                lat: parseFloat(response.data[l].lat),
+                lng: parseFloat(response.data[l].lng),
+                title: parseJson.data.alert_type,
+                content: contentTime,
+                speed: parseJson.data.speed,
+                event: response.data[l].event,
+                reason: parseJson.data.alert_type,
+                alert_type: parseJson.data.alert_type,
+                media: parseJson.data.media,
+                dashcam: parseJson.data.dashcam,
+                severity: parseJson.data.severity,
+              };
+              parameters.push(params);
+            }
 
-          // adding brk json to markers
-          if (parseJson.notification !== undefined) {
-            let updatedTime = new Date(response.data[l].timestamp * 1000);
-            let contentTime = updatedTime.toLocaleString();
-            params = {
-              id: response.data[l].id,
-              lat: parseFloat(response.data[l].lat),
-              lng: parseFloat(response.data[l].lng),
-              title: parseJson.notification,
-              content: contentTime,
-              speed: parseFloat(response.data[l].spd),
-              event: response.data[l].event,
-              reason: parseJson.notification,
-            };
-            parameters.push(params);
-          }
-          if (parseJson.event === "BRK") {
-            params = {
-              id: response.data[l].id,
-              lat: parseFloat(response.data[l].lat),
-              lng: parseFloat(response.data[l].lng),
-              title: response.data[l].message,
-              event: response.data[l].event,
-              reason: parseJson.data.reason,
-              bypass: parseJson.data.bypass,
-              speed: parseFloat(response.data[l].spd),
-              brake_duration:
-                parseJson.data.off_timestamp - parseJson.data.on_timestamp,
-            };
-            parameters.push(params);
-          }
+            // adding brk json to markers
+            if (parseJson.notification !== undefined) {
+              let updatedTime = new Date(response.data[l].timestamp * 1000);
+              let contentTime = updatedTime.toLocaleString();
+              params = {
+                id: response.data[l].id,
+                lat: parseFloat(response.data[l].lat),
+                lng: parseFloat(response.data[l].lng),
+                title: parseJson.notification,
+                content: contentTime,
+                speed: parseFloat(response.data[l].spd),
+                event: response.data[l].event,
+                reason: parseJson.notification,
+              };
+              parameters.push(params);
+            }
+            if (parseJson.event === "BRK") {
+              params = {
+                id: response.data[l].id,
+                lat: parseFloat(response.data[l].lat),
+                lng: parseFloat(response.data[l].lng),
+                title: response.data[l].message,
+                event: response.data[l].event,
+                reason: parseJson.data.reason,
+                bypass: parseJson.data.bypass,
+                speed: parseFloat(response.data[l].spd),
+                brake_duration:
+                  parseJson.data.off_timestamp - parseJson.data.on_timestamp,
+              };
+              parameters.push(params);
+            }
 
-          // ALM markers
-          if (response.data[l].event === "ALM") {
-            let updatedTime = new Date(response.data[l].timestamp * 1000);
-            let contentTime = updatedTime.toLocaleString();
-            params = {
-              id: response.data[l].id,
-              lat: parseFloat(response.data[l].lat),
-              lng: parseFloat(response.data[l].lng),
-              reason: response.data[l].message,
-              title: response.data[l].message,
-              speed: Math.round(response.data[l].spd),
-              content: contentTime,
-              event: parseJson.data.alarm == 2 ? "ALM2" : "ALM3",
-              alarm_no: parseJson.data.alarm,
-            };
-            parameters.push(params);
+            // ALM markers
+            if (response.data[l].event === "ALM") {
+              let updatedTime = new Date(response.data[l].timestamp * 1000);
+              let contentTime = updatedTime.toLocaleString();
+              params = {
+                id: response.data[l].id,
+                lat: parseFloat(response.data[l].lat),
+                lng: parseFloat(response.data[l].lng),
+                reason: response.data[l].message,
+                title: response.data[l].message,
+                speed: Math.round(response.data[l].spd),
+                content: contentTime,
+                event: parseJson.data.alarm == 2 ? "ALM2" : "ALM3",
+                alarm_no: parseJson.data.alarm,
+              };
+              parameters.push(params);
+            }
           }
-        }
-        setMarkers(parameters);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+          setMarkers(parameters);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
   }, [id, epochStart]);
 
   // Set DMS media
@@ -389,7 +460,14 @@ const CompletedTripView = () => {
       faultData.forEach((item) => {
         if (item.event === "DMS") {
           let dmsData = JSON.parse(item.jsondata);
-          mediaData.push(dmsData.data.media);
+          let dmsTimeStamp = item.timestamp;
+          let updatedmsTimeStamp = new Date(dmsTimeStamp * 1000);
+          mediaData.push({
+            dms: dmsData.data.media,
+            dashcam: dmsData.data.dashcam,
+            alert: dmsData.data.alert_type,
+            timestamp: updatedmsTimeStamp.toLocaleString(),
+          });
           if (dmsData.data.alert_type === "DROWSINESS") {
             setDrowsiness((prev) => prev + 1);
           }
@@ -431,13 +509,45 @@ const CompletedTripView = () => {
   }, [faultData]);
 
   // Set Iframe for DMS
-  // const dmsIframes = media.map((data, index) => {
-  //   return (
-  //     <div className="col-md-6 mb-2" key={index}>
-  //       <Iframe src={data} width="100%" height="300px"></Iframe>
-  //     </div>
-  //   );
-  // });
+  const dmsIframes = media.map((data, index) => {
+    // console.log(data);
+    return (
+      <div className="col-md-6 d-flex" key={index}>
+        <div className="card mb-3 shadow border-0">
+          <div className="card-body">
+            <p className="mb-0">
+              <small>
+                Alert: <b>{data.alert}</b>
+              </small>
+            </p>
+            <p className="mb-0">
+              <small>Timestamp: {data?.timestamp}</small>
+            </p>
+            <div className="row justify-content-center">
+              <div className="col-md-6 text-center">
+                <Iframe src={data?.dms} width="100%" height="130px"></Iframe>
+                <p className="mb-0 text-danger">
+                  <b>DMS</b>
+                </p>
+              </div>
+              {data.dashcam && (
+                <div className="col-md-6">
+                  <Iframe
+                    src={data?.dashcam}
+                    width="100%"
+                    height="130px"
+                  ></Iframe>
+                  <p className="mb-0 text-danger">
+                    <b>Dash CAM</b>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  });
 
   const handleMarkerClick = (marker) => {
     setSelectedMarker(marker);
@@ -722,9 +832,9 @@ const CompletedTripView = () => {
                           ) : (
                             ""
                           )}
-                          {marker.reason === 13 ? (
+                          {marker.reason === 16 ? (
                             <div>
-                              <b>Sleep Alert Missed</b>
+                              <b>Engine Off</b>
                               <p className="mb-0">
                                 TimeStamp: {marker.content}
                               </p>
@@ -920,7 +1030,7 @@ const CompletedTripView = () => {
               </div>
             </Tab>
 
-            {/* Fault count tab */}
+            {/* CAS & CWS */}
             <Tab eventKey="fault" title="CAS & CWS">
               <div className="row">
                 <div className="col-md-4">
@@ -986,7 +1096,7 @@ const CompletedTripView = () => {
 
                   <div className="card mb-3 border-0 shadow">
                     <div className="card-header bg-theme text-light">
-                      Sleep Alert
+                      Notifications
                     </div>
                     <div className="card-body">
                       <ListGroup>
@@ -997,22 +1107,22 @@ const CompletedTripView = () => {
                           <div className="ms-2 me-auto">
                             <Form.Group className="" controlId="sl1">
                               <Form.Check
-                                disabled={sleeptAlt === 0}
+                                disabled={engineOff === 0}
                                 type="checkbox"
-                                label="Sleep Alert Missed"
-                                value={13}
+                                label="Engine Off"
+                                value={16}
                                 data-custom-attribute="NTF"
                                 onChange={handlecheckbox}
                               />
                             </Form.Group>
                           </div>
-                          {sleeptAlt === 0 ? (
+                          {engineOff === 0 ? (
                             <Badge bg="secondary" pill>
-                              {sleeptAlt}
+                              {engineOff}
                             </Badge>
                           ) : (
                             <Badge bg="primary" pill>
-                              {sleeptAlt}
+                              {engineOff}
                             </Badge>
                           )}
                         </ListGroup.Item>
@@ -1263,125 +1373,177 @@ const CompletedTripView = () => {
             {/* DMS */}
             <Tab eventKey="dms" title="DMS">
               <div className="row">
-                <div className="col-md-12 mb-3">
+                <div className="col-md-4 mb-3">
                   <div className="card border-0 shadow">
                     <div className="card-header bg-theme text-light">DMS</div>
                     <div className="card-body">
+                      <ListGroup>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms11">
+                              <Form.Check
+                                type="checkbox"
+                                label="Trip Start"
+                                value="TRIP_START"
+                                disabled={tripStartAlert === 0}
+                                data-custom-attribute="DMS"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          {tripStartAlert === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {tripStartAlert}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {tripStartAlert}
+                            </Badge>
+                          )}
+                        </ListGroup.Item>
+
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms1">
+                              <Form.Check
+                                type="checkbox"
+                                label="Drowsiness"
+                                disabled={drowsiness === 0}
+                                value="DROWSINESS"
+                                data-custom-attribute="DMS"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          {drowsiness === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {drowsiness}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {drowsiness}
+                            </Badge>
+                          )}
+                        </ListGroup.Item>
+
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms2">
+                              <Form.Check
+                                type="checkbox"
+                                label="Distraction"
+                                disabled={distraction === 0}
+                                value="DISTRACTION"
+                                data-custom-attribute="DMS"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          {distraction === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {distraction}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {distraction}
+                            </Badge>
+                          )}
+                        </ListGroup.Item>
+
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms3">
+                              <Form.Check
+                                type="checkbox"
+                                label="Overspeeding"
+                                disabled={dmsoverSpd === 0}
+                                value="OVERSPEEDING"
+                                data-custom-attribute="DMS"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          {dmsoverSpd === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {dmsoverSpd}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {dmsoverSpd}
+                            </Badge>
+                          )}
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms7">
+                              <Form.Check
+                                type="checkbox"
+                                label="No Driver"
+                                disabled={noDriver === 0}
+                                value="NO_DRIVER"
+                                data-custom-attribute="DMS"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          {noDriver === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {noDriver}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {noDriver}
+                            </Badge>
+                          )}
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="li"
+                          className="d-flex justify-content-between align-items-start border-0"
+                        >
+                          <div className="ms-2 me-auto">
+                            <Form.Group className="" controlId="dms10">
+                              <Form.Check
+                                type="checkbox"
+                                label="Accident"
+                                disabled={dmsAccident === 0}
+                                value="ACCIDENT"
+                                data-custom-attribute="DMS"
+                                onChange={handlecheckbox}
+                              />
+                            </Form.Group>
+                          </div>
+                          {dmsAccident === 0 ? (
+                            <Badge bg="secondary" pill>
+                              {dmsAccident}
+                            </Badge>
+                          ) : (
+                            <Badge bg="primary" pill>
+                              {dmsAccident}
+                            </Badge>
+                          )}
+                        </ListGroup.Item>
+                      </ListGroup>
+
                       <div className="row">
+                        <div className="col-md-12"></div>
                         <div className="col-md-4">
                           <ListGroup>
-                            <ListGroup.Item
-                              as="li"
-                              className="d-flex justify-content-between align-items-start border-0"
-                            >
-                              <div className="ms-2 me-auto">
-                                <Form.Group className="" controlId="dms11">
-                                  <Form.Check
-                                    type="checkbox"
-                                    label="Trip Start"
-                                    value="TRIP_START"
-                                    disabled={tripStartAlert === 0}
-                                    data-custom-attribute="DMS"
-                                    onChange={handlecheckbox}
-                                  />
-                                </Form.Group>
-                              </div>
-                              {tripStartAlert === 0 ? (
-                                <Badge bg="secondary" pill>
-                                  {tripStartAlert}
-                                </Badge>
-                              ) : (
-                                <Badge bg="primary" pill>
-                                  {tripStartAlert}
-                                </Badge>
-                              )}
-                            </ListGroup.Item>
-
-                            <ListGroup.Item
-                              as="li"
-                              className="d-flex justify-content-between align-items-start border-0"
-                            >
-                              <div className="ms-2 me-auto">
-                                <Form.Group className="" controlId="dms1">
-                                  <Form.Check
-                                    type="checkbox"
-                                    label="Drowsiness"
-                                    disabled={drowsiness === 0}
-                                    value="DROWSINESS"
-                                    data-custom-attribute="DMS"
-                                    onChange={handlecheckbox}
-                                  />
-                                </Form.Group>
-                              </div>
-                              {drowsiness === 0 ? (
-                                <Badge bg="secondary" pill>
-                                  {drowsiness}
-                                </Badge>
-                              ) : (
-                                <Badge bg="primary" pill>
-                                  {drowsiness}
-                                </Badge>
-                              )}
-                            </ListGroup.Item>
-
-                            <ListGroup.Item
-                              as="li"
-                              className="d-flex justify-content-between align-items-start border-0"
-                            >
-                              <div className="ms-2 me-auto">
-                                <Form.Group className="" controlId="dms2">
-                                  <Form.Check
-                                    type="checkbox"
-                                    label="Distraction"
-                                    disabled={distraction === 0}
-                                    value="DISTRACTION"
-                                    data-custom-attribute="DMS"
-                                    onChange={handlecheckbox}
-                                  />
-                                </Form.Group>
-                              </div>
-                              {distraction === 0 ? (
-                                <Badge bg="secondary" pill>
-                                  {distraction}
-                                </Badge>
-                              ) : (
-                                <Badge bg="primary" pill>
-                                  {distraction}
-                                </Badge>
-                              )}
-                            </ListGroup.Item>
-
-                            <ListGroup.Item
-                              as="li"
-                              className="d-flex justify-content-between align-items-start border-0"
-                            >
-                              <div className="ms-2 me-auto">
-                                <Form.Group className="" controlId="dms3">
-                                  <Form.Check
-                                    type="checkbox"
-                                    label="Overspeeding"
-                                    disabled={dmsoverSpd === 0}
-                                    value="OVERSPEEDING"
-                                    data-custom-attribute="DMS"
-                                    onChange={handlecheckbox}
-                                  />
-                                </Form.Group>
-                              </div>
-                              {dmsoverSpd === 0 ? (
-                                <Badge bg="secondary" pill>
-                                  {dmsoverSpd}
-                                </Badge>
-                              ) : (
-                                <Badge bg="primary" pill>
-                                  {dmsoverSpd}
-                                </Badge>
-                              )}
-                            </ListGroup.Item>
-                          </ListGroup>
-                        </div>
-                        <div className="col-md-4">
-                          <ListGroup>
-                            <ListGroup.Item
+                            {/* <ListGroup.Item
                               as="li"
                               className="d-flex justify-content-between align-items-start border-0"
                             >
@@ -1406,9 +1568,9 @@ const CompletedTripView = () => {
                                   {noSeatbelt}
                                 </Badge>
                               )}
-                            </ListGroup.Item>
+                            </ListGroup.Item> */}
 
-                            <ListGroup.Item
+                            {/* <ListGroup.Item
                               as="li"
                               className="d-flex justify-content-between align-items-start border-0"
                             >
@@ -1433,9 +1595,9 @@ const CompletedTripView = () => {
                                   {usePhone}
                                 </Badge>
                               )}
-                            </ListGroup.Item>
+                            </ListGroup.Item> */}
 
-                            <ListGroup.Item
+                            {/* <ListGroup.Item
                               as="li"
                               className="d-flex justify-content-between align-items-start border-0"
                             >
@@ -1460,39 +1622,12 @@ const CompletedTripView = () => {
                                   {unknownDriver}
                                 </Badge>
                               )}
-                            </ListGroup.Item>
-
-                            <ListGroup.Item
-                              as="li"
-                              className="d-flex justify-content-between align-items-start border-0"
-                            >
-                              <div className="ms-2 me-auto">
-                                <Form.Group className="" controlId="dms7">
-                                  <Form.Check
-                                    type="checkbox"
-                                    label="No Driver"
-                                    disabled={noDriver === 0}
-                                    value="NO_DRIVER"
-                                    data-custom-attribute="DMS"
-                                    onChange={handlecheckbox}
-                                  />
-                                </Form.Group>
-                              </div>
-                              {noDriver === 0 ? (
-                                <Badge bg="secondary" pill>
-                                  {noDriver}
-                                </Badge>
-                              ) : (
-                                <Badge bg="primary" pill>
-                                  {noDriver}
-                                </Badge>
-                              )}
-                            </ListGroup.Item>
+                            </ListGroup.Item> */}
                           </ListGroup>
                         </div>
                         <div className="col-md-4">
                           <ListGroup>
-                            <ListGroup.Item
+                            {/* <ListGroup.Item
                               as="li"
                               className="d-flex justify-content-between align-items-start border-0"
                             >
@@ -1517,9 +1652,9 @@ const CompletedTripView = () => {
                                   {smoking}
                                 </Badge>
                               )}
-                            </ListGroup.Item>
+                            </ListGroup.Item> */}
 
-                            <ListGroup.Item
+                            {/* <ListGroup.Item
                               as="li"
                               className="d-flex justify-content-between align-items-start border-0"
                             >
@@ -1544,44 +1679,17 @@ const CompletedTripView = () => {
                                   {rashDrive}
                                 </Badge>
                               )}
-                            </ListGroup.Item>
-
-                            <ListGroup.Item
-                              as="li"
-                              className="d-flex justify-content-between align-items-start border-0"
-                            >
-                              <div className="ms-2 me-auto">
-                                <Form.Group className="" controlId="dms10">
-                                  <Form.Check
-                                    type="checkbox"
-                                    label="Accident"
-                                    disabled={dmsAccident === 0}
-                                    value="ACCIDENT"
-                                    data-custom-attribute="DMS"
-                                    onChange={handlecheckbox}
-                                  />
-                                </Form.Group>
-                              </div>
-                              {dmsAccident === 0 ? (
-                                <Badge bg="secondary" pill>
-                                  {dmsAccident}
-                                </Badge>
-                              ) : (
-                                <Badge bg="primary" pill>
-                                  {dmsAccident}
-                                </Badge>
-                              )}
-                            </ListGroup.Item>
+                            </ListGroup.Item> */}
                           </ListGroup>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                {/* <div className="col-md-8">
-                  <h6>DMS Media</h6>
+                <div className="col-md-8">
+                  <h5>DMS Media</h5>
                   <div className="row">{dmsIframes}</div>
-                </div> */}
+                </div>
               </div>
             </Tab>
           </Tabs>
